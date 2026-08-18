@@ -2,3 +2,4 @@
 firebase-service-account.json
 steam-worker/firebase-service-account.json
 .DS_Store
+steam-worker/.wrangler/
