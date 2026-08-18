@@ -157,8 +157,11 @@ if (globeStage && !reducedMotion) {
   globeStage.dataset.enhanced = "true";
 
   const globe = new THREE.Group();
-  const eurasiaYaw = THREE.MathUtils.degToRad(-50);
-  globe.rotation.set(.12, eurasiaYaw, -.025);
+  // The texture's prime meridian is offset by 90° in Three's sphere UVs.
+  // Keep Eastern Europe and Central Asia facing the visitor at rest.
+  const eurasiaYaw = THREE.MathUtils.degToRad(-142);
+  const eurasiaTilt = THREE.MathUtils.degToRad(34);
+  globe.rotation.set(eurasiaTilt, eurasiaYaw, -.025);
   scene.add(globe);
   const earthTexture = new THREE.TextureLoader().load("assets/globe/earth-blue-marble.jpg");
   earthTexture.colorSpace = THREE.SRGBColorSpace;
@@ -193,12 +196,13 @@ if (globeStage && !reducedMotion) {
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
     const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false }));
-    sprite.scale.set(width / 150, .52, 1);
+    sprite.scale.set(width / 178, .46, 1);
     return sprite;
   };
   const locationVector = (latitude, longitude, radius = 2.22) => {
     const lat = THREE.MathUtils.degToRad(latitude);
-    const lon = THREE.MathUtils.degToRad(longitude);
+    // Match the Blue Marble equirectangular texture to geographic longitude.
+    const lon = THREE.MathUtils.degToRad(longitude + 90);
     return new THREE.Vector3(radius * Math.cos(lat) * Math.sin(lon), radius * Math.sin(lat), radius * Math.cos(lat) * Math.cos(lon));
   };
   const locations = [
@@ -207,7 +211,12 @@ if (globeStage && !reducedMotion) {
     { label: "Скоро · Москва", lat: 55.75, lon: 37.62, color: 0xffb56d },
     { label: "Скоро · Минск", lat: 53.9, lon: 27.56, color: 0xffb56d },
   ];
-  const labelOffsets = [new THREE.Vector3(.48, -.25, .08), new THREE.Vector3(-.63, -.05, .1), new THREE.Vector3(.36, .28, .08), new THREE.Vector3(-.72, .34, .1)];
+  const labelOffsets = [
+    new THREE.Vector3(.38, -.36, .18),
+    new THREE.Vector3(-.58, -.24, .18),
+    new THREE.Vector3(.44, .26, .18),
+    new THREE.Vector3(-.68, .31, .18),
+  ];
   locations.forEach(({ label, lat, lon, color }, index) => {
     const pin = new THREE.Group();
     const direction = locationVector(lat, lon).normalize();
@@ -279,7 +288,7 @@ if (globeStage && !reducedMotion) {
       const restingYaw = eurasiaYaw + Math.sin(elapsed * .24) * .075;
       globe.rotation.y += (restingYaw - globe.rotation.y) * .012;
     }
-    globe.rotation.x = .12 + Math.sin(elapsed * .36) * .026;
+    globe.rotation.x = eurasiaTilt + Math.sin(elapsed * .36) * .02;
     orbit.rotation.z = elapsed * .13;
     renderer.render(scene, camera);
   });
