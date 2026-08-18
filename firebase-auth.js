@@ -16,6 +16,7 @@ provider.setCustomParameters({ prompt: "select_account" });
 
 const accountModal = document.getElementById("account-modal");
 const signInButton = document.getElementById("google-sign-in");
+const steamSignInButton = document.getElementById("steam-sign-in");
 const signOutButton = document.getElementById("google-sign-out");
 const feedback = accountModal?.querySelector(".account-feedback");
 
@@ -36,6 +37,10 @@ signInButton?.addEventListener("click", async () => {
   signInButton.disabled = true;
   setFeedback("Открываем защищённое окно Google…");
   try { await signInWithPopup(auth, provider); } catch (error) { setFeedback(signInMessage(error)); } finally { signInButton.disabled = false; }
+});
+
+steamSignInButton?.addEventListener("click", () => {
+  setFeedback("Steam появится после подключения защищённого сервера авторизации. Ключи Steam не будут храниться в браузере.");
 });
 
 signOutButton?.addEventListener("click", async () => {

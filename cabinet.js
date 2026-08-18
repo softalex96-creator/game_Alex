@@ -7,6 +7,22 @@
   const createOrderButton = document.getElementById("create-order");
   const orderList = document.querySelector("[data-order-list]");
   const orderCount = document.querySelector("[data-order-count]");
+  const rankName = document.querySelector("[data-rank-name]");
+  const rankSymbol = document.querySelector("[data-rank-symbol]");
+  const rankDescription = document.querySelector("[data-rank-description]");
+  const rankTrack = document.querySelector("[data-rank-track]");
+  const ranks = [
+    { name: "Ferrum", symbol: "Fe", title: "Железо" },
+    { name: "Cuprum", symbol: "Cu", title: "Медь" },
+    { name: "Zincum", symbol: "Zn", title: "Цинк" },
+    { name: "Stannum", symbol: "Sn", title: "Олово" },
+    { name: "Argentum", symbol: "Ag", title: "Серебро" },
+    { name: "Aurum", symbol: "Au", title: "Золото" },
+    { name: "Palladium", symbol: "Pd", title: "Палладий" },
+    { name: "Iridium", symbol: "Ir", title: "Иридий" },
+    { name: "Osmium", symbol: "Os", title: "Осмий" },
+    { name: "Platinum", symbol: "Pt", title: "Платина" },
+  ];
   let currentUser = null;
   let selectedProduct = null;
 
@@ -20,6 +36,7 @@
     if (!orderList || !orderCount) return;
     const orders = currentUser ? readOrders() : [];
     orderCount.textContent = String(orders.length);
+    renderRank(orders.length);
     orderList.replaceChildren();
     if (!orders.length) {
       const empty = document.createElement("li");
@@ -36,6 +53,26 @@
       meta.textContent = `${order.price} · заявка сохранена`;
       item.append(title, meta);
       orderList.append(item);
+    });
+  }
+
+  function renderRank(orderTotal) {
+    if (!rankName || !rankSymbol || !rankDescription || !rankTrack) return;
+    const level = Math.min(ranks.length, Math.floor(orderTotal / 2) + 1);
+    const rank = ranks[level - 1];
+    const untilNext = 2 - (orderTotal % 2);
+    rankName.textContent = `${rank.name} ${level}`;
+    rankSymbol.textContent = rank.symbol;
+    rankDescription.textContent = level === ranks.length
+      ? "Вершина таблицы LevelUp. Статус Platinum достигнут."
+      : `${rank.title}: ещё ${untilNext} ${untilNext === 1 ? "заявка" : "заявки"} до уровня ${ranks[level].name}.`;
+    rankTrack.replaceChildren();
+    ranks.forEach((item, index) => {
+      const mark = document.createElement("span");
+      mark.className = index < level ? "rank-track__item is-active" : "rank-track__item";
+      mark.title = `${index + 1}. ${item.name} — ${item.title}`;
+      mark.textContent = item.symbol;
+      rankTrack.append(mark);
     });
   }
 
