@@ -214,8 +214,8 @@ if (globeStage && !reducedMotion) {
   const locations = [
     { label: "🇰🇬  Кыргызстан", lat: 41.2, lon: 74.8, color: 0x72f3b4 },
     { label: "Абхазия", lat: 43.0, lon: 41.0, color: 0x72f3b4 },
-    { label: "🇷🇺  Москва · скоро", lat: 55.75, lon: 37.62, color: 0xffb56d },
-    { label: "🇧🇾  Минск · скоро", lat: 53.9, lon: 27.56, color: 0xffb56d },
+    { label: "🇷🇺  Российская Федерация · скоро", lat: 55.75, lon: 37.62, color: 0xffb56d },
+    { label: "🇧🇾  Республика Беларусь · скоро", lat: 53.9, lon: 27.56, color: 0xffb56d },
   ];
   const labelOffsets = [
     new THREE.Vector3(.38, -.36, .18),
