@@ -61,6 +61,9 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-cover::before { z-index: 0; }.slot-cover::after { z-index: 1; }
 .slot-card:nth-child(1) .slot-cover { background-image: url("assets/game-slots/catalog/warcraft-card.png"); background-position: center 48%; }
 .slot-card:nth-child(2) .slot-cover { background-image: url("assets/game-slots/catalog/world-of-warcraft-card.png"); background-position: center 45%; }
+.slot-card:nth-child(3) .slot-cover { background-image: url("assets/game-slots/catalog/counter-strike-card.png"); background-position: center 42%; }
+.slot-card:nth-child(4) .slot-cover { background-image: url("assets/game-slots/catalog/cs2-card.png"); background-position: center 43%; }
+.slot-card:nth-child(5) .slot-cover { background-image: url("assets/game-slots/catalog/mobile-legends-card.png"); background-position: center 45%; }
 .slot-card:nth-child(3) .slot-cover { background-image: url("assets/games/counter-strike.png"); }
 .slot-card:nth-child(4) .slot-cover { background-image: url("assets/games/cs2.png"); }
 .slot-card:nth-child(5) .slot-cover { background-image: url("assets/game-slots/individual/mobile-legends.jpg"); }
