@@ -35,6 +35,7 @@ function setLevelUpLanguage(language) {
   document.querySelectorAll("[data-language]").forEach((button) => {
     button.setAttribute("aria-pressed", String(button.dataset.language === language));
   });
+  window.dispatchEvent(new CustomEvent("levelup-language-change"));
   try { localStorage.setItem("levelup-language", language); } catch { /* Language defaults to Russian when browser storage is unavailable. */ }
 }
 
