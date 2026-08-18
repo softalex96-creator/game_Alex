@@ -81,8 +81,29 @@
     renderOrders();
   }
 
+  function addToCart(product) {
+    if (!currentUser) {
+      accountModal?.showModal();
+      window.dispatchEvent(new CustomEvent("levelup-cart-result", { detail: { message: "Войдите в кабинет, чтобы добавить товар в корзину.", variant: "warning" } }));
+      return false;
+    }
+    if (!product) return false;
+    const orders = readOrders();
+    orders.push({ ...product, createdAt: new Date().toISOString() });
+    localStorage.setItem(storageKey(), JSON.stringify(orders));
+    renderOrders();
+    window.dispatchEvent(new CustomEvent("levelup-cart-result", { detail: { message: `${product.product} добавлен в корзину.`, variant: "success" } }));
+    return true;
+  }
+
   window.addEventListener("levelup-auth", (event) => setUser(event.detail));
   setUser(window.levelUpUser);
+
+  window.addEventListener("levelup-add-to-cart", (event) => {
+    const product = event.detail;
+    if (!product) return;
+    addToCart({ product: product.title, price: `от ${product.price} сом` });
+  });
 
   document.querySelectorAll(".game-card [data-modal='payment']").forEach((button) => {
     button.addEventListener("click", () => {
@@ -116,10 +137,7 @@
       return;
     }
     if (!selectedProduct) return;
-    const orders = readOrders();
-    orders.push({ ...selectedProduct, createdAt: new Date().toISOString() });
-    localStorage.setItem(storageKey(), JSON.stringify(orders));
-    renderOrders();
+    if (!addToCart(selectedProduct)) return;
     paymentFeedback.textContent = "Игра добавлена в корзину. Откройте полный кабинет для демо-оплаты.";
     createOrderButton.disabled = true;
     window.setTimeout(() => { createOrderButton.disabled = false; }, 800);
