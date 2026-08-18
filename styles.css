@@ -80,13 +80,19 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-card:nth-child(7) .slot-cover { background-image: url("assets/game-slots/catalog/quake-card-v2.png"); background-position: center; }
 .slot-card:nth-child(8) .slot-cover { background-image: url("assets/game-slots/catalog/street-fighter-card-v2.png"); background-position: center; }
 .slot-card:nth-child(9) .slot-cover { background-image: url("assets/game-slots/catalog/apex-card-v2.png"); background-position: center; }
+.slot-card:nth-child(10) .slot-cover { background-image: url("assets/game-slots/catalog/fc-card-v3.png"); background-position: center; }
+.slot-card:nth-child(11) .slot-cover { background-image: url("assets/game-slots/catalog/battlefield-card-v2.png"); background-position: center; }
+.slot-card:nth-child(12) .slot-cover { background-image: url("assets/game-slots/catalog/sims-card-v2.png"); background-position: center; }
 .slot-card:nth-child(3) .slot-cover::before,
 .slot-card:nth-child(4) .slot-cover::before,
 .slot-card:nth-child(5) .slot-cover::before,
 .slot-card:nth-child(6) .slot-cover::before,
 .slot-card:nth-child(7) .slot-cover::before,
 .slot-card:nth-child(8) .slot-cover::before,
-.slot-card:nth-child(9) .slot-cover::before {
+.slot-card:nth-child(9) .slot-cover::before,
+.slot-card:nth-child(10) .slot-cover::before,
+.slot-card:nth-child(11) .slot-cover::before,
+.slot-card:nth-child(12) .slot-cover::before {
   z-index: 2;
   background-position: center;
   background-size: 108% auto;
@@ -99,18 +105,21 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-card:nth-child(7) .slot-cover::before { background-image: url("assets/game-slots/catalog/quake-card-v2.png"); }
 .slot-card:nth-child(8) .slot-cover::before { background-image: url("assets/game-slots/catalog/street-fighter-card-v2.png"); }
 .slot-card:nth-child(9) .slot-cover::before { background-image: url("assets/game-slots/catalog/apex-card-v2.png"); }
+.slot-card:nth-child(10) .slot-cover::before { background-image: url("assets/game-slots/catalog/fc-card-v3.png"); }
+.slot-card:nth-child(11) .slot-cover::before { background-image: url("assets/game-slots/catalog/battlefield-card-v2.png"); }
+.slot-card:nth-child(12) .slot-cover::before { background-image: url("assets/game-slots/catalog/sims-card-v2.png"); }
 .slot-card:nth-child(3) .slot-cover::after,
 .slot-card:nth-child(4) .slot-cover::after,
 .slot-card:nth-child(5) .slot-cover::after,
 .slot-card:nth-child(6) .slot-cover::after,
 .slot-card:nth-child(7) .slot-cover::after,
 .slot-card:nth-child(8) .slot-cover::after,
-.slot-card:nth-child(9) .slot-cover::after {
+.slot-card:nth-child(9) .slot-cover::after,
+.slot-card:nth-child(10) .slot-cover::after,
+.slot-card:nth-child(11) .slot-cover::after,
+.slot-card:nth-child(12) .slot-cover::after {
   background: linear-gradient(180deg, transparent 64%, rgba(9, 8, 18, .08));
 }
-.slot-card:nth-child(10) .slot-cover { background-image: url("assets/game-slots/individual/fc.jpg"); }
-.slot-card:nth-child(11) .slot-cover { background-image: url("assets/game-slots/individual/battlefield.jpg"); }
-.slot-card:nth-child(12) .slot-cover { background-image: url("assets/game-slots/individual/sims.jpg"); }
 .slot-card:nth-child(13) .slot-cover { background-image: url("assets/game-slots/individual/nfs.jpg"); }
 .slot-card:nth-child(14) .slot-cover { background-image: url("assets/game-slots/individual/f1.jpg"); }
 .slot-card:nth-child(15) .slot-cover { background-image: url("assets/game-slots/individual/pvz.jpg"); }
