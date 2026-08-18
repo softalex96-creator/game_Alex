@@ -89,6 +89,12 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-card:nth-child(16) .slot-cover { background-image: url("assets/game-slots/catalog/star-wars-card-v2.png"); background-position: center; }
 .slot-card:nth-child(17) .slot-cover { background-image: url("assets/game-slots/catalog/real-racing-card-v2.png"); background-position: center; }
 .slot-card:nth-child(18) .slot-cover { background-image: url("assets/game-slots/catalog/madden-card-v2.png"); background-position: center; }
+.slot-card:nth-child(19) .slot-cover { background-image: url("assets/game-slots/catalog/tekken-card-v2.png"); background-position: center; }
+.slot-card:nth-child(20) .slot-cover { background-image: url("assets/game-slots/catalog/elden-ring-card-v2.png"); background-position: center; }
+.slot-card:nth-child(21) .slot-cover { background-image: url("assets/game-slots/catalog/sparking-zero-card-v2.png"); background-position: center; }
+.slot-card:nth-child(22) .slot-cover { background-image: url("assets/game-slots/catalog/xenoverse-card-v2.png"); background-position: center; }
+.slot-card:nth-child(23) .slot-cover { background-image: url("assets/game-slots/catalog/digimon-card-v2.png"); background-position: center; }
+.slot-card:nth-child(24) .slot-cover { background-image: url("assets/game-slots/catalog/little-nightmares-card-v2.png"); background-position: center; }
 .slot-card:nth-child(3) .slot-cover::before,
 .slot-card:nth-child(4) .slot-cover::before,
 .slot-card:nth-child(5) .slot-cover::before,
@@ -104,7 +110,13 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-card:nth-child(15) .slot-cover::before,
 .slot-card:nth-child(16) .slot-cover::before,
 .slot-card:nth-child(17) .slot-cover::before,
-.slot-card:nth-child(18) .slot-cover::before {
+.slot-card:nth-child(18) .slot-cover::before,
+.slot-card:nth-child(19) .slot-cover::before,
+.slot-card:nth-child(20) .slot-cover::before,
+.slot-card:nth-child(21) .slot-cover::before,
+.slot-card:nth-child(22) .slot-cover::before,
+.slot-card:nth-child(23) .slot-cover::before,
+.slot-card:nth-child(24) .slot-cover::before {
   z-index: 2;
   background-position: center;
   background-size: 108% auto;
@@ -126,6 +138,12 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-card:nth-child(16) .slot-cover::before { background-image: url("assets/game-slots/catalog/star-wars-card-v2.png"); }
 .slot-card:nth-child(17) .slot-cover::before { background-image: url("assets/game-slots/catalog/real-racing-card-v2.png"); }
 .slot-card:nth-child(18) .slot-cover::before { background-image: url("assets/game-slots/catalog/madden-card-v2.png"); }
+.slot-card:nth-child(19) .slot-cover::before { background-image: url("assets/game-slots/catalog/tekken-card-v2.png"); }
+.slot-card:nth-child(20) .slot-cover::before { background-image: url("assets/game-slots/catalog/elden-ring-card-v2.png"); }
+.slot-card:nth-child(21) .slot-cover::before { background-image: url("assets/game-slots/catalog/sparking-zero-card-v2.png"); }
+.slot-card:nth-child(22) .slot-cover::before { background-image: url("assets/game-slots/catalog/xenoverse-card-v2.png"); }
+.slot-card:nth-child(23) .slot-cover::before { background-image: url("assets/game-slots/catalog/digimon-card-v2.png"); }
+.slot-card:nth-child(24) .slot-cover::before { background-image: url("assets/game-slots/catalog/little-nightmares-card-v2.png"); }
 .slot-card:nth-child(3) .slot-cover::after,
 .slot-card:nth-child(4) .slot-cover::after,
 .slot-card:nth-child(5) .slot-cover::after,
@@ -141,15 +159,15 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-card:nth-child(15) .slot-cover::after,
 .slot-card:nth-child(16) .slot-cover::after,
 .slot-card:nth-child(17) .slot-cover::after,
-.slot-card:nth-child(18) .slot-cover::after {
+.slot-card:nth-child(18) .slot-cover::after,
+.slot-card:nth-child(19) .slot-cover::after,
+.slot-card:nth-child(20) .slot-cover::after,
+.slot-card:nth-child(21) .slot-cover::after,
+.slot-card:nth-child(22) .slot-cover::after,
+.slot-card:nth-child(23) .slot-cover::after,
+.slot-card:nth-child(24) .slot-cover::after {
   background: linear-gradient(180deg, transparent 64%, rgba(9, 8, 18, .08));
 }
-.slot-card:nth-child(19) .slot-cover { background-image: url("assets/game-slots/individual/tekken.jpg"); }
-.slot-card:nth-child(20) .slot-cover { background-image: url("assets/game-slots/individual/elden-ring.jpg"); }
-.slot-card:nth-child(21) .slot-cover { background-image: url("assets/game-slots/individual/sparking-zero.jpg"); }
-.slot-card:nth-child(22) .slot-cover { background-image: url("assets/game-slots/individual/xenoverse.jpg"); }
-.slot-card:nth-child(23) .slot-cover { background-image: url("assets/game-slots/individual/digimon.jpg"); }
-.slot-card:nth-child(24) .slot-cover { background-image: url("assets/game-slots/individual/little-nightmares.jpg"); }
 .slot-card:nth-child(25) .slot-cover { background-image: url("assets/game-slots/individual/code-vein.jpg"); }
 .slot-card:nth-child(26) .slot-cover { background-image: url("assets/game-slots/individual/tales.jpg"); }
 .slot-card:nth-child(27) .slot-cover { background-image: url("assets/game-slots/individual/ace-combat.jpg"); }
