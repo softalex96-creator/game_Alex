@@ -40,7 +40,7 @@ signInButton?.addEventListener("click", async () => {
 });
 
 steamSignInButton?.addEventListener("click", () => {
-  setFeedback("Steam появится после подключения защищённого сервера авторизации. Ключи Steam не будут храниться в браузере.");
+  window.location.assign("https://levelup-steam-auth.steam-worker.workers.dev/steam/login");
 });
 
 signOutButton?.addEventListener("click", async () => {
