@@ -89,7 +89,7 @@ const howStage = document.querySelector(".how-three-stage");
 if (howStage && !reducedMotion) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-  camera.position.set(0, 0, 5.8);
+  camera.position.set(0, 0, 6.2);
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -104,24 +104,43 @@ if (howStage && !reducedMotion) {
     new THREE.Vector3(-0.05, -0.34, 0),
   ]);
   const question = new THREE.Mesh(
-    new THREE.TubeGeometry(curve, 80, 0.115, 12, false),
-    new THREE.MeshStandardMaterial({ color: 0xc8b7ff, emissive: 0x5f36d3, emissiveIntensity: 1.6, metalness: 0.62, roughness: 0.2 }),
+    new THREE.TubeGeometry(curve, 96, 0.165, 16, false),
+    new THREE.MeshStandardMaterial({ color: 0xeefbff, emissive: 0x2c83ff, emissiveIntensity: 2.25, metalness: 0.82, roughness: 0.12 }),
   );
-  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.14, 18, 18), new THREE.MeshStandardMaterial({ color: 0xffb16c, emissive: 0x9c3d08, emissiveIntensity: 1.4, metalness: 0.45, roughness: 0.25 }));
-  dot.position.y = -0.77;
-  group.add(question, dot);
+  const questionAura = new THREE.Mesh(
+    new THREE.TubeGeometry(curve, 96, 0.245, 16, false),
+    new THREE.MeshBasicMaterial({ color: 0x6b4dff, transparent: true, opacity: .15 }),
+  );
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.19, 24, 24), new THREE.MeshStandardMaterial({ color: 0xffa6e5, emissive: 0xde2db3, emissiveIntensity: 2.2, metalness: 0.7, roughness: 0.16 }));
+  dot.position.y = -0.82;
+  const dotAura = new THREE.Mesh(new THREE.SphereGeometry(0.29, 20, 20), new THREE.MeshBasicMaterial({ color: 0xff6fcf, transparent: true, opacity: .12 }));
+  dotAura.position.copy(dot.position);
+  group.add(questionAura, question, dotAura, dot);
   const rings = new THREE.Group();
-  [1.2, 1.55].forEach((radius, index) => {
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, .018, 8, 72), new THREE.MeshBasicMaterial({ color: index ? 0x6ee7ff : 0xa889ff, transparent: true, opacity: .66 }));
-    ring.rotation.set(index ? .9 : 1.5, .32 * index, .2);
+  [1.1, 1.46, 1.78].forEach((radius, index) => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, index === 1 ? .025 : .016, 8, 96), new THREE.MeshBasicMaterial({ color: [0x54eaff, 0xc07bff, 0xff8fd3][index], transparent: true, opacity: index === 1 ? .76 : .54 }));
+    ring.rotation.set([1.42, .76, 2.06][index], [.1, .42, -.24][index], [.2, .54, -.32][index]);
     rings.add(ring);
   });
   group.add(rings);
-  scene.add(new THREE.AmbientLight(0x8b6bf3, 1.8));
-  const light = new THREE.PointLight(0xd7c5ff, 18, 9);
+  const dataParticles = new THREE.BufferGeometry();
+  const dataParticleCount = 96;
+  const dataPositions = new Float32Array(dataParticleCount * 3);
+  for (let index = 0; index < dataParticleCount; index += 1) {
+    const radius = 1.25 + Math.random() * .75;
+    const angle = Math.random() * Math.PI * 2;
+    dataPositions[index * 3] = Math.cos(angle) * radius;
+    dataPositions[index * 3 + 1] = Math.sin(angle) * radius;
+    dataPositions[index * 3 + 2] = (Math.random() - .5) * .8;
+  }
+  dataParticles.setAttribute("position", new THREE.BufferAttribute(dataPositions, 3));
+  const particleField = new THREE.Points(dataParticles, new THREE.PointsMaterial({ color: 0x9ceaff, size: .035, transparent: true, opacity: .82 }));
+  group.add(particleField);
+  scene.add(new THREE.AmbientLight(0x8b6bf3, 2.15));
+  const light = new THREE.PointLight(0x9deaff, 24, 9);
   light.position.set(-2, 2, 3);
   scene.add(light);
-  const warmLight = new THREE.PointLight(0xffa55a, 9, 7);
+  const warmLight = new THREE.PointLight(0xff62c8, 14, 7);
   warmLight.position.set(1, -1, 2);
   scene.add(warmLight);
 
@@ -136,10 +155,13 @@ if (howStage && !reducedMotion) {
   const clock = new THREE.Clock();
   renderer.setAnimationLoop(() => {
     const elapsed = clock.getElapsedTime();
-    group.rotation.y = elapsed * .42;
-    group.rotation.x = Math.sin(elapsed * .75) * .12;
+    group.rotation.y = elapsed * .52;
+    group.rotation.x = Math.sin(elapsed * .75) * .16;
     group.position.y = Math.sin(elapsed * .9) * .11;
-    rings.rotation.z = -elapsed * .28;
+    questionAura.rotation.y = -elapsed * .8;
+    dotAura.scale.setScalar(1 + Math.sin(elapsed * 2.4) * .12);
+    rings.rotation.z = -elapsed * .38;
+    particleField.rotation.z = elapsed * .17;
     renderer.render(scene, camera);
   });
 }
