@@ -86,11 +86,12 @@ export default {
 
       if (url.pathname === "/steam/login" && request.method === "GET") {
       const state = await createState(env.STATE_SECRET);
+      const siteUrl = env.ALLOWED_ORIGIN.replace(/\/$/, "");
       const params = new URLSearchParams({
         "openid.ns": "http://specs.openid.net/auth/2.0",
         "openid.mode": "checkid_setup",
-        "openid.return_to": `${env.ALLOWED_ORIGIN}/game_Alex/steam-callback.html?state=${encodeURIComponent(state)}`,
-        "openid.realm": `${env.ALLOWED_ORIGIN}/`,
+        "openid.return_to": `${siteUrl}/steam-callback.html?state=${encodeURIComponent(state)}`,
+        "openid.realm": `${siteUrl}/`,
         "openid.identity": "http://specs.openid.net/auth/2.0/identifier_select",
         "openid.claimed_id": "http://specs.openid.net/auth/2.0/identifier_select",
       });

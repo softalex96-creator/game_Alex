@@ -28,7 +28,7 @@ async function finishSteamLogin() {
   const steamId = credential.user.uid.replace("steam:", "");
   await updateProfile(credential.user, { displayName: `Steam ${steamId}` });
   status.textContent = "Steam подключён. Возвращаемся в кабинет…";
-  window.setTimeout(() => window.location.replace("/game_Alex/"), 700);
+  window.setTimeout(() => window.location.replace("/"), 700);
 }
 
 finishSteamLogin().catch((error) => {
