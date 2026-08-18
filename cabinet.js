@@ -25,11 +25,36 @@
   ];
   let currentUser = null;
   let selectedProduct = null;
+  const guestStorageKey = "levelup-guest-cart";
+  const cartButton = document.querySelector("[data-cart-button]");
+  const cartCount = document.querySelector("[data-cart-count]");
 
-  function storageKey() { return currentUser ? `levelup-orders-${currentUser.uid}` : null; }
+  function storageKey() { return currentUser ? `levelup-orders-${currentUser.uid}` : guestStorageKey; }
 
   function readOrders() {
     try { return JSON.parse(localStorage.getItem(storageKey()) || "[]"); } catch { return []; }
+  }
+
+  function writeOrders(orders) {
+    localStorage.setItem(storageKey(), JSON.stringify(orders));
+  }
+
+  function updateCartBadge() {
+    if (!cartButton || !cartCount) return;
+    const total = readOrders().length;
+    cartCount.textContent = String(total);
+    cartCount.hidden = total === 0;
+    cartButton.setAttribute("aria-label", total ? `Корзина: ${total} ${total === 1 ? "товар" : "товаров"}` : "Корзина: пуста");
+  }
+
+  function migrateGuestCart() {
+    if (!currentUser) return;
+    let guestOrders = [];
+    try { guestOrders = JSON.parse(localStorage.getItem(guestStorageKey) || "[]"); } catch { guestOrders = []; }
+    if (!guestOrders.length) return;
+    const userOrders = readOrders();
+    writeOrders([...userOrders, ...guestOrders]);
+    localStorage.removeItem(guestStorageKey);
   }
 
   function renderOrders() {
@@ -78,21 +103,20 @@
 
   function setUser(user) {
     currentUser = user || null;
+    migrateGuestCart();
     renderOrders();
+    updateCartBadge();
   }
 
   function addToCart(product) {
-    if (!currentUser) {
-      accountModal?.showModal();
-      window.dispatchEvent(new CustomEvent("levelup-cart-result", { detail: { message: "Войдите в кабинет, чтобы добавить товар в корзину.", variant: "warning" } }));
-      return false;
-    }
     if (!product) return false;
     const orders = readOrders();
     orders.push({ ...product, createdAt: new Date().toISOString() });
-    localStorage.setItem(storageKey(), JSON.stringify(orders));
+    writeOrders(orders);
     renderOrders();
-    window.dispatchEvent(new CustomEvent("levelup-cart-result", { detail: { message: `${product.product} добавлен в корзину.`, variant: "success" } }));
+    updateCartBadge();
+    const suffix = currentUser ? "" : " Войдите в кабинет позже — корзина сохранится.";
+    window.dispatchEvent(new CustomEvent("levelup-cart-result", { detail: { message: `${product.product} добавлен в корзину.${suffix}`, variant: "success" } }));
     return true;
   }
 
@@ -103,6 +127,11 @@
     const product = event.detail;
     if (!product) return;
     addToCart({ product: product.title, price: `от ${product.price} сом` });
+  });
+
+  cartButton?.addEventListener("click", () => {
+    accountModal?.showModal();
+    if (!currentUser) window.dispatchEvent(new CustomEvent("levelup-cart-result", { detail: { message: "Корзина сохранена на этом устройстве. Войдите, чтобы перенести её в личный кабинет.", variant: "success" } }));
   });
 
   document.querySelectorAll(".game-card [data-modal='payment']").forEach((button) => {
@@ -132,8 +161,9 @@
 
   createOrderButton?.addEventListener("click", () => {
     if (!currentUser) {
+      if (!selectedProduct) return;
+      addToCart(selectedProduct);
       paymentModal.close();
-      accountModal.showModal();
       return;
     }
     if (!selectedProduct) return;
