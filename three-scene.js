@@ -143,3 +143,132 @@ if (howStage && !reducedMotion) {
     renderer.render(scene, camera);
   });
 }
+
+const globeStage = document.querySelector(".globe-stage");
+
+if (globeStage && !reducedMotion) {
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+  camera.position.set(0, 0, 7.4);
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  globeStage.appendChild(renderer.domElement);
+  globeStage.dataset.enhanced = "true";
+
+  const globe = new THREE.Group();
+  globe.rotation.set(.2, -.68, -.06);
+  scene.add(globe);
+  const planet = new THREE.Mesh(
+    new THREE.SphereGeometry(2.18, 52, 38),
+    new THREE.MeshStandardMaterial({ color: 0x251c5c, emissive: 0x180b48, emissiveIntensity: 1.6, metalness: .5, roughness: .38, transparent: true, opacity: .96 }),
+  );
+  globe.add(planet);
+  const grid = new THREE.Mesh(
+    new THREE.SphereGeometry(2.205, 28, 20),
+    new THREE.MeshBasicMaterial({ color: 0xa991ff, wireframe: true, transparent: true, opacity: .17 }),
+  );
+  globe.add(grid);
+  const atmosphere = new THREE.Mesh(
+    new THREE.SphereGeometry(2.31, 52, 38),
+    new THREE.MeshBasicMaterial({ color: 0x6958e9, transparent: true, opacity: .075, side: THREE.BackSide }),
+  );
+  globe.add(atmosphere);
+
+  const makeLabel = (text, color) => {
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    canvas.width = 512;
+    canvas.height = 112;
+    context.font = "700 33px Arial";
+    const width = Math.min(470, Math.ceil(context.measureText(text).width + 56));
+    context.fillStyle = "rgba(13, 12, 29, .82)";
+    context.strokeStyle = color;
+    context.lineWidth = 3;
+    context.beginPath();
+    context.roundRect(8, 12, width - 16, 82, 38);
+    context.fill();
+    context.stroke();
+    context.fillStyle = "#ffffff";
+    context.fillText(text, 28, 64);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false }));
+    sprite.scale.set(width / 150, .52, 1);
+    return sprite;
+  };
+  const locationVector = (latitude, longitude, radius = 2.22) => {
+    const lat = THREE.MathUtils.degToRad(latitude);
+    const lon = THREE.MathUtils.degToRad(longitude);
+    return new THREE.Vector3(radius * Math.cos(lat) * Math.sin(lon), radius * Math.sin(lat), radius * Math.cos(lat) * Math.cos(lon));
+  };
+  const locations = [
+    { label: "Кыргызстан", lat: 41.2, lon: 74.8, color: 0x72f3b4 },
+    { label: "Абхазия", lat: 43.0, lon: 41.0, color: 0x72f3b4 },
+    { label: "Скоро · Москва", lat: 55.75, lon: 37.62, color: 0xffb56d },
+    { label: "Скоро · Минск", lat: 53.9, lon: 27.56, color: 0xffb56d },
+  ];
+  locations.forEach(({ label, lat, lon, color }) => {
+    const pin = new THREE.Group();
+    const direction = locationVector(lat, lon).normalize();
+    const base = direction.clone().multiplyScalar(2.22);
+    pin.position.copy(base);
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(.095, 18, 18), new THREE.MeshBasicMaterial({ color }));
+    pin.add(dot);
+    const halo = new THREE.Mesh(new THREE.RingGeometry(.13, .2, 28), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .74, side: THREE.DoubleSide }));
+    halo.lookAt(direction.clone().multiplyScalar(5));
+    pin.add(halo);
+    const labelSprite = makeLabel(label, `#${color.toString(16).padStart(6, "0")}`);
+    labelSprite.position.copy(direction.clone().multiplyScalar(.52).add(new THREE.Vector3(.12, .14, 0)));
+    pin.add(labelSprite);
+    globe.add(pin);
+  });
+
+  const orbit = new THREE.Group();
+  [2.58, 2.86].forEach((radius, index) => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, .012, 8, 100), new THREE.MeshBasicMaterial({ color: index ? 0x75deff : 0xb99aff, transparent: true, opacity: .42 }));
+    ring.rotation.set(index ? .65 : 1.3, .1, index ? .7 : -.25);
+    orbit.add(ring);
+  });
+  scene.add(orbit);
+  scene.add(new THREE.AmbientLight(0x755ee6, 2.1));
+  const keyLight = new THREE.PointLight(0xd7c7ff, 28, 13);
+  keyLight.position.set(-3, 3, 5);
+  scene.add(keyLight);
+  const fillLight = new THREE.PointLight(0x4cc7ff, 14, 10);
+  fillLight.position.set(3, -2, 2);
+  scene.add(fillLight);
+
+  let dragging = false;
+  let lastX = 0;
+  let velocity = .0024;
+  globeStage.addEventListener("pointerdown", (event) => { dragging = true; lastX = event.clientX; globeStage.setPointerCapture(event.pointerId); });
+  globeStage.addEventListener("pointermove", (event) => {
+    if (!dragging) return;
+    const delta = event.clientX - lastX;
+    velocity = delta * .006;
+    globe.rotation.y += velocity;
+    lastX = event.clientX;
+  });
+  const release = () => { dragging = false; };
+  globeStage.addEventListener("pointerup", release);
+  globeStage.addEventListener("pointercancel", release);
+  const resize = () => {
+    const { width, height } = globeStage.getBoundingClientRect();
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height, false);
+  };
+  new ResizeObserver(resize).observe(globeStage);
+  resize();
+  const clock = new THREE.Clock();
+  renderer.setAnimationLoop(() => {
+    const elapsed = clock.getElapsedTime();
+    if (!dragging) globe.rotation.y += velocity;
+    velocity += (.0024 - velocity) * .016;
+    globe.rotation.x = .2 + Math.sin(elapsed * .36) * .045;
+    grid.rotation.y = -elapsed * .028;
+    orbit.rotation.z = elapsed * .13;
+    renderer.render(scene, camera);
+  });
+}
