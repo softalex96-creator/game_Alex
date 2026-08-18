@@ -85,6 +85,7 @@
     control.addEventListener("click", () => {
       const key = control.dataset.filter;
       filters[key] = control.dataset.value;
+      document.querySelectorAll("[data-collection]").forEach((item) => item.classList.remove("is-active"));
       document.querySelectorAll(`[data-filter="${key}"]`).forEach((item) => item.setAttribute("aria-pressed", String(item === control)));
       applyFilters();
     });
@@ -94,7 +95,21 @@
     Object.keys(filters).forEach((key) => { filters[key] = "all"; });
     if (search) search.value = "";
     document.querySelectorAll("[data-filter]").forEach((item) => item.setAttribute("aria-pressed", String(item.dataset.value === "all")));
+    document.querySelectorAll("[data-collection]").forEach((item) => item.classList.remove("is-active"));
     applyFilters();
+  });
+  document.querySelectorAll("[data-collection]").forEach((collection) => {
+    collection.addEventListener("click", () => {
+      const selected = JSON.parse(collection.dataset.collection || "{}");
+      Object.keys(filters).forEach((key) => { filters[key] = selected[key] || "all"; });
+      document.querySelectorAll("[data-filter]").forEach((item) => {
+        const active = filters[item.dataset.filter] === item.dataset.value;
+        item.setAttribute("aria-pressed", String(active));
+      });
+      document.querySelectorAll("[data-collection]").forEach((item) => item.classList.toggle("is-active", item === collection));
+      applyFilters();
+      grid?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   });
 
   const requestId = new URLSearchParams(window.location.search).get("product");
