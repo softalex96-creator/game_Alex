@@ -149,12 +149,16 @@ const globeStage = document.querySelector(".globe-stage");
 if (globeStage && !reducedMotion) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
-  camera.position.set(0, 0, 7.4);
+  camera.position.set(0, 0, 7.55);
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   globeStage.appendChild(renderer.domElement);
   globeStage.dataset.enhanced = "true";
+  const labelsLayer = document.createElement("div");
+  labelsLayer.className = "globe-labels";
+  labelsLayer.setAttribute("aria-hidden", "true");
+  globeStage.appendChild(labelsLayer);
 
   const globe = new THREE.Group();
   // The texture's prime meridian is offset by 90° in Three's sphere UVs.
@@ -167,85 +171,51 @@ if (globeStage && !reducedMotion) {
   earthTexture.colorSpace = THREE.SRGBColorSpace;
   earthTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
   const planet = new THREE.Mesh(
-    new THREE.SphereGeometry(2.18, 52, 38),
+    new THREE.SphereGeometry(2.34, 52, 38),
     new THREE.MeshStandardMaterial({ map: earthTexture, color: 0xb8a7ff, emissive: 0x160a38, emissiveIntensity: .34, metalness: .12, roughness: .72 }),
   );
   globe.add(planet);
   const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(2.31, 52, 38),
+    new THREE.SphereGeometry(2.48, 52, 38),
     new THREE.MeshBasicMaterial({ color: 0x7863ff, transparent: true, opacity: .13, side: THREE.BackSide }),
   );
   globe.add(atmosphere);
 
-  const makeLabel = (text, color) => {
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-    const scale = 3;
-    const labelHeight = 58;
-    context.font = "800 23px Arial, sans-serif";
-    const labelWidth = Math.min(300, Math.ceil(context.measureText(text).width + 42));
-    canvas.width = labelWidth * scale;
-    canvas.height = labelHeight * scale;
-    context.scale(scale, scale);
-    context.font = "800 23px Arial, sans-serif";
-    context.fillStyle = "rgba(13, 12, 29, .82)";
-    context.strokeStyle = color;
-    context.lineWidth = 1.5;
-    context.beginPath();
-    context.roundRect(1, 1, labelWidth - 2, labelHeight - 2, 17);
-    context.fill();
-    context.stroke();
-    context.fillStyle = "#ffffff";
-    context.fillText(text, 21, 36);
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false }));
-    sprite.scale.set((labelWidth / labelHeight) * .42, .42, 1);
-    return sprite;
-  };
-  const locationVector = (latitude, longitude, radius = 2.22) => {
+  const locationVector = (latitude, longitude, radius = 2.38) => {
     const lat = THREE.MathUtils.degToRad(latitude);
     // Match the Blue Marble equirectangular texture to geographic longitude.
     const lon = THREE.MathUtils.degToRad(longitude + 90);
     return new THREE.Vector3(radius * Math.cos(lat) * Math.sin(lon), radius * Math.sin(lat), radius * Math.cos(lat) * Math.cos(lon));
   };
   const locations = [
-    { label: "🇰🇬  Кыргызстан", lat: 41.2, lon: 74.8, color: 0x72f3b4 },
-    { label: "Абхазия", lat: 43.0, lon: 41.0, color: 0x72f3b4 },
-    { label: "🇷🇺  Российская Федерация · скоро", lat: 55.75, lon: 37.62, color: 0xffb56d },
-    { label: "🇧🇾  Республика Беларусь · скоро", lat: 53.9, lon: 27.56, color: 0xffb56d },
+    { label: "Кыргызстан", flag: "🇰🇬", status: "Уже развиваемся", lat: 41.2, lon: 74.8, color: 0x72f3b4, offset: [72, 42] },
+    { label: "Абхазия", flag: "", status: "Уже развиваемся", lat: 43.0, lon: 41.0, color: 0x72f3b4, offset: [-114, 25] },
+    { label: "Российская Федерация", flag: "🇷🇺", status: "Скоро", lat: 55.75, lon: 37.62, color: 0xffb56d, offset: [90, -88] },
+    { label: "Республика Беларусь", flag: "🇧🇾", status: "Скоро", lat: 53.9, lon: 27.56, color: 0xffb56d, offset: [-104, -88] },
   ];
-  const labelOffsets = [
-    new THREE.Vector3(.38, -.36, .18),
-    new THREE.Vector3(-.58, -.24, .18),
-    new THREE.Vector3(.44, .26, .18),
-    new THREE.Vector3(-.68, .31, .18),
-  ];
-  locations.forEach(({ label, lat, lon, color }, index) => {
+  const htmlLabels = [];
+  locations.forEach(({ label, flag, status, lat, lon, color, offset }) => {
     const pin = new THREE.Group();
     const direction = locationVector(lat, lon).normalize();
-    const base = direction.clone().multiplyScalar(2.22);
+    const base = direction.clone().multiplyScalar(2.38);
     pin.position.copy(base);
     const dot = new THREE.Mesh(new THREE.SphereGeometry(.095, 18, 18), new THREE.MeshBasicMaterial({ color }));
     pin.add(dot);
     const halo = new THREE.Mesh(new THREE.RingGeometry(.13, .2, 28), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .74, side: THREE.DoubleSide }));
     halo.lookAt(direction.clone().multiplyScalar(5));
     pin.add(halo);
-    const labelOffset = labelOffsets[index];
     const markerHead = direction.clone().multiplyScalar(.22);
     const pinStem = new THREE.Mesh(new THREE.CylinderGeometry(.014, .014, .26, 8), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .76 }));
     pinStem.position.copy(markerHead.clone().multiplyScalar(.5));
     pinStem.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
     pin.add(pinStem);
-    const labelLineGeometry = new THREE.BufferGeometry().setFromPoints([markerHead, labelOffset.clone().multiplyScalar(.84)]);
-    const labelLine = new THREE.Line(labelLineGeometry, new THREE.LineBasicMaterial({ color, transparent: true, opacity: .64 }));
-    pin.add(labelLine);
-    const labelSprite = makeLabel(label, `#${color.toString(16).padStart(6, "0")}`);
-    labelSprite.position.copy(labelOffset);
-    pin.add(labelSprite);
     globe.add(pin);
+    const htmlLabel = document.createElement("div");
+    htmlLabel.className = "globe-label";
+    htmlLabel.style.setProperty("--label-color", `#${color.toString(16).padStart(6, "0")}`);
+    htmlLabel.innerHTML = `<strong>${flag ? `<span>${flag}</span>` : ""}${label}</strong><small>${status}</small>`;
+    labelsLayer.appendChild(htmlLabel);
+    htmlLabels.push({ pin, element: htmlLabel, offset });
   });
 
   const orbit = new THREE.Group();
@@ -286,6 +256,9 @@ if (globeStage && !reducedMotion) {
   new ResizeObserver(resize).observe(globeStage);
   resize();
   const clock = new THREE.Clock();
+  const globePosition = new THREE.Vector3();
+  const pinPosition = new THREE.Vector3();
+  const cameraDirection = new THREE.Vector3();
   renderer.setAnimationLoop(() => {
     const elapsed = clock.getElapsedTime();
     if (!dragging) {
@@ -296,6 +269,20 @@ if (globeStage && !reducedMotion) {
     }
     globe.rotation.x = eurasiaTilt + Math.sin(elapsed * .36) * .02;
     orbit.rotation.z = elapsed * .13;
+    globe.getWorldPosition(globePosition);
+    cameraDirection.copy(camera.position).sub(globePosition).normalize();
+    const { width, height } = globeStage.getBoundingClientRect();
+    htmlLabels.forEach(({ pin, element, offset }) => {
+      pin.getWorldPosition(pinPosition);
+      const normal = pinPosition.clone().sub(globePosition).normalize();
+      const visible = normal.dot(cameraDirection) > .08;
+      const screen = pinPosition.clone().project(camera);
+      element.hidden = !visible || screen.z > 1;
+      if (!element.hidden) {
+        element.style.left = `${(screen.x * .5 + .5) * width + offset[0]}px`;
+        element.style.top = `${(-screen.y * .5 + .5) * height + offset[1]}px`;
+      }
+    });
     renderer.render(scene, camera);
   });
 }
