@@ -1,0 +1,80 @@
+(() => {
+  const products = window.levelUpProducts || [];
+  const cards = [...document.querySelectorAll(".game-card")];
+  const grid = document.querySelector(".game-grid");
+  const search = document.querySelector("[data-catalog-search]");
+  const result = document.querySelector("[data-catalog-result]");
+  const filters = { category: "all", platform: "all", genre: "all", publisher: "all", status: "all" };
+  const genres = {
+    warcraft: "RPG", "world-of-warcraft": "RPG", "counter-strike": "Экшен", cs2: "Экшен", "mobile-legends": "RPG", pubg: "Экшен", quake: "Экшен", "street-fighter": "Файтинг", "apex-legends": "Экшен", "ea-sports-fc": "Спорт", battlefield: "Экшен", "the-sims-4": "Симулятор", "need-for-speed": "Гонки", "ea-sports-f1": "Гонки", "plants-vs-zombies-2": "Стратегия", "star-wars-goh": "RPG", "real-racing-3": "Гонки", "madden-nfl-mobile": "Спорт", "tekken-8": "Файтинг", "elden-ring": "RPG", "dragon-ball-sparking-zero": "Файтинг", "dragon-ball-xenoverse-2": "Файтинг", "digimon-story": "RPG", "little-nightmares-iii": "Приключение", "code-vein-ii": "RPG", "tales-of-arise": "RPG", "ace-combat-7": "Экшен", "naruto-to-boruto": "Файтинг", "one-piece-pirate-warriors-4": "Файтинг", "pac-man": "Аркада"
+  };
+
+  cards.forEach((card, index) => {
+    const product = products[index];
+    if (!product) return;
+    Object.assign(card.dataset, product, { genre: genres[product.id] || "Другое" });
+    const button = card.querySelector("button");
+    if (button) {
+      const link = document.createElement("a");
+      link.className = "game-card__details";
+      link.href = `product.html?id=${encodeURIComponent(product.id)}`;
+      link.textContent = "Подробнее →";
+      button.replaceWith(link);
+    }
+    const meta = document.createElement("div");
+    meta.className = "game-card__meta";
+    meta.innerHTML = `<span>${product.platform}</span><span>${product.publisher}</span>`;
+    card.querySelector(".region-note")?.before(meta);
+  });
+
+  function matches(card) {
+    const query = (search?.value || "").trim().toLowerCase();
+    const text = `${card.dataset.title} ${card.dataset.offer} ${card.dataset.publisher} ${card.dataset.platform} ${card.dataset.genre}`.toLowerCase();
+    return (!query || text.includes(query))
+      && (filters.category === "all" || card.dataset.category === filters.category)
+      && (filters.platform === "all" || card.dataset.platform === filters.platform)
+      && (filters.genre === "all" || card.dataset.genre === filters.genre)
+      && (filters.publisher === "all" || card.dataset.publisher === filters.publisher)
+      && (filters.status === "all" || (filters.status === "featured" && card.dataset.badge) || card.dataset.badge === filters.status);
+  }
+
+  function applyFilters() {
+    let visible = 0;
+    cards.forEach((card) => {
+      const show = matches(card);
+      card.hidden = !show;
+      if (show) visible += 1;
+    });
+    if (result) result.textContent = `Найдено: ${visible} ${visible === 1 ? "игра" : visible < 5 ? "игры" : "игр"}`;
+    if (grid) grid.classList.toggle("is-filtered", visible !== cards.length);
+  }
+
+  document.querySelectorAll("[data-filter]").forEach((control) => {
+    control.addEventListener("click", () => {
+      const key = control.dataset.filter;
+      filters[key] = control.dataset.value;
+      document.querySelectorAll(`[data-filter="${key}"]`).forEach((item) => item.setAttribute("aria-pressed", String(item === control)));
+      applyFilters();
+    });
+  });
+  search?.addEventListener("input", applyFilters);
+  document.querySelector("[data-catalog-reset]")?.addEventListener("click", () => {
+    Object.keys(filters).forEach((key) => { filters[key] = "all"; });
+    if (search) search.value = "";
+    document.querySelectorAll("[data-filter]").forEach((item) => item.setAttribute("aria-pressed", String(item.dataset.value === "all")));
+    applyFilters();
+  });
+
+  const requestId = new URLSearchParams(window.location.search).get("product");
+  if (requestId) {
+    const product = products.find((item) => item.id === requestId);
+    const card = cards.find((item) => item.dataset.id === requestId);
+    if (product && card) {
+      window.setTimeout(() => {
+        card.querySelector(".game-card__details")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.dispatchEvent(new CustomEvent("levelup-select-product", { detail: product }));
+      }, 180);
+    }
+  }
+  applyFilters();
+})();

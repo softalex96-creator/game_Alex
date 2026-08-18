@@ -98,6 +98,17 @@
     });
   });
 
+  window.addEventListener("levelup-select-product", (event) => {
+    const product = event.detail;
+    if (!product || !paymentModal) return;
+    selectedProduct = { product: product.title, price: `от ${product.price} сом` };
+    paymentTitle.textContent = selectedProduct.product;
+    paymentDescription.textContent = `Стартовая цена: ${selectedProduct.price}. Сохраните заявку в личном кабинете — оплата подключится позднее.`;
+    paymentFeedback.textContent = "";
+    createOrderButton.textContent = currentUser ? "Сохранить заявку" : "Войти, чтобы сохранить";
+    paymentModal.showModal();
+  });
+
   createOrderButton?.addEventListener("click", () => {
     if (!currentUser) {
       paymentModal.close();

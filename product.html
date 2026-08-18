@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Карточка игрового товара LevelUp: описание, регион и условия подачи заявки." />
+    <title>Игра — LevelUp</title>
+    <link rel="icon" type="image/png" href="assets/brand/levelup-favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="product.css" />
+  </head>
+  <body>
+    <header class="header container"><a class="logo logo--header" href="index.html" aria-label="LevelUp — на главную"><img src="assets/brand/levelup-mark.png" alt="" /><span class="logo-copy"><strong>LEVEL<span>UP</span></strong><small>Исследуй игровые миры вместе с нами</small></span></a><a class="button button-outline" href="index.html#catalog">В каталог</a></header>
+    <main class="product-page container" data-product-page>
+      <a class="product-back" href="index.html#catalog">← Вернуться к каталогу</a>
+      <section class="product-shell" aria-labelledby="product-title">
+        <div>
+          <p class="eyebrow">Карточка игры LevelUp</p>
+          <h1 id="product-title" data-product-title>Игра</h1>
+          <p class="product-page__lead" data-product-offer></p>
+          <p class="product-page__lead" data-product-description></p>
+          <div class="product-facts" aria-label="Параметры предложения"><div><small>Платформа</small><strong data-product-platform></strong></div><div><small>Издатель</small><strong data-product-publisher></strong></div><div><small>Регион</small><strong data-product-region></strong></div><div><small>Стартовая цена</small><strong data-product-price></strong></div></div>
+          <a class="button button-primary" data-product-request href="index.html#catalog">Войти и сохранить заявку</a>
+          <p class="product-notice">Оплата не подключена: LevelUp не принимает банковские данные на сайте. Мы сохраняем только заявку в личном кабинете после входа.</p>
+        </div>
+        <div class="product-visual" data-product-visual aria-hidden="true"></div>
+      </section>
+    </main>
+    <footer class="footer container"><a class="logo logo--footer" href="index.html"><img src="assets/brand/levelup-mark.png" alt="" /><span>LEVEL<span>UP</span></span></a><p>© 2026 LevelUp · исследуй игровые миры вместе с нами</p></footer>
+    <script src="catalog-data.js"></script>
+    <script src="product.js"></script>
+  </body>
+</html>
