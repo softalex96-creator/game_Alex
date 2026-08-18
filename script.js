@@ -9,6 +9,25 @@ document.querySelectorAll(".modal").forEach((modal) => {
   modal.addEventListener("click", (event) => { if (event.target === modal) modal.close(); });
 });
 
+const accountModal = document.getElementById("account-modal");
+if (accountModal) {
+  const accountViews = accountModal.querySelectorAll("[data-account-view]");
+  const feedback = accountModal.querySelector(".account-feedback");
+
+  accountModal.querySelectorAll("[data-account-mode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      accountViews.forEach((view) => { view.hidden = view.dataset.accountView !== button.dataset.accountMode; });
+      if (feedback) feedback.textContent = "";
+    });
+  });
+
+  accountModal.querySelectorAll("[data-auth-provider]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (feedback) feedback.textContent = "Вход с Google станет доступен после подключения защищённой авторизации.";
+    });
+  });
+}
+
 const supportsMotion = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 if (supportsMotion) {
