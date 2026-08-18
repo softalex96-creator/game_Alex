@@ -180,23 +180,29 @@ if (globeStage && !reducedMotion) {
   const makeLabel = (text, color) => {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
-    canvas.width = 512;
-    canvas.height = 112;
-    context.font = "700 33px Arial";
-    const width = Math.min(470, Math.ceil(context.measureText(text).width + 56));
+    const scale = 3;
+    const labelHeight = 58;
+    context.font = "800 23px Arial, sans-serif";
+    const labelWidth = Math.min(300, Math.ceil(context.measureText(text).width + 42));
+    canvas.width = labelWidth * scale;
+    canvas.height = labelHeight * scale;
+    context.scale(scale, scale);
+    context.font = "800 23px Arial, sans-serif";
     context.fillStyle = "rgba(13, 12, 29, .82)";
     context.strokeStyle = color;
-    context.lineWidth = 3;
+    context.lineWidth = 1.5;
     context.beginPath();
-    context.roundRect(8, 12, width - 16, 82, 38);
+    context.roundRect(1, 1, labelWidth - 2, labelHeight - 2, 17);
     context.fill();
     context.stroke();
     context.fillStyle = "#ffffff";
-    context.fillText(text, 28, 64);
+    context.fillText(text, 21, 36);
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
     const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false }));
-    sprite.scale.set(width / 178, .46, 1);
+    sprite.scale.set((labelWidth / labelHeight) * .42, .42, 1);
     return sprite;
   };
   const locationVector = (latitude, longitude, radius = 2.22) => {
@@ -206,10 +212,10 @@ if (globeStage && !reducedMotion) {
     return new THREE.Vector3(radius * Math.cos(lat) * Math.sin(lon), radius * Math.sin(lat), radius * Math.cos(lat) * Math.cos(lon));
   };
   const locations = [
-    { label: "Кыргызстан", lat: 41.2, lon: 74.8, color: 0x72f3b4 },
+    { label: "🇰🇬  Кыргызстан", lat: 41.2, lon: 74.8, color: 0x72f3b4 },
     { label: "Абхазия", lat: 43.0, lon: 41.0, color: 0x72f3b4 },
-    { label: "Скоро · Москва", lat: 55.75, lon: 37.62, color: 0xffb56d },
-    { label: "Скоро · Минск", lat: 53.9, lon: 27.56, color: 0xffb56d },
+    { label: "🇷🇺  Москва · скоро", lat: 55.75, lon: 37.62, color: 0xffb56d },
+    { label: "🇧🇾  Минск · скоро", lat: 53.9, lon: 27.56, color: 0xffb56d },
   ];
   const labelOffsets = [
     new THREE.Vector3(.38, -.36, .18),
