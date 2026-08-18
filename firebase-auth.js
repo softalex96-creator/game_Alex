@@ -10,7 +10,7 @@ const firebaseConfig = {
   appId: "1:920434234588:web:aa5bbdaf58b59610c25019",
 };
 
-const auth = getAuth(initializeApp(firebaseConfig));
+export const auth = getAuth(initializeApp(firebaseConfig));
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
@@ -26,6 +26,9 @@ function showAccountView(name) {
 
 function setFeedback(message) { if (feedback) feedback.textContent = message; }
 
+export async function signInWithGoogle() { return signInWithPopup(auth, provider); }
+export async function signOutLevelUp() { return signOut(auth); }
+
 function signInMessage(error) {
   if (error.code === "auth/popup-closed-by-user") return "Вход отменён. Попробуйте ещё раз, когда будете готовы.";
   if (error.code === "auth/popup-blocked") return "Браузер заблокировал окно входа. Разрешите всплывающие окна для сайта и повторите попытку.";
@@ -36,7 +39,7 @@ function signInMessage(error) {
 signInButton?.addEventListener("click", async () => {
   signInButton.disabled = true;
   setFeedback("Открываем защищённое окно Google…");
-  try { await signInWithPopup(auth, provider); } catch (error) { setFeedback(signInMessage(error)); } finally { signInButton.disabled = false; }
+  try { await signInWithGoogle(); } catch (error) { setFeedback(signInMessage(error)); } finally { signInButton.disabled = false; }
 });
 
 steamSignInButton?.addEventListener("click", () => {
@@ -44,7 +47,7 @@ steamSignInButton?.addEventListener("click", () => {
 });
 
 signOutButton?.addEventListener("click", async () => {
-  try { await signOut(auth); setFeedback("Вы вышли из аккаунта."); } catch { setFeedback("Не удалось выйти из аккаунта. Попробуйте ещё раз."); }
+  try { await signOutLevelUp(); setFeedback("Вы вышли из аккаунта."); } catch { setFeedback("Не удалось выйти из аккаунта. Попробуйте ещё раз."); }
 });
 
 onAuthStateChanged(auth, (user) => {

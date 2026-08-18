@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Личный кабинет игрока LevelUp" />
+    <title>Личный кабинет — LevelUp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="firebase-auth.css" />
+    <link rel="stylesheet" href="cabinet.css" />
+    <link rel="stylesheet" href="rank.css" />
+    <link rel="stylesheet" href="cabinet-page.css" />
+  </head>
+  <body>
+    <header class="header container cabinet-header">
+      <a class="logo" href="index.html" aria-label="LevelUp — на главную">LEVEL<span>UP</span></a>
+      <a class="cabinet-back" href="index.html">← Вернуться в каталог</a>
+    </header>
+    <main class="cabinet-page container">
+      <section class="cabinet-welcome">
+        <div>
+          <p class="eyebrow">Личный кабинет</p>
+          <h1>Твой игровой профиль</h1>
+          <p>Заказы, статусы и связь с поддержкой — в одном месте.</p>
+        </div>
+        <div class="cabinet-user" data-cabinet-user hidden>
+          <img class="cabinet-user__avatar" data-cabinet-avatar alt="" hidden />
+          <div><strong data-cabinet-name>Игрок</strong><span data-cabinet-email></span></div>
+          <button class="cabinet-signout" type="button" data-cabinet-signout>Выйти</button>
+        </div>
+      </section>
+
+      <section class="cabinet-login" data-cabinet-login>
+        <p class="eyebrow">Вход в аккаунт</p>
+        <h2>Войдите, чтобы увидеть свою историю</h2>
+        <p>После входа здесь появятся сохранённые заявки и обращения.</p>
+        <div class="cabinet-login__actions"><button class="auth-provider auth-provider--google" type="button" data-cabinet-google><span aria-hidden="true">G</span>Войти с Google</button><button class="auth-provider auth-provider--steam" type="button" data-cabinet-steam><span aria-hidden="true">S</span>Войти через Steam</button></div>
+        <p class="account-feedback" data-cabinet-feedback aria-live="polite"></p>
+      </section>
+
+      <section class="cabinet-dashboard" data-cabinet-dashboard hidden aria-label="Данные личного кабинета">
+        <nav class="cabinet-tabs" aria-label="Разделы кабинета" role="tablist">
+          <button type="button" role="tab" aria-selected="true" aria-controls="orders-panel" id="orders-tab" data-cabinet-tab="orders">Заказы <span data-cabinet-order-count>0</span></button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="transactions-panel" id="transactions-tab" data-cabinet-tab="transactions">Транзакции</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="support-panel" id="support-tab" data-cabinet-tab="support">Поддержка <span data-cabinet-ticket-count>0</span></button>
+        </nav>
+
+        <section class="cabinet-panel" role="tabpanel" id="orders-panel" aria-labelledby="orders-tab" data-cabinet-panel="orders">
+          <div class="cabinet-panel__heading"><div><p class="eyebrow">Заказанные игры</p><h2>Мои заказы</h2></div><a class="button button-primary" href="index.html#catalog">Выбрать игру</a></div>
+          <div class="cabinet-list" data-cabinet-orders></div>
+        </section>
+
+        <section class="cabinet-panel" role="tabpanel" id="transactions-panel" aria-labelledby="transactions-tab" data-cabinet-panel="transactions" hidden>
+          <div class="cabinet-panel__heading"><div><p class="eyebrow">Финансы</p><h2>История транзакций</h2></div></div>
+          <div class="cabinet-notice"><strong>Оплата пока не подключена</strong><span>Здесь будут отображаться подтверждённые платежи после запуска защищённой оплаты.</span></div>
+          <div class="cabinet-list" data-cabinet-transactions></div>
+        </section>
+
+        <section class="cabinet-panel cabinet-support" role="tabpanel" id="support-panel" aria-labelledby="support-tab" data-cabinet-panel="support" hidden>
+          <div class="cabinet-panel__heading"><div><p class="eyebrow">Помощь</p><h2>Поддержка</h2><p>Опишите вопрос — обращение сохранится в кабинете.</p></div></div>
+          <div class="support-layout"><form class="support-form" data-support-form><label>Тема<select name="topic" required><option value="Заказ">Заказ</option><option value="Оплата">Оплата</option><option value="Игра">Игра и товар</option><option value="Другое">Другое</option></select></label><label>Сообщение<textarea name="message" rows="5" minlength="10" maxlength="800" placeholder="Например: хочу уточнить состав товара для CS2" required></textarea></label><button class="button button-primary" type="submit">Отправить обращение</button><p class="account-feedback" data-support-feedback aria-live="polite"></p></form><aside class="support-aside"><strong>Как ответит поддержка</strong><p>На этом этапе обращения сохраняются только в вашем браузере. После подключения рабочего центра поддержки здесь появится ответ оператора.</p><a href="https://t.me/11111">Telegram →</a></aside></div>
+          <div class="cabinet-list cabinet-ticket-list" data-cabinet-tickets></div>
+        </section>
+      </section>
+    </main>
+    <footer class="footer container"><a class="logo" href="index.html">LEVEL<span>UP</span></a><p>© 2026 LevelUp. Демонстрационная версия сайта.</p><a href="index.html#contacts">Связаться</a></footer>
+    <script type="module" src="firebase-auth.js"></script>
+    <script type="module" src="cabinet-page.js"></script>
+  </body>
+</html>
