@@ -83,3 +83,63 @@ if (stage && card && !reducedMotion) {
   };
   renderer.setAnimationLoop(animate);
 }
+
+const howStage = document.querySelector(".how-three-stage");
+
+if (howStage && !reducedMotion) {
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  camera.position.set(0, 0, 5.8);
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  howStage.appendChild(renderer.domElement);
+  howStage.dataset.enhanced = "true";
+
+  const group = new THREE.Group();
+  scene.add(group);
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-0.65, 0.74, 0), new THREE.Vector3(-0.37, 1.12, 0), new THREE.Vector3(0.24, 1.12, 0),
+    new THREE.Vector3(0.6, 0.72, 0), new THREE.Vector3(0.45, 0.28, 0), new THREE.Vector3(0.02, 0.05, 0),
+    new THREE.Vector3(-0.05, -0.34, 0),
+  ]);
+  const question = new THREE.Mesh(
+    new THREE.TubeGeometry(curve, 80, 0.115, 12, false),
+    new THREE.MeshStandardMaterial({ color: 0xc8b7ff, emissive: 0x5f36d3, emissiveIntensity: 1.6, metalness: 0.62, roughness: 0.2 }),
+  );
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.14, 18, 18), new THREE.MeshStandardMaterial({ color: 0xffb16c, emissive: 0x9c3d08, emissiveIntensity: 1.4, metalness: 0.45, roughness: 0.25 }));
+  dot.position.y = -0.77;
+  group.add(question, dot);
+  const rings = new THREE.Group();
+  [1.2, 1.55].forEach((radius, index) => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, .018, 8, 72), new THREE.MeshBasicMaterial({ color: index ? 0x6ee7ff : 0xa889ff, transparent: true, opacity: .66 }));
+    ring.rotation.set(index ? .9 : 1.5, .32 * index, .2);
+    rings.add(ring);
+  });
+  group.add(rings);
+  scene.add(new THREE.AmbientLight(0x8b6bf3, 1.8));
+  const light = new THREE.PointLight(0xd7c5ff, 18, 9);
+  light.position.set(-2, 2, 3);
+  scene.add(light);
+  const warmLight = new THREE.PointLight(0xffa55a, 9, 7);
+  warmLight.position.set(1, -1, 2);
+  scene.add(warmLight);
+
+  const resize = () => {
+    const { width, height } = howStage.getBoundingClientRect();
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height, false);
+  };
+  new ResizeObserver(resize).observe(howStage);
+  resize();
+  const clock = new THREE.Clock();
+  renderer.setAnimationLoop(() => {
+    const elapsed = clock.getElapsedTime();
+    group.rotation.y = elapsed * .42;
+    group.rotation.x = Math.sin(elapsed * .75) * .12;
+    group.position.y = Math.sin(elapsed * .9) * .11;
+    rings.rotation.z = -elapsed * .28;
+    renderer.render(scene, camera);
+  });
+}
