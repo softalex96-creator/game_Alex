@@ -83,7 +83,7 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-card:nth-child(6) .slot-cover::before {
   z-index: 2;
   background-position: center;
-  background-size: contain;
+  background-size: 108% auto;
   background-repeat: no-repeat;
 }
 .slot-card:nth-child(3) .slot-cover::before { background-image: url("assets/game-slots/catalog/counter-strike-card-v2.png"); }
