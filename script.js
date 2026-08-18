@@ -21,11 +21,6 @@ if (accountModal) {
     });
   });
 
-  accountModal.querySelectorAll("[data-auth-provider]").forEach((button) => {
-    button.addEventListener("click", () => {
-      if (feedback) feedback.textContent = "Вход с Google станет доступен после подключения защищённой авторизации.";
-    });
-  });
 }
 
 const supportsMotion = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
