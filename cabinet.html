@@ -43,19 +43,20 @@
 
       <section class="cabinet-dashboard" data-cabinet-dashboard hidden aria-label="Данные личного кабинета">
         <nav class="cabinet-tabs" aria-label="Разделы кабинета" role="tablist">
-          <button type="button" role="tab" aria-selected="true" aria-controls="orders-panel" id="orders-tab" data-cabinet-tab="orders">Заказы <span data-cabinet-order-count>0</span></button>
+          <button type="button" role="tab" aria-selected="true" aria-controls="orders-panel" id="orders-tab" data-cabinet-tab="orders">Корзина <span data-cabinet-order-count>0</span></button>
           <button type="button" role="tab" aria-selected="false" aria-controls="transactions-panel" id="transactions-tab" data-cabinet-tab="transactions">Транзакции</button>
           <button type="button" role="tab" aria-selected="false" aria-controls="support-panel" id="support-tab" data-cabinet-tab="support">Поддержка <span data-cabinet-ticket-count>0</span></button>
         </nav>
 
         <section class="cabinet-panel" role="tabpanel" id="orders-panel" aria-labelledby="orders-tab" data-cabinet-panel="orders">
-          <div class="cabinet-panel__heading"><div><p class="eyebrow">Заказанные игры</p><h2>Мои заказы</h2></div><a class="button button-primary" href="index.html#catalog">Выбрать игру</a></div>
+          <div class="cabinet-panel__heading"><div><p class="eyebrow">Игры к оформлению</p><h2>Моя корзина</h2><p>Отметьте нужные позиции — демонстрационная оплата не списывает деньги и не передаёт данные карты.</p></div><a class="button button-primary" href="index.html#catalog">Добавить игру</a></div>
           <div class="cabinet-list" data-cabinet-orders></div>
+          <div class="cart-summary" data-cart-summary hidden><div><span>Выбрано: <strong data-cart-selected-count>0</strong></span><b data-cart-total>0 сом</b></div><button class="button button-primary" type="button" data-open-demo-payment disabled>Перейти к демо-оплате</button></div>
         </section>
 
         <section class="cabinet-panel" role="tabpanel" id="transactions-panel" aria-labelledby="transactions-tab" data-cabinet-panel="transactions" hidden>
           <div class="cabinet-panel__heading"><div><p class="eyebrow">Финансы</p><h2>История транзакций</h2></div></div>
-          <div class="cabinet-notice"><strong>Оплата пока не подключена</strong><span>Здесь будут отображаться подтверждённые платежи после запуска защищённой оплаты.</span></div>
+          <div class="cabinet-notice"><strong>Демо-история платежей</strong><span>Здесь отображаются только тестовые операции. Настоящая оплата будет подключена отдельно через платёжного провайдера.</span></div>
           <div class="cabinet-list" data-cabinet-transactions></div>
         </section>
 
@@ -66,6 +67,7 @@
         </section>
       </section>
     </main>
+    <dialog class="modal demo-payment" data-demo-payment aria-labelledby="demo-payment-title"><button class="close" type="button" aria-label="Закрыть окно">×</button><p class="eyebrow">Тестовая касса</p><h2 id="demo-payment-title">Демо-оплата</h2><div class="demo-payment__notice"><strong>Это симуляция</strong><span>Деньги не списываются. Номер карты, срок и CVV уже заполнены тестовыми значениями и не передаются в сеть.</span></div><div class="demo-payment__items" data-demo-payment-items></div><div class="demo-card" aria-label="Тестовая банковская карта"><span>LEVELUP DEMO</span><strong>4242&nbsp; 4242&nbsp; 4242&nbsp; 4242</strong><div><span>VALID THRU<br /><b>12/30</b></span><span>CVV<br /><b>123</b></span></div></div><form data-demo-payment-form><label>Номер тестовой карты<input value="4242 4242 4242 4242" readonly aria-readonly="true" /></label><div class="demo-payment__fields"><label>Срок действия<input value="12/30" readonly aria-readonly="true" /></label><label>CVV<input value="123" readonly aria-readonly="true" /></label></div><button class="button button-primary" type="submit">Подтвердить демо-оплату</button><p class="account-feedback" data-demo-payment-feedback aria-live="polite"></p></form></dialog>
     <footer class="footer container"><a class="logo" href="index.html">LEVEL<span>UP</span></a><p>© 2026 LevelUp. Демонстрационная версия сайта.</p><nav class="footer-links" aria-label="Документы"><a href="privacy.html">Политика</a><a href="service-rules.html">Правила</a><a href="contacts.html">Контакты</a><a href="responsibility.html">Ответственность</a></nav></footer>
     <script type="module" src="firebase-auth.js"></script>
     <script type="module" src="cabinet-page.js"></script>

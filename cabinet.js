@@ -92,9 +92,9 @@
         price: card.querySelector("h3 + p")?.textContent?.replace("Стартовая цена: ", "") || "цена уточняется",
       };
       paymentTitle.textContent = selectedProduct.product;
-      paymentDescription.textContent = `Стартовая цена: ${selectedProduct.price}. Сохраните заявку в личном кабинете — оплата подключится позднее.`;
+      paymentDescription.textContent = `Стартовая цена: ${selectedProduct.price}. Добавьте игру в корзину, затем откройте кабинет для демо-оплаты.`;
       paymentFeedback.textContent = "";
-      createOrderButton.textContent = currentUser ? "Сохранить заявку" : "Войти, чтобы сохранить";
+      createOrderButton.textContent = currentUser ? "Добавить в корзину" : "Войти, чтобы добавить";
     });
   });
 
@@ -103,9 +103,9 @@
     if (!product || !paymentModal) return;
     selectedProduct = { product: product.title, price: `от ${product.price} сом` };
     paymentTitle.textContent = selectedProduct.product;
-    paymentDescription.textContent = `Стартовая цена: ${selectedProduct.price}. Сохраните заявку в личном кабинете — оплата подключится позднее.`;
+    paymentDescription.textContent = `Стартовая цена: ${selectedProduct.price}. Добавьте игру в корзину, затем откройте кабинет для демо-оплаты.`;
     paymentFeedback.textContent = "";
-    createOrderButton.textContent = currentUser ? "Сохранить заявку" : "Войти, чтобы сохранить";
+    createOrderButton.textContent = currentUser ? "Добавить в корзину" : "Войти, чтобы добавить";
     paymentModal.showModal();
   });
 
@@ -120,7 +120,7 @@
     orders.push({ ...selectedProduct, createdAt: new Date().toISOString() });
     localStorage.setItem(storageKey(), JSON.stringify(orders));
     renderOrders();
-    paymentFeedback.textContent = "Заявка сохранена в личном кабинете.";
+    paymentFeedback.textContent = "Игра добавлена в корзину. Откройте полный кабинет для демо-оплаты.";
     createOrderButton.disabled = true;
     window.setTimeout(() => { createOrderButton.disabled = false; }, 800);
   });
