@@ -185,8 +185,8 @@ if (globeStage && !reducedMotion) {
   const globe = new THREE.Group();
   // The texture's prime meridian is offset by 90° in Three's sphere UVs.
   // Keep Eastern Europe and Central Asia facing the visitor at rest.
-  const eurasiaYaw = THREE.MathUtils.degToRad(-142);
-  const eurasiaTilt = THREE.MathUtils.degToRad(34);
+  const eurasiaYaw = THREE.MathUtils.degToRad(-146);
+  const eurasiaTilt = THREE.MathUtils.degToRad(17);
   globe.rotation.set(eurasiaTilt, eurasiaYaw, -.025);
   scene.add(globe);
   const earthTexture = new THREE.TextureLoader().load("assets/globe/earth-blue-marble.jpg");
@@ -210,10 +210,10 @@ if (globeStage && !reducedMotion) {
     return new THREE.Vector3(radius * Math.cos(lat) * Math.sin(lon), radius * Math.sin(lat), radius * Math.cos(lat) * Math.cos(lon));
   };
   const locations = [
-    { label: "Кыргызстан", flag: "🇰🇬", status: "Уже развиваемся", lat: 41.2, lon: 74.8, color: 0x72f3b4, offset: [72, 42] },
-    { label: "Абхазия", flag: "", status: "Уже развиваемся", lat: 43.0, lon: 41.0, color: 0x72f3b4, offset: [-114, 25] },
-    { label: "Российская Федерация", flag: "🇷🇺", status: "Скоро", lat: 55.75, lon: 37.62, color: 0xffb56d, offset: [90, -88] },
-    { label: "Республика Беларусь", flag: "🇧🇾", status: "Скоро", lat: 53.9, lon: 27.56, color: 0xffb56d, offset: [-104, -88] },
+    { label: "Кыргызстан", flag: "🇰🇬", status: "Уже развиваемся", lat: 41.2, lon: 74.8, color: 0x72f3b4, offset: [105, 38] },
+    { label: "Абхазия", flag: "", status: "Уже развиваемся", lat: 43.0, lon: 41.0, color: 0x72f3b4, offset: [-106, 34] },
+    { label: "Российская Федерация", flag: "🇷🇺", status: "Скоро", lat: 55.75, lon: 37.62, color: 0xffb56d, offset: [106, -45] },
+    { label: "Республика Беларусь", flag: "🇧🇾", status: "Скоро", lat: 53.9, lon: 27.56, color: 0xffb56d, offset: [-108, -68] },
   ];
   const htmlLabels = [];
   locations.forEach(({ label, flag, status, lat, lon, color, offset }) => {
@@ -301,8 +301,13 @@ if (globeStage && !reducedMotion) {
       const screen = pinPosition.clone().project(camera);
       element.hidden = !visible || screen.z > 1;
       if (!element.hidden) {
-        element.style.left = `${(screen.x * .5 + .5) * width + offset[0]}px`;
-        element.style.top = `${(-screen.y * .5 + .5) * height + offset[1]}px`;
+        const bounds = element.getBoundingClientRect();
+        const halfWidth = Math.min((bounds.width || 150) / 2, width * .42);
+        const halfHeight = (bounds.height || 46) / 2;
+        const x = (screen.x * .5 + .5) * width + offset[0];
+        const y = (-screen.y * .5 + .5) * height + offset[1];
+        element.style.left = `${THREE.MathUtils.clamp(x, halfWidth + 12, width - halfWidth - 12)}px`;
+        element.style.top = `${THREE.MathUtils.clamp(y, halfHeight + 14, height - halfHeight - 56)}px`;
       }
     });
     renderer.render(scene, camera);
