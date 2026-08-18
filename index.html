@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Игры и игровая валюта для пользователей из Кыргызстана и СНГ. Скоро в России." />
+    <title>LevelUp — игры для СНГ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="header container">
+      <a class="logo" href="#top" aria-label="LevelUp — на главную">LEVEL<span>UP</span></a>
+      <nav aria-label="Основная навигация"><a href="#catalog">Каталог</a><a href="#how-it-works">Как это работает</a><a href="#regions">Регионы</a></nav>
+      <button class="button button-outline" type="button" data-modal="account">Личный кабинет</button>
+    </header>
+    <main id="top">
+      <section class="hero container">
+        <div class="hero-copy">
+          <p class="eyebrow">Игры и игровая валюта для СНГ</p>
+          <h1>Твой следующий уровень начинается здесь.</h1>
+          <p class="lead">Пополняй любимые игры быстро и понятно. Уже работаем в Кыргызстане — скоро откроемся в России.</p>
+          <div class="hero-actions"><a class="button button-primary" href="#catalog">Выбрать игру</a><a class="text-link" href="#regions">Узнать о регионах <span aria-hidden="true">→</span></a></div>
+        </div>
+        <div class="hero-card" aria-hidden="true"><div class="orb orb-one"></div><div class="orb orb-two"></div><p>GAME ON</p><strong>+2500 XP</strong><span>впечатлений каждый день</span></div>
+      </section>
+      <section class="catalog-section container" id="catalog">
+        <div class="section-heading"><div><p class="eyebrow">Каталог</p><h2>Выбери, во что играешь</h2></div><p>Это демонстрационные карточки. Покупка будет доступна после подключения проверенного платёжного сервиса.</p></div>
+        <div class="game-grid">
+          <article class="game-card game-card--violet"><span class="game-icon">✦</span><h3>Игровая валюта</h3><p>Пополняйте баланс в любимых играх.</p><button type="button" data-modal="payment">Скоро доступно</button></article>
+          <article class="game-card game-card--blue"><span class="game-icon">◈</span><h3>Онлайн-игры</h3><p>Ключи и цифровые товары для вашего аккаунта.</p><button type="button" data-modal="payment">Скоро доступно</button></article>
+          <article class="game-card game-card--orange"><span class="game-icon">⌁</span><h3>Скоро больше</h3><p>Расширяем каталог и запускаем новые регионы.</p><a href="#regions">Следить за запуском</a></article>
+        </div>
+      </section>
+      <section class="steps" id="how-it-works"><div class="container"><p class="eyebrow">Просто и прозрачно</p><h2>Как это будет работать</h2><ol><li><span>01</span><strong>Выбираешь игру</strong><p>Находишь нужную игру или игровую валюту.</p></li><li><span>02</span><strong>Входишь в кабинет</strong><p>Авторизация появится после настройки безопасного входа.</p></li><li><span>03</span><strong>Оформляешь заказ</strong><p>Оплата откроется через защищённую страницу платёжного партнёра.</p></li></ol></div></section>
+      <section class="regions container" id="regions"><div><p class="eyebrow">География</p><h2>Уже в Кыргызстане.<br />Скоро в России.</h2></div><div class="region-statuses"><div class="region-status active"><span></span><div><strong>Кыргызстан</strong><p>Сервис в развитии</p></div></div><div class="region-status"><span></span><div><strong>Россия</strong><p>Готовим запуск</p></div></div></div></section>
+    </main>
+    <footer class="footer container"><a class="logo" href="#top">LEVEL<span>UP</span></a><p>© 2026 LevelUp. Демонстрационная версия сайта.</p><a href="mailto:hello@example.com">Связаться</a></footer>
+    <dialog class="modal" id="account-modal" aria-labelledby="account-title"><button class="close" type="button" aria-label="Закрыть окно">×</button><p class="eyebrow">Личный кабинет</p><h2 id="account-title">Скоро здесь появится вход</h2><p>Мы добавим личный кабинет после отдельной настройки безопасного входа. На этом этапе сайт не запрашивает логины, пароли или другие персональные данные.</p><button class="button button-primary close-action" type="button">Понятно</button></dialog>
+    <dialog class="modal" id="payment-modal" aria-labelledby="payment-title"><button class="close" type="button" aria-label="Закрыть окно">×</button><p class="eyebrow">Оплата</p><h2 id="payment-title">Оплата пока не подключена</h2><p>Это безопасная заглушка: сайт не принимает данные банковских карт. Позже подключим подходящего платёжного провайдера с защищённой страницей оплаты.</p><button class="button button-primary close-action" type="button">Понятно</button></dialog>
+    <script src="script.js"></script>
+  </body>
+</html>
