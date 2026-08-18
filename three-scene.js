@@ -157,21 +157,20 @@ if (globeStage && !reducedMotion) {
   globeStage.dataset.enhanced = "true";
 
   const globe = new THREE.Group();
-  globe.rotation.set(.2, -.68, -.06);
+  const eurasiaYaw = THREE.MathUtils.degToRad(-50);
+  globe.rotation.set(.12, eurasiaYaw, -.025);
   scene.add(globe);
+  const earthTexture = new THREE.TextureLoader().load("assets/globe/earth-blue-marble.jpg");
+  earthTexture.colorSpace = THREE.SRGBColorSpace;
+  earthTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
   const planet = new THREE.Mesh(
     new THREE.SphereGeometry(2.18, 52, 38),
-    new THREE.MeshStandardMaterial({ color: 0x251c5c, emissive: 0x180b48, emissiveIntensity: 1.6, metalness: .5, roughness: .38, transparent: true, opacity: .96 }),
+    new THREE.MeshStandardMaterial({ map: earthTexture, color: 0xb8a7ff, emissive: 0x160a38, emissiveIntensity: .34, metalness: .12, roughness: .72 }),
   );
   globe.add(planet);
-  const grid = new THREE.Mesh(
-    new THREE.SphereGeometry(2.205, 28, 20),
-    new THREE.MeshBasicMaterial({ color: 0xa991ff, wireframe: true, transparent: true, opacity: .17 }),
-  );
-  globe.add(grid);
   const atmosphere = new THREE.Mesh(
     new THREE.SphereGeometry(2.31, 52, 38),
-    new THREE.MeshBasicMaterial({ color: 0x6958e9, transparent: true, opacity: .075, side: THREE.BackSide }),
+    new THREE.MeshBasicMaterial({ color: 0x7863ff, transparent: true, opacity: .13, side: THREE.BackSide }),
   );
   globe.add(atmosphere);
 
@@ -208,7 +207,8 @@ if (globeStage && !reducedMotion) {
     { label: "Скоро · Москва", lat: 55.75, lon: 37.62, color: 0xffb56d },
     { label: "Скоро · Минск", lat: 53.9, lon: 27.56, color: 0xffb56d },
   ];
-  locations.forEach(({ label, lat, lon, color }) => {
+  const labelOffsets = [new THREE.Vector3(.48, -.25, .08), new THREE.Vector3(-.63, -.05, .1), new THREE.Vector3(.36, .28, .08), new THREE.Vector3(-.72, .34, .1)];
+  locations.forEach(({ label, lat, lon, color }, index) => {
     const pin = new THREE.Group();
     const direction = locationVector(lat, lon).normalize();
     const base = direction.clone().multiplyScalar(2.22);
@@ -218,8 +218,17 @@ if (globeStage && !reducedMotion) {
     const halo = new THREE.Mesh(new THREE.RingGeometry(.13, .2, 28), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .74, side: THREE.DoubleSide }));
     halo.lookAt(direction.clone().multiplyScalar(5));
     pin.add(halo);
+    const labelOffset = labelOffsets[index];
+    const markerHead = direction.clone().multiplyScalar(.22);
+    const pinStem = new THREE.Mesh(new THREE.CylinderGeometry(.014, .014, .26, 8), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .76 }));
+    pinStem.position.copy(markerHead.clone().multiplyScalar(.5));
+    pinStem.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+    pin.add(pinStem);
+    const labelLineGeometry = new THREE.BufferGeometry().setFromPoints([markerHead, labelOffset.clone().multiplyScalar(.84)]);
+    const labelLine = new THREE.Line(labelLineGeometry, new THREE.LineBasicMaterial({ color, transparent: true, opacity: .64 }));
+    pin.add(labelLine);
     const labelSprite = makeLabel(label, `#${color.toString(16).padStart(6, "0")}`);
-    labelSprite.position.copy(direction.clone().multiplyScalar(.52).add(new THREE.Vector3(.12, .14, 0)));
+    labelSprite.position.copy(labelOffset);
     pin.add(labelSprite);
     globe.add(pin);
   });
@@ -241,12 +250,12 @@ if (globeStage && !reducedMotion) {
 
   let dragging = false;
   let lastX = 0;
-  let velocity = .0024;
+  let velocity = 0;
   globeStage.addEventListener("pointerdown", (event) => { dragging = true; lastX = event.clientX; globeStage.setPointerCapture(event.pointerId); });
   globeStage.addEventListener("pointermove", (event) => {
     if (!dragging) return;
     const delta = event.clientX - lastX;
-    velocity = delta * .006;
+    velocity = delta * .005;
     globe.rotation.y += velocity;
     lastX = event.clientX;
   });
@@ -264,10 +273,13 @@ if (globeStage && !reducedMotion) {
   const clock = new THREE.Clock();
   renderer.setAnimationLoop(() => {
     const elapsed = clock.getElapsedTime();
-    if (!dragging) globe.rotation.y += velocity;
-    velocity += (.0024 - velocity) * .016;
-    globe.rotation.x = .2 + Math.sin(elapsed * .36) * .045;
-    grid.rotation.y = -elapsed * .028;
+    if (!dragging) {
+      globe.rotation.y += velocity;
+      velocity *= .92;
+      const restingYaw = eurasiaYaw + Math.sin(elapsed * .24) * .075;
+      globe.rotation.y += (restingYaw - globe.rotation.y) * .012;
+    }
+    globe.rotation.x = .12 + Math.sin(elapsed * .36) * .026;
     orbit.rotation.z = elapsed * .13;
     renderer.render(scene, camera);
   });
