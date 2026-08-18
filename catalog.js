@@ -22,7 +22,7 @@
     return [product.offer, "Игровой баланс или товары", "Подбор варианта через заявку"];
   }
 
-  function showInfo(product) {
+  function showInfo(product, card) {
     if (!infoModal) return;
     infoModal.querySelector("[data-game-info-title]").textContent = product.title;
     infoModal.querySelector("[data-game-info-offer]").textContent = product.offer;
@@ -30,6 +30,9 @@
     infoModal.querySelector("[data-game-info-platform]").textContent = product.platform;
     infoModal.querySelector("[data-game-info-region]").textContent = product.region;
     infoModal.querySelector("[data-game-info-price]").textContent = `от ${product.price} сом`;
+    const cover = card?.querySelector(".game-cover");
+    const modalCover = infoModal.querySelector("[data-game-info-cover]");
+    if (cover && modalCover) modalCover.style.backgroundImage = getComputedStyle(cover).backgroundImage;
     const list = infoModal.querySelector("[data-game-info-options]");
     list.replaceChildren(...productOptions(product).map((option) => {
       const item = document.createElement("li");
@@ -65,7 +68,7 @@
       details.className = "game-card__details";
       details.type = "button";
       details.textContent = "Подробнее";
-      details.addEventListener("click", () => showInfo(product));
+      details.addEventListener("click", () => showInfo(product, card));
       const add = document.createElement("button");
       add.className = "game-card__add";
       add.type = "button";
@@ -83,7 +86,7 @@
     info.type = "button";
     info.setAttribute("aria-label", `Информация об игре ${product.title}`);
     info.textContent = "i";
-    info.addEventListener("click", () => showInfo(product));
+    info.addEventListener("click", () => showInfo(product, card));
     card.querySelector(".game-cover")?.append(info);
   });
 
