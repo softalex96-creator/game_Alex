@@ -46,6 +46,37 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-card:nth-child(5) .slot-cover, .slot-card:nth-child(7) .slot-cover, .slot-card:nth-child(12) .slot-cover, .slot-card:nth-child(15) .slot-cover, .slot-card:nth-child(16) .slot-cover, .slot-card:nth-child(23) .slot-cover, .slot-card:nth-child(24) .slot-cover, .slot-card:nth-child(27) .slot-cover, .slot-card:nth-child(30) .slot-cover { background-image: url("assets/game-slots/adventure.png"); }
 .slot-card[data-badge]::before { content: attr(data-badge); position: absolute; z-index: 3; top: 8px; left: 8px; padding: 4px 6px; border: 1px solid rgba(255,255,255,.38); border-radius: 5px; color: #fff; background: linear-gradient(135deg, #eb4c80, #a833ca); box-shadow: 0 3px 12px rgba(0,0,0,.34); font-size: 8px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; }
 .slot-card[data-badge="Хит продаж"]::before { color: #271400; border-color: #ffe4a2; background: linear-gradient(135deg, #ffd26d, #f38a35); }
+.slot-cover::before { z-index: 0; }.slot-cover::after { z-index: 1; }
+.slot-card:nth-child(1) .slot-cover { background-image: url("assets/games/warcraft.png"); }
+.slot-card:nth-child(2) .slot-cover { background-image: url("assets/games/world-of-warcraft.png"); }
+.slot-card:nth-child(3) .slot-cover { background-image: url("assets/games/counter-strike.png"); }
+.slot-card:nth-child(4) .slot-cover { background-image: url("assets/games/cs2.png"); }
+.slot-card:nth-child(5) .slot-cover { background-image: url("assets/game-slots/individual/mobile-legends.jpg"); }
+.slot-card:nth-child(6) .slot-cover { background-image: url("assets/games/pubg.png"); }
+.slot-card:nth-child(7) .slot-cover { background-image: url("assets/game-slots/individual/quake.jpg"); }
+.slot-card:nth-child(8) .slot-cover { background-image: url("assets/games/street-fighter.png"); }
+.slot-card:nth-child(9) .slot-cover { background-image: url("assets/game-slots/individual/apex.jpg"); }
+.slot-card:nth-child(10) .slot-cover { background-image: url("assets/game-slots/individual/fc.jpg"); }
+.slot-card:nth-child(11) .slot-cover { background-image: url("assets/game-slots/individual/battlefield.jpg"); }
+.slot-card:nth-child(12) .slot-cover { background-image: url("assets/game-slots/individual/sims.jpg"); }
+.slot-card:nth-child(13) .slot-cover { background-image: url("assets/game-slots/individual/nfs.jpg"); }
+.slot-card:nth-child(14) .slot-cover { background-image: url("assets/game-slots/individual/f1.jpg"); }
+.slot-card:nth-child(15) .slot-cover { background-image: url("assets/game-slots/individual/pvz.jpg"); }
+.slot-card:nth-child(16) .slot-cover { background-image: url("assets/game-slots/individual/star-wars.jpg"); }
+.slot-card:nth-child(17) .slot-cover { background-image: url("assets/game-slots/individual/real-racing.jpg"); }
+.slot-card:nth-child(18) .slot-cover { background-image: url("assets/game-slots/individual/madden.jpg"); }
+.slot-card:nth-child(19) .slot-cover { background-image: url("assets/game-slots/individual/tekken.jpg"); }
+.slot-card:nth-child(20) .slot-cover { background-image: url("assets/game-slots/individual/elden-ring.jpg"); }
+.slot-card:nth-child(21) .slot-cover { background-image: url("assets/game-slots/individual/sparking-zero.jpg"); }
+.slot-card:nth-child(22) .slot-cover { background-image: url("assets/game-slots/individual/xenoverse.jpg"); }
+.slot-card:nth-child(23) .slot-cover { background-image: url("assets/game-slots/individual/digimon.jpg"); }
+.slot-card:nth-child(24) .slot-cover { background-image: url("assets/game-slots/individual/little-nightmares.jpg"); }
+.slot-card:nth-child(25) .slot-cover { background-image: url("assets/game-slots/individual/code-vein.jpg"); }
+.slot-card:nth-child(26) .slot-cover { background-image: url("assets/game-slots/individual/tales.jpg"); }
+.slot-card:nth-child(27) .slot-cover { background-image: url("assets/game-slots/individual/ace-combat.jpg"); }
+.slot-card:nth-child(28) .slot-cover { background-image: url("assets/game-slots/individual/naruto.jpg"); }
+.slot-card:nth-child(29) .slot-cover { background-image: url("assets/game-slots/individual/one-piece.jpg"); }
+.slot-card:nth-child(30) .slot-cover { background-image: url("assets/game-slots/individual/pacman.jpg"); }
 @media (max-width: 1100px) { .game-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 960px) { .game-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .rewards { grid-template-columns: 1fr; }.rewards__progress { max-width: 430px; width: 100%; } }
 @media (max-width: 760px) { .header { height: auto; padding: 22px 0; }.header nav { display: none; }.hero { grid-template-columns: 1fr; gap: 38px; padding: 55px 0 70px; }.hero-card { height: 280px; }.rewards { min-height: 0; padding: 32px 22px; border-radius: 20px; }.rewards__art { background-image: linear-gradient(180deg, rgba(10,10,19,.93), rgba(10,10,19,.72)), url("assets/bonus/levelup-rewards-banner.png"); background-position: 63% center; }.rewards__actions { flex-wrap: wrap; }.rewards__trust { margin-top: 0; }.section-heading, .regions { display: block; }.section-heading > p { margin-top: 18px; }.game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }.steps ol, .contact-layout { grid-template-columns: 1fr; }.steps li, .steps li:first-child { border-left: 0; border-top: 1px solid var(--line); padding: 24px 0; }.steps li:first-child { border-top: 0; padding-top: 0; }.steps li span { margin-bottom: 14px; }.region-statuses { margin-top: 34px; }.contacts { padding: 70px 0; }.contact-layout { gap: 28px; }.footer { padding: 24px 0; align-items: start; flex-direction: column; gap: 12px; } }
