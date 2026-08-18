@@ -43,6 +43,8 @@ signOutButton?.addEventListener("click", async () => {
 });
 
 onAuthStateChanged(auth, (user) => {
+  window.levelUpUser = user;
+  window.dispatchEvent(new CustomEvent("levelup-auth", { detail: user }));
   if (!user) {
     showAccountView("start");
     return;
