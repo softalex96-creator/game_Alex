@@ -77,6 +77,18 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-card:nth-child(4) .slot-cover { background-image: url("assets/game-slots/catalog/cs2-card-v3.png"); background-position: center 48%; }
 .slot-card:nth-child(5) .slot-cover { background-image: url("assets/game-slots/catalog/mobile-legends-card-v3.png"); background-position: center 48%; }
 .slot-card:nth-child(6) .slot-cover { background-image: url("assets/game-slots/catalog/pubg-card-v3.png"); background-position: center 48%; }
+.slot-card:nth-child(3) .slot-cover::before,
+.slot-card:nth-child(4) .slot-cover::before,
+.slot-card:nth-child(5) .slot-cover::before,
+.slot-card:nth-child(6) .slot-cover::before {
+  background: linear-gradient(105deg, rgba(7, 7, 15, .06), transparent 58%, rgba(7, 7, 15, .13));
+}
+.slot-card:nth-child(3) .slot-cover::after,
+.slot-card:nth-child(4) .slot-cover::after,
+.slot-card:nth-child(5) .slot-cover::after,
+.slot-card:nth-child(6) .slot-cover::after {
+  background: linear-gradient(180deg, transparent 58%, rgba(9, 8, 18, .16));
+}
 .slot-card:nth-child(7) .slot-cover { background-image: url("assets/game-slots/individual/quake.jpg"); }
 .slot-card:nth-child(8) .slot-cover { background-image: url("assets/games/street-fighter.png"); }
 .slot-card:nth-child(9) .slot-cover { background-image: url("assets/game-slots/individual/apex.jpg"); }
