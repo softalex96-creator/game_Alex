@@ -59,8 +59,8 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-card[data-badge]::before { content: attr(data-badge); position: absolute; z-index: 3; top: 8px; left: 8px; padding: 4px 6px; border: 1px solid rgba(255,255,255,.38); border-radius: 5px; color: #fff; background: linear-gradient(135deg, #eb4c80, #a833ca); box-shadow: 0 3px 12px rgba(0,0,0,.34); font-size: 8px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; }
 .slot-card[data-badge="Хит продаж"]::before { color: #271400; border-color: #ffe4a2; background: linear-gradient(135deg, #ffd26d, #f38a35); }
 .slot-cover::before { z-index: 0; }.slot-cover::after { z-index: 1; }
-.slot-card:nth-child(1) .slot-cover { background-image: url("assets/games/warcraft.png"); }
-.slot-card:nth-child(2) .slot-cover { background-image: url("assets/games/world-of-warcraft.png"); }
+.slot-card:nth-child(1) .slot-cover { background-image: url("assets/game-slots/catalog/warcraft-card.png"); background-position: center 48%; }
+.slot-card:nth-child(2) .slot-cover { background-image: url("assets/game-slots/catalog/world-of-warcraft-card.png"); background-position: center 45%; }
 .slot-card:nth-child(3) .slot-cover { background-image: url("assets/games/counter-strike.png"); }
 .slot-card:nth-child(4) .slot-cover { background-image: url("assets/games/cs2.png"); }
 .slot-card:nth-child(5) .slot-cover { background-image: url("assets/game-slots/individual/mobile-legends.jpg"); }
