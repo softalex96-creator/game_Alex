@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>LevelUp · Операционный центр</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <main class="admin-shell">
+      <section class="admin-login" data-admin-login>
+        <a class="admin-brand" href="index.html"><span class="admin-brand__mark">↑</span> LEVELUP <em>OPS</em></a>
+        <div class="admin-login__card">
+          <p class="admin-kicker">ОПЕРАЦИОННЫЙ ЦЕНТР</p>
+          <h1>Управляйте заказами<br />в одном месте.</h1>
+          <p>Войдите через разрешённый Google-аккаунт, чтобы открыть рабочее пространство LevelUp.</p>
+          <button class="admin-button admin-button--primary" type="button" data-admin-sign-in>Войти с Google</button>
+          <p class="admin-login__feedback" data-admin-feedback role="status" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="admin-app" data-admin-app hidden>
+        <aside class="admin-sidebar">
+          <a class="admin-brand" href="index.html"><span class="admin-brand__mark">↑</span> LEVELUP <em>OPS</em></a>
+          <nav class="admin-nav" aria-label="Навигация операционного центра">
+            <a class="is-active" href="#orders">Заказы <span data-admin-order-nav-count>0</span></a>
+            <a href="#tasks">Задачи <span data-admin-task-nav-count>0</span></a>
+            <a href="#support">Поддержка</a>
+          </nav>
+          <div class="admin-sidebar__footer">
+            <div class="admin-user"><img data-admin-avatar hidden alt="" /><span><strong data-admin-name>Оператор</strong><small data-admin-email></small></span></div>
+            <button class="admin-text-button" type="button" data-admin-sign-out>Выйти</button>
+          </div>
+        </aside>
+
+        <section class="admin-content">
+          <header class="admin-topbar">
+            <div><p class="admin-kicker">ПАНЕЛЬ УПРАВЛЕНИЯ</p><h1>Добрый день, <span data-admin-greeting>оператор</span>.</h1></div>
+            <div class="admin-topbar__actions"><a class="admin-text-button" href="index.html">Открыть сайт ↗</a><button class="admin-button admin-button--primary" type="button" data-open-order-dialog>+ Новая заявка</button></div>
+          </header>
+
+          <section class="admin-local-note" aria-label="Статус подключения"><span></span><p><strong>Контур подготовки.</strong> Сейчас записи этой панели хранятся только в данном браузере. После подключения провайдера заказы и статусы будут поступать через защищённый серверный webhook.</p></section>
+
+          <section class="admin-stats" aria-label="Сводка">
+            <article><span>Новые заявки</span><strong data-admin-new-count>0</strong><small>требуют обработки</small></article>
+            <article><span>В работе</span><strong data-admin-progress-count>0</strong><small>заказы и выдачи</small></article>
+            <article><span>Выполнено</span><strong data-admin-done-count>0</strong><small>в этом журнале</small></article>
+            <article><span>Оборот</span><strong data-admin-total>0 ₽</strong><small>по подтверждённым</small></article>
+          </section>
+
+          <section class="admin-panel" id="orders">
+            <div class="admin-panel__heading"><div><p class="admin-kicker">ОЧЕРЕДЬ</p><h2>Заказы и транзакции</h2></div><button class="admin-button admin-button--ghost" type="button" data-open-order-dialog>Добавить</button></div>
+            <div class="admin-filters"><label><span class="sr-only">Поиск</span><input data-admin-search type="search" placeholder="Поиск по заказу или покупателю" /></label><label><span class="sr-only">Статус</span><select data-admin-status-filter><option value="all">Все статусы</option><option value="new">Новые</option><option value="paid">Оплачено</option><option value="processing">В работе</option><option value="done">Выполнено</option><option value="cancelled">Отменено</option></select></label></div>
+            <div class="admin-table-wrap"><table><thead><tr><th>Заказ</th><th>Покупатель</th><th>Состав</th><th>Оплата</th><th>Статус</th><th>Действие</th></tr></thead><tbody data-admin-orders></tbody></table></div>
+            <div class="admin-empty" data-admin-orders-empty hidden><strong>Очередь пуста</strong><span>Добавьте первую заявку или дождитесь подключения платёжного webhook.</span></div>
+          </section>
+
+          <section class="admin-grid">
+            <section class="admin-panel" id="tasks"><div class="admin-panel__heading"><div><p class="admin-kicker">ИСПОЛНЕНИЕ</p><h2>Задачи команды</h2></div><button class="admin-button admin-button--ghost" type="button" data-open-task-dialog>+ Задача</button></div><div class="admin-task-list" data-admin-tasks></div><div class="admin-empty" data-admin-tasks-empty hidden><strong>Нет активных задач</strong><span>После оплаты здесь появятся задачи на выдачу.</span></div></section>
+            <section class="admin-panel" id="support"><div class="admin-panel__heading"><div><p class="admin-kicker">ПОДДЕРЖКА</p><h2>Каналы связи</h2></div></div><div class="admin-support-list"><a href="mailto:business@pulse80.cc"><span>Email</span><strong>business@pulse80.cc</strong><small>Ответ в течение 24 часов</small></a><a href="https://t.me/levelUP_67" target="_blank" rel="noopener noreferrer"><span>Telegram</span><strong>@levelUP_67</strong><small>Открыть чат ↗</small></a><div><span>WhatsApp</span><strong>@levelUP_67</strong><small>Подключён как канал поддержки</small></div></div></section>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <dialog class="admin-dialog" data-admin-order-dialog><form method="dialog" data-admin-order-form><button class="admin-dialog__close" value="cancel" aria-label="Закрыть">×</button><p class="admin-kicker">НОВАЯ ЗАЯВКА</p><h2>Добавить в очередь</h2><label>Покупатель<input name="buyer" required placeholder="Имя или никнейм" /></label><label>Email или ID<input name="contact" required placeholder="user@example.com" /></label><label>Товар<input name="item" required placeholder="Например, 1 000 UC PUBG" /></label><div class="admin-dialog__row"><label>Сумма, ₽<input name="amount" required inputmode="numeric" type="number" min="1" placeholder="990" /></label><label>Способ оплаты<select name="method"><option>Visa / Mastercard</option><option>Мобильная коммерция</option><option>Ручная заявка</option></select></label></div><button class="admin-button admin-button--primary" value="default">Создать заявку</button></form></dialog>
+    <dialog class="admin-dialog" data-admin-task-dialog><form method="dialog" data-admin-task-form><button class="admin-dialog__close" value="cancel" aria-label="Закрыть">×</button><p class="admin-kicker">ЗАДАЧА</p><h2>Добавить задачу</h2><label>Название<input name="title" required placeholder="Проверить выдачу товара" /></label><label>Связанный заказ<input name="order" placeholder="LU-0000" /></label><label>Исполнитель<input name="assignee" placeholder="Оператор" /></label><button class="admin-button admin-button--primary" value="default">Создать задачу</button></form></dialog>
+    <script type="module" src="admin.js"></script>
+  </body>
+</html>
