@@ -1,3 +1,38 @@
+// Только официальные цифровые товары, дополнения и валюты. Доступность зависит
+// от региона, платформы и действующих договоров с правообладателями.
+const levelUpOptions = {
+  warcraft: ["Warcraft III: Reforged", "Warcraft III: Reforged — Spoils of War Edition"],
+  "world-of-warcraft": ["60 дней игрового времени", "WoW Token — 30 дней игрового времени", "Набор дополнения The War Within"],
+  "counter-strike": ["Prime Status Upgrade для Counter-Strike 2", "Предметы Steam Community Market", "Ключ к кейсу через Steam"],
+  cs2: ["Armory Pass", "Prime Status Upgrade", "Предметы Steam Community Market", "Ключ к кейсу через Steam"],
+  "mobile-legends": ["Алмазы", "Weekly Diamond Pass", "Twilight Pass", "Официальный набор в игре"],
+  pubg: ["G-COIN", "Набор G-COIN", "PUBG Plus", "Battle Pass"],
+  quake: ["Quake Enhanced Edition", "Quake Mission Pack: Scourge of Armagon", "Quake Mission Pack: Dissolution of Eternity"],
+  "street-fighter": ["Fighter Coins", "Year 3 Character Pass", "Year 3 Ultimate Pass", "Отдельный DLC-персонаж"],
+  "apex-legends": ["1 000 Apex Coins", "2 150 Apex Coins", "4 350 Apex Coins", "Premium Battle Pass"],
+  "ea-sports-fc": ["FC Points", "Ultimate Team Points Pack", "Season Pass", "Evolution Slot"],
+  battlefield: ["Battlefield Coins", "Battle Pass", "Официальный набор косметики", "Battlefield Pro"],
+  "the-sims-4": ["Expansion Pack", "Game Pack", "Stuff Pack", "Kit / Maker Pack"],
+  "need-for-speed": ["Need for Speed Unbound — Ultimate Collection", "Vol. 9 Premium Speed Pass", "Catch-Up Pack", "Набор автомобилей и косметики"],
+  "ea-sports-f1": ["EA SPORTS F1 — базовое издание", "EA SPORTS F1 — расширенное издание", "Официальный сезонный контент"],
+  "plants-vs-zombies-2": ["Премиум-растение", "Набор семян", "Самоцветы", "Официальное спецпредложение"],
+  "star-wars-goh": ["Crystals", "Data Cards", "Resources Bundle", "Официальный набор Web Store"],
+  "real-racing-3": [],
+  "madden-nfl-mobile": ["200 Madden Cash", "1 050 Madden Cash", "2 200 Madden Cash", "Madden Cash Calendar"],
+  "tekken-8": ["Season 2 Character & Stage Pass", "Season 3 Pass", "Отдельный DLC-персонаж", "TEKKEN Fight Pass"],
+  "elden-ring": ["Shadow of the Erdtree DLC", "Shadow of the Erdtree Edition", "Digital Artbook & Soundtrack"],
+  "dragon-ball-sparking-zero": ["Season Pass (DLC 1–3)", "DAIMA Character Pack 1", "DAIMA Character Pack 2", "Ultimate Upgrade Pack"],
+  "dragon-ball-xenoverse-2": ["Future Saga Pack Set", "Dragon Ball DAIMA Pack", "HERO OF JUSTICE Pack Set", "Отдельная глава Future Saga"],
+  "digimon-story": ["Season Pass", "Additional Digimon & Episode Pack 1", "Additional Digimon & Episode Pack 2", "Additional Digimon & Episode Pack 3"],
+  "little-nightmares-iii": ["The Backstage DLC", "Secrets of The Spiral — Expansion Pass", "Residents Costumes Pack", "Digital Deluxe Edition"],
+  "code-vein-ii": ["Mask of Idris Expansion DLC", "Deluxe Upgrade Pack", "Custom Outfit Pack", "Ultimate Edition"],
+  "tales-of-arise": ["Beyond the Dawn Expansion", "Beyond the Dawn Edition", "Classic Characters Costume & BGM Pack", "Premium Travel Pack"],
+  "ace-combat-7": ["Season Pass", "Дополнительная миссия", "Дополнительный самолёт", "Digital Deluxe Edition"],
+  "naruto-to-boruto": ["Season Pass 9", "DLC-персонаж Kimimaro", "Отдельный DLC-персонаж", "Digital Deluxe Edition"],
+  "one-piece-pirate-warriors-4": ["Character Pass 3", "Special Selection Pack", "Additional Episodes Pack", "Digital Ultimate Edition"],
+  "pac-man": ["PAC-MAN WORLD 2 Re-PAC", "Sonic Collaboration Set", "Jukebox DLC", "Chrome Noir Chogokin DLC"]
+};
+
 window.levelUpProducts = [
   ["warcraft", "Warcraft", "Игровые товары", "catalog", "PC", "Blizzard", "KG · скоро РФ", 100, "Игровые товары для мира Warcraft: начните подбор и сохраните заявку в личном кабинете."],
   ["world-of-warcraft", "World of Warcraft", "Золото и подписка", "catalog", "PC", "Blizzard", "KG · скоро РФ", 250, "Подбор золота и подписки для World of Warcraft. Финальные параметры подтверждает поддержка."],
@@ -29,4 +64,4 @@ window.levelUpProducts = [
   ["naruto-to-boruto", "NARUTO TO BORUTO", "Shinobi Striker", "catalog", "PC", "Bandai Namco", "Bandai · KG", 130, "Игровой контент для NARUTO TO BORUTO."],
   ["one-piece-pirate-warriors-4", "ONE PIECE Pirate Warriors 4", "Персонажи и DLC", "dlc", "PC", "Bandai Namco", "Bandai · KG", 190, "Персонажи и DLC для ONE PIECE Pirate Warriors 4."],
   ["pac-man", "PAC-MAN", "Аркадный контент", "catalog", "PC", "Bandai Namco", "Bandai · KG", 90, "Аркадный контент для PAC-MAN."]
-].map(([id, title, offer, category, platform, publisher, region, price, description, badge]) => ({ id, title, offer, category, platform, publisher, region, price, description, badge: badge || "" }));
+].map(([id, title, offer, category, platform, publisher, region, price, description, badge]) => ({ id, title, offer, category, platform, publisher, region, price, description, badge: badge || "", options: levelUpOptions[id] || [] }));

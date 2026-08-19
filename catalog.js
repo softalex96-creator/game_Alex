@@ -17,9 +17,7 @@
   };
 
   function productOptions(product) {
-    if (product.category === "currency") return ["Игровая валюта", "Наборы и бонусы", "Сезонные предметы"];
-    if (product.category === "dlc") return ["Дополнения и DLC", "Персонажи или предметы", "Наборы игрового контента"];
-    return [product.offer, "Игровой баланс или товары", "Подбор варианта через заявку"];
+    return product.options || [];
   }
 
   function showInfo(product, card) {
@@ -34,13 +32,45 @@
     const modalCover = infoModal.querySelector("[data-game-info-cover]");
     if (cover && modalCover) modalCover.style.backgroundImage = getComputedStyle(cover).backgroundImage;
     const list = infoModal.querySelector("[data-game-info-options]");
-    list.replaceChildren(...productOptions(product).map((option) => {
-      const item = document.createElement("li");
-      item.textContent = option;
-      return item;
-    }));
+    const addButton = infoModal.querySelector("[data-game-info-add]");
+    const options = productOptions(product);
+    const title = infoModal.querySelector("[data-game-info-options-title]");
+    list.replaceChildren();
+    if (!options.length) {
+      title.textContent = "Статус предложения";
+      const notice = document.createElement("p");
+      notice.className = "game-info-modal__empty";
+      notice.textContent = "Официальные покупки для этой игры больше недоступны. Мы не добавляем заменители или неофициальные услуги.";
+      list.append(notice);
+      addButton.disabled = true;
+      addButton.textContent = "Недоступно";
+    } else {
+      title.textContent = "Выберите товары";
+      addButton.disabled = false;
+      addButton.textContent = "Добавить выбранное";
+      options.forEach((option, index) => {
+        const label = document.createElement("label");
+        label.className = "game-info-option";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.value = option;
+        input.checked = index === 0;
+        const copy = document.createElement("span");
+        copy.textContent = option;
+        label.append(input, copy);
+        list.append(label);
+      });
+    }
     infoModal.querySelector("[data-game-info-details]").href = `product.html?id=${encodeURIComponent(product.id)}`;
-    infoModal.querySelector("[data-game-info-add]").onclick = () => addToCart(product);
+    addButton.onclick = () => {
+      const selected = [...list.querySelectorAll("input:checked")].map((input) => input.value);
+      if (!selected.length) {
+        showToast("Выберите хотя бы один вариант", "warning");
+        return;
+      }
+      selected.forEach((option) => addToCart({ ...product, title: `${product.title} — ${option}` }));
+      infoModal.close();
+    };
     infoModal.showModal();
   }
 
@@ -72,8 +102,8 @@
       const add = document.createElement("button");
       add.className = "game-card__add";
       add.type = "button";
-      add.textContent = "В корзину +";
-      add.addEventListener("click", () => addToCart(product));
+      add.textContent = "Выбрать +";
+      add.addEventListener("click", () => showInfo(product, card));
       actions.append(details, add);
       button.replaceWith(actions);
     }

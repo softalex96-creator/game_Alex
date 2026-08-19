@@ -13,6 +13,18 @@
   page.querySelector("[data-product-publisher]").textContent = product.publisher;
   page.querySelector("[data-product-region]").textContent = product.region;
   page.querySelector("[data-product-price]").textContent = `от ${product.price} сом`;
+  const options = page.querySelector("[data-product-options]");
+  if (product.options?.length) {
+    options.replaceChildren(...product.options.map((option) => {
+      const item = document.createElement("li");
+      item.textContent = option;
+      return item;
+    }));
+  } else {
+    const item = document.createElement("li");
+    item.textContent = "Официальные покупки для этой игры завершены или недоступны.";
+    options.replaceChildren(item);
+  }
   const visual = page.querySelector("[data-product-visual]");
   const index = (window.levelUpProducts || []).indexOf(product) + 1;
   visual.classList.add(`product-visual--${index}`);

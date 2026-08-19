@@ -1,0 +1,11 @@
+.product-options {
+  margin: 24px 0;
+  padding: 18px;
+  border: 1px solid rgba(187, 158, 255, .22);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .025);
+}
+.product-options h2 { margin: 0 0 12px; font-size: 17px; }
+.product-options ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.product-options li { min-height: 42px; display: flex; align-items: center; padding: 9px 11px; border: 1px solid rgba(185, 157, 255, .18); border-radius: 10px; color: #ddd2f2; background: rgba(116, 77, 210, .08); font-size: 12px; font-weight: 700; line-height: 1.35; }
+@media (max-width: 600px) { .product-options ul { grid-template-columns: 1fr; } }
