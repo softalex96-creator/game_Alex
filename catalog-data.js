@@ -1,7 +1,7 @@
 // Только официальные цифровые товары, дополнения и валюты. Доступность зависит
 // от региона, платформы и действующих договоров с правообладателями.
 const levelUpOptions = {
-  warcraft: ["Warcraft III: Reforged", "Warcraft III: Reforged — Spoils of War Edition"],
+  "gta-vi": [],
   "world-of-warcraft": ["60 дней игрового времени", "WoW Token — 30 дней игрового времени", "Набор дополнения The War Within"],
   "counter-strike": ["Prime Status Upgrade для Counter-Strike 2", "Предметы Steam Community Market", "Ключ к кейсу через Steam"],
   cs2: ["Armory Pass", "Prime Status Upgrade", "Предметы Steam Community Market", "Ключ к кейсу через Steam"],
@@ -36,7 +36,7 @@ const levelUpOptions = {
 // Ориентиры в RUB: уровни официальных витрин и открытых ценовых пакетов.
 // Перед реальной продажей должны быть заменены ценами из кабинета поставщика.
 const levelUpPricing = {
-  warcraft: [1199, [1199, 1599]], "world-of-warcraft": [1599, [1599, 1799, 3499]],
+  "gta-vi": [0, []], "world-of-warcraft": [1599, [1599, 1799, 3499]],
   "counter-strike": [199, [1499, 199, 199]], cs2: [199, [1599, 1499, 199, 199]],
   "mobile-legends": [99, [99, 399, 699, 149]], pubg: [149, [149, 499, 799, 499]],
   quake: [399, [399]], "street-fighter": [299, [699, 1499, 2499, 499]],
@@ -54,7 +54,7 @@ const levelUpPricing = {
 };
 
 window.levelUpProducts = [
-  ["warcraft", "Warcraft", "Игровые товары", "catalog", "PC", "Blizzard", "KG · скоро РФ", 100, "Игровые товары для мира Warcraft: начните подбор и сохраните заявку в личном кабинете."],
+  ["gta-vi", "GTA VI", "PC-радар и статус анонса", "catalog", "PC · ожидаем", "Rockstar Games", "Официальный анонс", 0, "PC-версия и отдельный GTA VI Online пока официально не анонсированы. Сохраняем интерес и следим за подтверждёнными новостями Rockstar.", "Самая ожидаемая"],
   ["world-of-warcraft", "World of Warcraft", "Золото и подписка", "catalog", "PC", "Blizzard", "KG · скоро РФ", 250, "Подбор золота и подписки для World of Warcraft. Финальные параметры подтверждает поддержка."],
   ["counter-strike", "Counter-Strike", "Скины и баланс", "catalog", "PC", "Valve", "KG · скоро РФ", 150, "Подбор игровых товаров и баланса для Counter-Strike."],
   ["cs2", "CS2", "Предметы и баланс", "catalog", "PC", "Valve", "KG · скоро РФ", 150, "Предметы и баланс для CS2. Доступность подтверждается до оформления.", "Хит продаж"],

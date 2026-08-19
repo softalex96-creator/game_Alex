@@ -54,6 +54,19 @@
     const options = productOptions(product);
     const title = infoModal.querySelector("[data-game-info-options-title]");
     list.replaceChildren();
+    if (product.id === "gta-vi") {
+      title.textContent = "Статус PC-версии";
+      const notice = document.createElement("p");
+      notice.className = "game-info-modal__empty";
+      notice.textContent = "Продажа и предзаказ PC-версии не открыты: Rockstar пока не объявила платформу, дату или отдельный онлайн-режим для PC. Мы не принимаем оплату за GTA VI.";
+      list.append(notice);
+      addButton.disabled = false;
+      addButton.textContent = "Открыть PC-радар";
+      addButton.onclick = () => { location.href = "gta-vi.html"; };
+      infoModal.querySelector("[data-game-info-details]").href = "gta-vi.html";
+      infoModal.showModal();
+      return;
+    }
     if (!options.length) {
       title.textContent = "Статус предложения";
       const notice = document.createElement("p");
@@ -123,8 +136,13 @@
       const add = document.createElement("button");
       add.className = "game-card__add";
       add.type = "button";
-      setBuyLabel(add);
-      add.addEventListener("click", () => showInfo(product, card));
+      if (product.id === "gta-vi") {
+        add.textContent = "PC-радар";
+        add.addEventListener("click", () => { location.href = "gta-vi.html"; });
+      } else {
+        setBuyLabel(add);
+        add.addEventListener("click", () => showInfo(product, card));
+      }
       actions.append(details, add);
       button.replaceWith(actions);
     }
