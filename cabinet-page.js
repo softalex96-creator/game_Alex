@@ -29,12 +29,22 @@ function paymentMethodLabel(method) { return method === "mobile" ? "Мобиль
 function renderPaymentMethod() { const method = paymentMethod(); elements.paymentMethodPanels.forEach((panel) => { panel.hidden = panel.dataset.paymentMethodPanel !== method; }); if (elements.paymentCardInput) { elements.paymentCardInput.disabled = method !== "card"; elements.paymentCardInput.required = method === "card"; } if (elements.paymentPhoneInput) { elements.paymentPhoneInput.disabled = method !== "mobile"; elements.paymentPhoneInput.required = method === "mobile"; } if (elements.paymentSubmit) elements.paymentSubmit.textContent = method === "mobile" ? "Продолжить с телефона" : "Продолжить с картой"; }
 
 function renderCartSummary() {
-  const selected = pendingOrders().filter((order) => selectedOrderIds.has(order.id));
+  const orders = pendingOrders();
+  selectedOrderIds = new Set([...selectedOrderIds].filter((id) => orders.some((order) => order.id === id)));
+  const selected = orders.filter((order) => selectedOrderIds.has(order.id));
   const total = selected.reduce((sum, order) => sum + priceValue(order.price), 0);
-  elements.cartSummary.hidden = !pendingOrders().length;
+  elements.cartSummary.hidden = !orders.length;
   elements.cartSelectedCount.textContent = String(selected.length);
   elements.cartTotal.textContent = rubles(total, false);
   elements.openDemoPayment.disabled = !selected.length;
+}
+
+function resetCartSummary() {
+  selectedOrderIds.clear();
+  elements.cartSummary.hidden = true;
+  elements.cartSelectedCount.textContent = "0";
+  elements.cartTotal.textContent = "0 ₽";
+  elements.openDemoPayment.disabled = true;
 }
 
 function removePendingOrder(orderIdToRemove, productName) {
@@ -48,7 +58,7 @@ function removePendingOrder(orderIdToRemove, productName) {
 function renderOrders() {
   const orders = read("orders").map((order, index) => ({ ...order, id: orderId(order, index) }));
   elements.orderCount.textContent = String(orders.filter((order) => !order.demoPaid).length); elements.orders.replaceChildren();
-  if (!orders.length) { elements.orders.append(empty("Здесь появятся выбранные игры. Перейдите в каталог, чтобы добавить первую позицию.")); elements.cartSummary.hidden = true; return; }
+  if (!orders.length) { elements.orders.append(empty("Здесь появятся выбранные игры. Перейдите в каталог, чтобы добавить первую позицию.")); resetCartSummary(); return; }
   orders.slice().reverse().forEach((order) => {
     const item = card(order.product, `${priceInRubles(order.price)} · ${formatDate(order.createdAt)}`, order.demoPaid ? "Демо оплачено" : "В корзине", order.demoPaid ? "accepted" : "waiting");
     if (!order.demoPaid) {
