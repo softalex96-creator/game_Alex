@@ -12,12 +12,12 @@
   page.querySelector("[data-product-platform]").textContent = product.platform;
   page.querySelector("[data-product-publisher]").textContent = product.publisher;
   page.querySelector("[data-product-region]").textContent = product.region;
-  page.querySelector("[data-product-price]").textContent = `от ${product.price} сом`;
+  page.querySelector("[data-product-price]").textContent = product.price > 0 ? `от ${product.price.toLocaleString("ru-RU")} ₽` : "Недоступно";
   const options = page.querySelector("[data-product-options]");
   if (product.options?.length) {
     options.replaceChildren(...product.options.map((option) => {
       const item = document.createElement("li");
-      item.textContent = option;
+      item.textContent = `${option.name} · от ${option.price.toLocaleString("ru-RU")} ₽`;
       return item;
     }));
   } else {

@@ -20,6 +20,10 @@
     return product.options || [];
   }
 
+  function rubPrice(amount) {
+    return amount > 0 ? `от ${new Intl.NumberFormat("ru-RU").format(amount)} ₽` : "Недоступно";
+  }
+
   function showInfo(product, card) {
     if (!infoModal) return;
     infoModal.querySelector("[data-game-info-title]").textContent = product.title;
@@ -27,7 +31,7 @@
     infoModal.querySelector("[data-game-info-description]").textContent = product.description;
     infoModal.querySelector("[data-game-info-platform]").textContent = product.platform;
     infoModal.querySelector("[data-game-info-region]").textContent = product.region;
-    infoModal.querySelector("[data-game-info-price]").textContent = `от ${product.price} сом`;
+    infoModal.querySelector("[data-game-info-price]").textContent = rubPrice(product.price);
     const cover = card?.querySelector(".game-cover");
     const modalCover = infoModal.querySelector("[data-game-info-cover]");
     if (cover && modalCover) modalCover.style.backgroundImage = getComputedStyle(cover).backgroundImage;
@@ -53,10 +57,10 @@
         label.className = "game-info-option";
         const input = document.createElement("input");
         input.type = "checkbox";
-        input.value = option;
+        input.value = option.name;
         input.checked = index === 0;
         const copy = document.createElement("span");
-        copy.textContent = option;
+        copy.innerHTML = `<strong>${option.name}</strong><small>${rubPrice(option.price)}</small>`;
         label.append(input, copy);
         list.append(label);
       });
@@ -68,7 +72,10 @@
         showToast("Выберите хотя бы один вариант", "warning");
         return;
       }
-      selected.forEach((option) => addToCart({ ...product, title: `${product.title} — ${option}` }));
+      selected.forEach((name) => {
+        const option = options.find((item) => item.name === name);
+        addToCart({ ...product, title: `${product.title} — ${name}`, price: option?.price || product.price });
+      });
       infoModal.close();
     };
     infoModal.showModal();

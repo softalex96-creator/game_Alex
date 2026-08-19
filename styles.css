@@ -4,6 +4,7 @@
 .game-info-option:hover { border-color: rgba(187,158,255,.65); background: rgba(116,77,210,.18); transform: translateY(-1px); }
 .game-info-option:has(input:checked) { border-color: #a787ff; background: linear-gradient(135deg, rgba(128,89,233,.32), rgba(90,172,255,.14)); box-shadow: inset 0 0 0 1px rgba(189,163,255,.18); }
 .game-info-option input { width: 15px; height: 15px; flex: 0 0 auto; accent-color: #986bff; }
+.game-info-option span { display: grid; gap: 3px; }.game-info-option span strong { color: #f5efff; font-size: 10px; }.game-info-option span small { color: #bbaeff; font-size: 9px; font-weight: 800; }
 .game-info-option:focus-within { outline: 2px solid #bda3ff; outline-offset: 2px; }
 .game-info-modal__empty { grid-column: 1 / -1; margin: 0; padding: 12px; border: 1px solid rgba(255,200,122,.28); border-radius: 10px; color: #f3d5a6; background: rgba(94,61,31,.26); font-size: 11px; font-weight: 700; line-height: 1.45; }
 .game-info-modal .button:disabled { opacity: .55; cursor: not-allowed; filter: grayscale(.35); }

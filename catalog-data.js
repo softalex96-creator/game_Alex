@@ -7,7 +7,7 @@ const levelUpOptions = {
   cs2: ["Armory Pass", "Prime Status Upgrade", "Предметы Steam Community Market", "Ключ к кейсу через Steam"],
   "mobile-legends": ["Алмазы", "Weekly Diamond Pass", "Twilight Pass", "Официальный набор в игре"],
   pubg: ["G-COIN", "Набор G-COIN", "PUBG Plus", "Battle Pass"],
-  quake: ["Quake Enhanced Edition", "Quake Mission Pack: Scourge of Armagon", "Quake Mission Pack: Dissolution of Eternity"],
+  quake: ["Quake Enhanced Edition"],
   "street-fighter": ["Fighter Coins", "Year 3 Character Pass", "Year 3 Ultimate Pass", "Отдельный DLC-персонаж"],
   "apex-legends": ["1 000 Apex Coins", "2 150 Apex Coins", "4 350 Apex Coins", "Premium Battle Pass"],
   "ea-sports-fc": ["FC Points", "Ultimate Team Points Pack", "Season Pass", "Evolution Slot"],
@@ -31,6 +31,26 @@ const levelUpOptions = {
   "naruto-to-boruto": ["Season Pass 9", "DLC-персонаж Kimimaro", "Отдельный DLC-персонаж", "Digital Deluxe Edition"],
   "one-piece-pirate-warriors-4": ["Character Pass 3", "Special Selection Pack", "Additional Episodes Pack", "Digital Ultimate Edition"],
   "pac-man": ["PAC-MAN WORLD 2 Re-PAC", "Sonic Collaboration Set", "Jukebox DLC", "Chrome Noir Chogokin DLC"]
+};
+
+// Ориентиры в RUB: уровни официальных витрин и открытых ценовых пакетов.
+// Перед реальной продажей должны быть заменены ценами из кабинета поставщика.
+const levelUpPricing = {
+  warcraft: [1199, [1199, 1599]], "world-of-warcraft": [1599, [1599, 1799, 3499]],
+  "counter-strike": [199, [1499, 199, 199]], cs2: [199, [1599, 1499, 199, 199]],
+  "mobile-legends": [99, [99, 399, 699, 149]], pubg: [149, [149, 499, 799, 499]],
+  quake: [399, [399]], "street-fighter": [299, [699, 1499, 2499, 499]],
+  "apex-legends": [99, [99, 199, 399, 999]], "ea-sports-fc": [99, [99, 299, 499, 149]],
+  battlefield: [199, [199, 999, 399, 1499]], "the-sims-4": [299, [1599, 999, 499, 299]],
+  "need-for-speed": [399, [2999, 699, 499, 799]], "ea-sports-f1": [499, [3499, 4999, 499]],
+  "plants-vs-zombies-2": [99, [199, 299, 99, 149]], "star-wars-goh": [199, [199, 299, 399, 499]],
+  "real-racing-3": [0, []], "madden-nfl-mobile": [199, [199, 999, 1999, 499]],
+  "tekken-8": [499, [1999, 2499, 599, 499]], "elden-ring": [599, [2399, 4499, 599]],
+  "dragon-ball-sparking-zero": [699, [2499, 699, 699, 999]], "dragon-ball-xenoverse-2": [699, [2499, 899, 1499, 699]],
+  "digimon-story": [699, [1999, 699, 699, 699]], "little-nightmares-iii": [499, [499, 999, 299, 1799]],
+  "code-vein-ii": [799, [1499, 2499, 399, 4999]], "tales-of-arise": [499, [1999, 2799, 499, 699]],
+  "ace-combat-7": [299, [1499, 499, 499, 2499]], "naruto-to-boruto": [249, [1999, 399, 399, 1499]],
+  "one-piece-pirate-warriors-4": [399, [1499, 699, 999, 2999]], "pac-man": [299, [1999, 699, 299, 199]]
 };
 
 window.levelUpProducts = [
@@ -64,4 +84,7 @@ window.levelUpProducts = [
   ["naruto-to-boruto", "NARUTO TO BORUTO", "Shinobi Striker", "catalog", "PC", "Bandai Namco", "Bandai · KG", 130, "Игровой контент для NARUTO TO BORUTO."],
   ["one-piece-pirate-warriors-4", "ONE PIECE Pirate Warriors 4", "Персонажи и DLC", "dlc", "PC", "Bandai Namco", "Bandai · KG", 190, "Персонажи и DLC для ONE PIECE Pirate Warriors 4."],
   ["pac-man", "PAC-MAN", "Аркадный контент", "catalog", "PC", "Bandai Namco", "Bandai · KG", 90, "Аркадный контент для PAC-MAN."]
-].map(([id, title, offer, category, platform, publisher, region, price, description, badge]) => ({ id, title, offer, category, platform, publisher, region, price, description, badge: badge || "", options: levelUpOptions[id] || [] }));
+].map(([id, title, offer, category, platform, publisher, region, price, description, badge]) => {
+  const [rubPrice, optionPrices] = levelUpPricing[id] || [price, []];
+  return { id, title, offer, category, platform, publisher, region, price: rubPrice, description, badge: badge || "", options: (levelUpOptions[id] || []).map((name, index) => ({ name, price: optionPrices[index] || rubPrice })) };
+});

@@ -126,7 +126,7 @@
   window.addEventListener("levelup-add-to-cart", (event) => {
     const product = event.detail;
     if (!product) return;
-    addToCart({ product: product.title, price: `от ${product.price} сом` });
+    addToCart({ product: product.title, price: `от ${product.price} ₽` });
   });
 
   cartButton?.addEventListener("click", () => {
@@ -151,7 +151,7 @@
   window.addEventListener("levelup-select-product", (event) => {
     const product = event.detail;
     if (!product || !paymentModal) return;
-    selectedProduct = { product: product.title, price: `от ${product.price} сом` };
+    selectedProduct = { product: product.title, price: `от ${product.price} ₽` };
     paymentTitle.textContent = selectedProduct.product;
     paymentDescription.textContent = `Стартовая цена: ${selectedProduct.price}. Добавьте игру в корзину, затем откройте кабинет для демо-оплаты.`;
     paymentFeedback.textContent = "";
