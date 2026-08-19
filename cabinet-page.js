@@ -37,6 +37,14 @@ function renderCartSummary() {
   elements.openDemoPayment.disabled = !selected.length;
 }
 
+function removePendingOrder(orderIdToRemove, productName) {
+  const orders = read("orders").map((order, index) => ({ ...order, id: orderId(order, index) }));
+  write("orders", orders.filter((order) => order.id !== orderIdToRemove));
+  selectedOrderIds.delete(orderIdToRemove);
+  render();
+  elements.feedback.textContent = `${productName} удалён из корзины.`;
+}
+
 function renderOrders() {
   const orders = read("orders").map((order, index) => ({ ...order, id: orderId(order, index) }));
   elements.orderCount.textContent = String(orders.filter((order) => !order.demoPaid).length); elements.orders.replaceChildren();
@@ -48,6 +56,14 @@ function renderOrders() {
       const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.checked = selectedOrderIds.has(order.id); checkbox.setAttribute("aria-label", `Выбрать ${order.product}`);
       checkbox.addEventListener("change", () => { checkbox.checked ? selectedOrderIds.add(order.id) : selectedOrderIds.delete(order.id); renderCartSummary(); });
       const label = document.createElement("span"); label.textContent = "К оплате"; select.append(checkbox, label); item.append(select);
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "cart-remove";
+      remove.title = `Удалить «${order.product}» из корзины`;
+      remove.setAttribute("aria-label", `Удалить «${order.product}» из корзины`);
+      remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';
+      remove.addEventListener("click", () => removePendingOrder(order.id, order.product));
+      item.append(remove);
     }
     elements.orders.append(item);
   });

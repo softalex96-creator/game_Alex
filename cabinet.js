@@ -31,8 +31,15 @@
 
   function storageKey() { return currentUser ? `levelup-orders-${currentUser.uid}` : guestStorageKey; }
 
+  function orderId(order, index) {
+    return order.id || `${order.createdAt || "legacy"}-${order.product || "item"}-${index}`;
+  }
+
   function readOrders() {
-    try { return JSON.parse(localStorage.getItem(storageKey()) || "[]"); } catch { return []; }
+    try {
+      return JSON.parse(localStorage.getItem(storageKey()) || "[]")
+        .map((order, index) => ({ ...order, id: orderId(order, index) }));
+    } catch { return []; }
   }
 
   function writeOrders(orders) {
@@ -59,7 +66,7 @@
 
   function renderOrders() {
     if (!orderList || !orderCount) return;
-    const orders = currentUser ? readOrders() : [];
+    const orders = currentUser ? readOrders().filter((order) => !order.demoPaid) : [];
     orderCount.textContent = String(orders.length);
     renderRank(orders.length);
     orderList.replaceChildren();
@@ -72,11 +79,26 @@
     }
     orders.slice().reverse().forEach((order) => {
       const item = document.createElement("li");
+      const copy = document.createElement("div");
+      copy.className = "account-orders__copy";
       const title = document.createElement("strong");
       const meta = document.createElement("span");
       title.textContent = order.product;
       meta.textContent = `${order.price} · заявка сохранена`;
-      item.append(title, meta);
+      copy.append(title, meta);
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "account-order-remove";
+      remove.title = `Удалить «${order.product}» из корзины`;
+      remove.setAttribute("aria-label", `Удалить «${order.product}» из корзины`);
+      remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';
+      remove.addEventListener("click", () => {
+        writeOrders(readOrders().filter((savedOrder) => savedOrder.id !== order.id));
+        renderOrders();
+        updateCartBadge();
+        window.dispatchEvent(new CustomEvent("levelup-cart-result", { detail: { message: `${order.product} удалён из корзины.`, variant: "success" } }));
+      });
+      item.append(copy, remove);
       orderList.append(item);
     });
   }
@@ -111,7 +133,7 @@
   function addToCart(product) {
     if (!product) return false;
     const orders = readOrders();
-    orders.push({ ...product, createdAt: new Date().toISOString() });
+    orders.push({ ...product, id: crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`, createdAt: new Date().toISOString() });
     writeOrders(orders);
     renderOrders();
     updateCartBadge();
