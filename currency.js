@@ -10,7 +10,7 @@ const currencyNotes = {
   be: { KGS: "Цэны ў KGS. Пераразлік у іншыя валюты носіць даведачны характар; аплата на сайце пакуль не падключана.", RUB: "Цэны паказаны ў RUB па арыентыровачным пераразліку. Канчатковы кошт пацвярджаецца перад аплатай.", BYN: "Цэны паказаны ў BYN па арыентыровачным пераразліку. Канчатковы кошт пацвярджаецца перад аплатай." },
 };
 
-const currencySelect = document.querySelector("[data-currency-select]");
+const currencySelects = [...document.querySelectorAll("[data-currency-select]")];
 const currencyNote = document.querySelector("[data-currency-note]");
 const priceElements = [...document.querySelectorAll(".game-card")].map((card) => {
   const price = card.querySelector("p:not(.game-label)");
@@ -28,7 +28,7 @@ function priceText(amount, currency) {
 function renderCurrency(currency) {
   const selected = levelUpCurrencies[currency] ? currency : "KGS";
   priceElements.forEach(({ price, amount }) => { price.textContent = priceText(amount, selected); });
-  if (currencySelect) currencySelect.value = selected;
+  currencySelects.forEach((select) => { select.value = selected; });
   const language = document.documentElement.lang || "ru";
   if (currencyNote) currencyNote.textContent = (currencyNotes[language] || currencyNotes.ru)[selected];
   try { localStorage.setItem("levelup-currency", selected); } catch { /* The selector still works without browser storage. */ }
@@ -38,5 +38,5 @@ let savedCurrency = "KGS";
 try { savedCurrency = localStorage.getItem("levelup-currency") || "KGS"; } catch { /* KGS is the default. */ }
 renderCurrency(savedCurrency);
 
-currencySelect?.addEventListener("change", () => renderCurrency(currencySelect.value));
-window.addEventListener("levelup-language-change", () => renderCurrency(currencySelect?.value || savedCurrency));
+currencySelects.forEach((select) => select.addEventListener("change", () => renderCurrency(select.value)));
+window.addEventListener("levelup-language-change", () => renderCurrency(currencySelects[0]?.value || savedCurrency));

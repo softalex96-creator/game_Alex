@@ -25,6 +25,27 @@ if (accountModal) {
 
 const supportsMotion = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+const mobileMenu = document.getElementById("mobile-menu");
+const mobileMenuToggle = document.querySelector(".mobile-menu-toggle");
+const mobileMenuClose = document.querySelector("[data-mobile-menu-close]");
+
+function setMobileMenu(open) {
+  if (!mobileMenu || !mobileMenuToggle) return;
+  mobileMenu.hidden = !open;
+  mobileMenuToggle.setAttribute("aria-expanded", String(open));
+  document.body.classList.toggle("mobile-menu-open", open);
+  if (open) mobileMenuClose?.focus();
+  else mobileMenuToggle.focus();
+}
+
+mobileMenuToggle?.addEventListener("click", () => setMobileMenu(mobileMenu?.hidden));
+mobileMenuClose?.addEventListener("click", () => setMobileMenu(false));
+mobileMenu?.addEventListener("click", (event) => {
+  if (event.target === mobileMenu) setMobileMenu(false);
+});
+mobileMenu?.querySelectorAll("a, [data-modal]").forEach((control) => control.addEventListener("click", () => setMobileMenu(false)));
+document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !mobileMenu?.hidden) setMobileMenu(false); });
+
 if (supportsMotion) {
   document.querySelectorAll(".game-card").forEach((card) => {
     card.addEventListener("pointermove", (event) => {
