@@ -84,3 +84,5 @@
 .payment-entry input::placeholder { color: #8f86a6; }
 .payment-entry--mobile label { grid-column: 1 / -1; }
 @media (max-width: 560px) { .payment-entry--mobile { grid-template-columns: auto 1fr; }.payment-entry__intro strong { font-size: 15px; } }
+
+.payment-availability { display: inline-flex; align-items: center; min-height: 30px; margin: 12px 0 2px; padding: 0 10px; border: 1px solid rgba(188,160,255,.28); border-radius: 999px; color: #cfc2ff; background: rgba(117,83,212,.1); font-size: 11px; font-weight: 800; }
