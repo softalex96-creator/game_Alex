@@ -24,6 +24,20 @@
     return amount > 0 ? `от ${new Intl.NumberFormat("ru-RU").format(amount)} ₽` : "Недоступно";
   }
 
+  function cartIcon() {
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("class", "button-cart-icon");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("aria-hidden", "true");
+    icon.setAttribute("focusable", "false");
+    icon.innerHTML = '<path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 1.9-1.4L20 8H7"/><circle cx="10" cy="20" r="1.2"/><circle cx="17" cy="20" r="1.2"/>';
+    return icon;
+  }
+
+  function setBuyLabel(button) {
+    button.replaceChildren(cartIcon(), document.createTextNode("Купить"));
+  }
+
   function showInfo(product, card) {
     if (!infoModal) return;
     infoModal.querySelector("[data-game-info-title]").textContent = product.title;
@@ -51,7 +65,7 @@
     } else {
       title.textContent = "Выберите товары";
       addButton.disabled = false;
-      addButton.textContent = "Добавить выбранное";
+      setBuyLabel(addButton);
       options.forEach((option, index) => {
         const label = document.createElement("label");
         label.className = "game-info-option";
@@ -109,7 +123,7 @@
       const add = document.createElement("button");
       add.className = "game-card__add";
       add.type = "button";
-      add.textContent = "Выбрать +";
+      setBuyLabel(add);
       add.addEventListener("click", () => showInfo(product, card));
       actions.append(details, add);
       button.replaceWith(actions);
