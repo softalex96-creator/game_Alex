@@ -26,7 +26,7 @@ function priceInRubles(price) { return rubles(priceValue(price)); }
 function pendingOrders() { return read("orders").map((order, index) => ({ ...order, id: orderId(order, index) })).filter((order) => !order.demoPaid); }
 function paymentMethod() { return elements.paymentMethodInputs.find((input) => input.checked)?.value || "card"; }
 function paymentMethodLabel(method) { return method === "mobile" ? "Мобильная коммерция" : "Банковская карта"; }
-function renderPaymentMethod() { const method = paymentMethod(); elements.paymentMethodPanels.forEach((panel) => { panel.hidden = panel.dataset.paymentMethodPanel !== method; }); if (elements.paymentCardInput) { elements.paymentCardInput.disabled = method !== "card"; elements.paymentCardInput.required = method === "card"; } if (elements.paymentPhoneInput) { elements.paymentPhoneInput.disabled = method !== "mobile"; elements.paymentPhoneInput.required = method === "mobile"; } if (elements.paymentSubmit) elements.paymentSubmit.textContent = method === "mobile" ? "Продолжить с телефона" : "Продолжить с картой"; }
+function renderPaymentMethod() { const method = paymentMethod(); elements.paymentMethodPanels.forEach((panel) => { panel.hidden = panel.dataset.paymentMethodPanel !== method; }); if (elements.paymentCardInput) { elements.paymentCardInput.disabled = method !== "card"; elements.paymentCardInput.required = method === "card"; } if (elements.paymentPhoneInput) { elements.paymentPhoneInput.disabled = method !== "mobile"; elements.paymentPhoneInput.required = method === "mobile"; } if (elements.paymentSubmit) elements.paymentSubmit.textContent = method === "mobile" ? "Оплатить" : "Продолжить с картой"; }
 
 function renderCartSummary() {
   const orders = pendingOrders();
