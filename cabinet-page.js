@@ -21,9 +21,9 @@ function card(title, subtitle, badge, variant = "pending") { const item = docume
 
 function orderId(order, index) { return order.id || `${order.createdAt || "legacy"}-${order.product}-${index}`; }
 function priceValue(price) { return Number(String(price).replace(/\D/g, "")) || 0; }
-function rubles(value, prefix = true) { const amount = Math.round(value * 0.9); return `${prefix ? "от " : ""}${amount.toLocaleString("ru-RU")} ₽`; }
+function rubles(value) { const amount = Math.round(value * 0.9); return `${amount.toLocaleString("ru-RU")} ₽`; }
 function priceInRubles(price) { return rubles(priceValue(price)); }
-function pendingOrders() { return read("orders").map((order, index) => ({ ...order, id: orderId(order, index) })).filter((order) => !order.demoPaid); }
+function pendingOrders() { return read("orders").map((order, index) => ({ ...order, id: orderId(order, index) })).filter((order) => order.paymentStatus !== "paid"); }
 function paymentMethod() { return elements.paymentMethodInputs.find((input) => input.checked)?.value || "card"; }
 function paymentMethodLabel(method) { return method === "mobile" ? "Мобильная коммерция" : "Банковская карта"; }
 function renderPaymentMethod() { const method = paymentMethod(); elements.paymentMethodPanels.forEach((panel) => { panel.hidden = panel.dataset.paymentMethodPanel !== method; }); if (elements.paymentCardInput) { elements.paymentCardInput.disabled = method !== "card"; elements.paymentCardInput.required = method === "card"; } if (elements.paymentPhoneInput) { elements.paymentPhoneInput.disabled = method !== "mobile"; elements.paymentPhoneInput.required = method === "mobile"; } if (elements.paymentSubmit) elements.paymentSubmit.textContent = method === "mobile" ? "Оплатить" : "Продолжить с картой"; }
@@ -57,11 +57,12 @@ function removePendingOrder(orderIdToRemove, productName) {
 
 function renderOrders() {
   const orders = read("orders").map((order, index) => ({ ...order, id: orderId(order, index) }));
-  elements.orderCount.textContent = String(orders.filter((order) => !order.demoPaid).length); elements.orders.replaceChildren();
+  elements.orderCount.textContent = String(orders.filter((order) => order.paymentStatus !== "paid").length); elements.orders.replaceChildren();
   if (!orders.length) { elements.orders.append(empty("Здесь появятся выбранные игры. Перейдите в каталог, чтобы добавить первую позицию.")); resetCartSummary(); return; }
   orders.slice().reverse().forEach((order) => {
-    const item = card(order.product, `${priceInRubles(order.price)} · ${formatDate(order.createdAt)}`, order.demoPaid ? "Демо оплачено" : "В корзине", order.demoPaid ? "accepted" : "waiting");
-    if (!order.demoPaid) {
+    const paid = order.paymentStatus === "paid";
+    const item = card(order.product, `${priceInRubles(order.price)} · ${formatDate(order.createdAt)}`, paid ? "Оплачено" : "В корзине", paid ? "accepted" : "waiting");
+    if (!paid) {
       const select = document.createElement("label"); select.className = "cart-select";
       const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.checked = selectedOrderIds.has(order.id); checkbox.setAttribute("aria-label", `Выбрать ${order.product}`);
       checkbox.addEventListener("change", () => { checkbox.checked ? selectedOrderIds.add(order.id) : selectedOrderIds.delete(order.id); renderCartSummary(); });
@@ -81,9 +82,9 @@ function renderOrders() {
 }
 
 function renderTransactions() {
-  const transactions = read("transactions"); elements.transactions.replaceChildren();
-  if (!transactions.length) { elements.transactions.append(empty("Демо-транзакций пока нет.")); return; }
-  transactions.slice().reverse().forEach((transaction) => elements.transactions.append(card(transaction.product, `${priceInRubles(transaction.price)} · ${paymentMethodLabel(transaction.method)} · ${formatDate(transaction.createdAt)}`, "Демо оплачено", "accepted")));
+  const transactions = read("transactions").filter((transaction) => transaction.paymentStatus === "paid"); elements.transactions.replaceChildren();
+  if (!transactions.length) { elements.transactions.append(empty("Подтверждённых платежей пока нет.")); return; }
+  transactions.slice().reverse().forEach((transaction) => elements.transactions.append(card(transaction.product, `${priceInRubles(transaction.price)} · ${paymentMethodLabel(transaction.method)} · ${formatDate(transaction.createdAt)}`, "Оплачено", "accepted")));
 }
 
 function renderTickets() {
@@ -117,21 +118,11 @@ elements.openDemoPayment?.addEventListener("click", () => {
   if (!selected.length) return;
   elements.paymentItems.replaceChildren();
   selected.forEach((order) => { const item = document.createElement("div"); const title = document.createElement("strong"); const price = document.createElement("span"); title.textContent = order.product; price.textContent = priceInRubles(order.price); item.append(title, price); elements.paymentItems.append(item); });
-  elements.paymentForm.reset(); renderPaymentMethod(); elements.paymentFeedback.textContent = "";
+  elements.paymentFeedback.textContent = "";
   elements.paymentModal.showModal();
 });
-elements.paymentForm?.addEventListener("submit", (event) => {
-  event.preventDefault(); if (!currentUser) return;
-  const selected = pendingOrders().filter((order) => selectedOrderIds.has(order.id));
-  if (!selected.length) return;
-  const orders = read("orders").map((order, index) => ({ ...order, id: orderId(order, index), demoPaid: selectedOrderIds.has(orderId(order, index)) || order.demoPaid }));
-  const transactions = read("transactions"); const method = paymentMethod();
-  selected.forEach((order) => transactions.push({ id: `demo-${crypto.randomUUID?.() || Date.now()}-${order.id}`, product: order.product, price: order.price, createdAt: new Date().toISOString(), mode: "demo", method }));
-  if (elements.paymentCardInput) elements.paymentCardInput.value = ""; if (elements.paymentPhoneInput) elements.paymentPhoneInput.value = "";
-  write("orders", orders); write("transactions", transactions); selectedOrderIds = new Set(); render(); elements.paymentFeedback.textContent = `${paymentMethodLabel(method)}: тестовая операция подтверждена. Введённые данные не сохранены.`;
-  window.setTimeout(() => elements.paymentModal.close(), 1300);
-});
 elements.paymentModal?.querySelector(".close")?.addEventListener("click", () => elements.paymentModal.close());
+document.querySelector("[data-payment-close]")?.addEventListener("click", () => elements.paymentModal.close());
 document.querySelector("[data-support-form]")?.addEventListener("submit", (event) => {
   event.preventDefault(); if (!currentUser) return;
   const form = event.currentTarget; const data = new FormData(form); const tickets = read("tickets");

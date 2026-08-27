@@ -13,7 +13,7 @@
   let toastTimer;
   const filters = { category: "all", platform: "all", genre: "all", publisher: "all", status: "all" };
   const genres = {
-    warcraft: "RPG", "world-of-warcraft": "RPG", "counter-strike": "Экшен", cs2: "Экшен", "mobile-legends": "RPG", pubg: "Экшен", quake: "Экшен", "street-fighter": "Файтинг", "apex-legends": "Экшен", "ea-sports-fc": "Спорт", battlefield: "Экшен", "the-sims-4": "Симулятор", "need-for-speed": "Гонки", "ea-sports-f1": "Гонки", "plants-vs-zombies-2": "Стратегия", "star-wars-goh": "RPG", "real-racing-3": "Гонки", "madden-nfl-mobile": "Спорт", "tekken-8": "Файтинг", "elden-ring": "RPG", "dragon-ball-sparking-zero": "Файтинг", "dragon-ball-xenoverse-2": "Файтинг", "digimon-story": "RPG", "little-nightmares-iii": "Приключение", "code-vein-ii": "RPG", "tales-of-arise": "RPG", "ace-combat-7": "Экшен", "naruto-to-boruto": "Файтинг", "one-piece-pirate-warriors-4": "Файтинг", "pac-man": "Аркада"
+    "gta-vi": "Экшен", "world-of-warcraft": "RPG", "mobile-legends": "RPG", "pubg-mobile": "Экшен", "pubg-battlegrounds": "Экшен", "genshin-impact": "RPG", "honkai-star-rail": "RPG", "zenless-zone-zero": "Экшен", "wuthering-waves": "RPG", valorant: "Экшен", roblox: "Приключение", minecraft: "Приключение", fortnite: "Экшен", "brawl-stars": "Экшен", "clash-royale": "Стратегия", "clash-of-clans": "Стратегия", "marvel-rivals": "Экшен", "league-of-legends": "RPG", "apex-legends": "Экшен", "delta-force": "Экшен", "arena-breakout": "Экшен", "free-fire": "Экшен", steam: "Каталог", "afk-journey": "RPG", "honor-of-kings": "RPG", nikke: "RPG", "identity-v": "Приключение", "love-and-deepspace": "RPG", tarisland: "RPG", "pubg-new-state": "Экшен"
   };
 
   function productOptions(product) {
@@ -21,7 +21,7 @@
   }
 
   function rubPrice(amount) {
-    return amount > 0 ? `от ${new Intl.NumberFormat("ru-RU").format(amount)} ₽` : "Недоступно";
+    return amount > 0 ? `${new Intl.NumberFormat("ru-RU").format(amount)} ₽` : "Недоступно";
   }
 
   function cartIcon() {
@@ -54,6 +54,18 @@
     const options = productOptions(product);
     const title = infoModal.querySelector("[data-game-info-options-title]");
     list.replaceChildren();
+    if (product.archived) {
+      title.textContent = "Архив витрины";
+      const notice = document.createElement("p");
+      notice.className = "game-info-modal__empty";
+      notice.textContent = "Эта карточка сохранена для навигации по каталогу. Новые покупки по ней пока не принимаются.";
+      list.append(notice);
+      addButton.disabled = true;
+      addButton.textContent = "В архиве";
+      infoModal.querySelector("[data-game-info-details]").href = `product.html?id=${encodeURIComponent(product.id)}`;
+      infoModal.showModal();
+      return;
+    }
     if (product.id === "gta-vi") {
       title.textContent = "Статус PC-версии";
       const notice = document.createElement("p");
@@ -124,6 +136,20 @@
     const product = products[index];
     if (!product) return;
     Object.assign(card.dataset, product, { genre: genres[product.id] || "Другое" });
+    // Static card markup has legacy labels; clear them when the current product has none.
+    card.dataset.badge = product.badge || "";
+    const cover = card.querySelector(".slot-cover");
+    if (cover) cover.dataset.mark = product.mark || product.title.slice(0, 3).toUpperCase();
+    const label = card.querySelector(".game-label");
+    const offer = card.querySelector("h3");
+    const price = card.querySelector("h3 + p");
+    const region = card.querySelector(".region-note");
+    if (label) label.textContent = product.title;
+    if (offer) offer.textContent = product.offer;
+    if (price) price.textContent = rubPrice(product.price);
+    if (region) region.textContent = product.region;
+    card.classList.toggle("game-card--featured", Boolean(product.featured));
+    card.classList.toggle("game-card--archive", Boolean(product.archived));
     const button = card.querySelector("button");
     if (button) {
       const actions = document.createElement("div");
@@ -136,7 +162,10 @@
       const add = document.createElement("button");
       add.className = "game-card__add";
       add.type = "button";
-      if (product.id === "gta-vi") {
+      if (product.archived) {
+        add.textContent = "В архиве";
+        add.disabled = true;
+      } else if (product.id === "gta-vi") {
         add.textContent = "PC-радар";
         add.addEventListener("click", () => { location.href = "gta-vi.html"; });
       } else {
@@ -172,7 +201,7 @@
       && (filters.platform === "all" || card.dataset.platform === filters.platform)
       && (filters.genre === "all" || card.dataset.genre === filters.genre)
       && (filters.publisher === "all" || card.dataset.publisher === filters.publisher)
-      && (filters.status === "all" || (filters.status === "featured" && card.dataset.badge) || card.dataset.badge === filters.status);
+      && (filters.status === "all" || (filters.status === "featured" && card.dataset.badge) || (filters.status === "archive" && card.dataset.archived === "true") || card.dataset.badge === filters.status);
   }
 
   function applyFilters() {

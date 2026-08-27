@@ -148,7 +148,7 @@
   window.addEventListener("levelup-add-to-cart", (event) => {
     const product = event.detail;
     if (!product) return;
-    addToCart({ product: product.title, price: `от ${product.price} ₽` });
+    addToCart({ product: product.title, price: `${product.price} ₽` });
   });
 
   cartButton?.addEventListener("click", () => {
@@ -164,7 +164,7 @@
         price: card.querySelector("h3 + p")?.textContent?.replace("Стартовая цена: ", "") || "цена уточняется",
       };
       paymentTitle.textContent = selectedProduct.product;
-      paymentDescription.textContent = `Стартовая цена: ${selectedProduct.price}. Добавьте игру в корзину, затем откройте кабинет для демо-оплаты.`;
+      paymentDescription.textContent = `Стартовая цена: ${selectedProduct.price}. Добавьте игру в корзину, затем откройте личный кабинет.`;
       paymentFeedback.textContent = "";
       createOrderButton.textContent = currentUser ? "Добавить в корзину" : "Войти, чтобы добавить";
     });
@@ -173,9 +173,9 @@
   window.addEventListener("levelup-select-product", (event) => {
     const product = event.detail;
     if (!product || !paymentModal) return;
-    selectedProduct = { product: product.title, price: `от ${product.price} ₽` };
+    selectedProduct = { product: product.title, price: `${product.price} ₽` };
     paymentTitle.textContent = selectedProduct.product;
-    paymentDescription.textContent = `Стартовая цена: ${selectedProduct.price}. Добавьте игру в корзину, затем откройте кабинет для демо-оплаты.`;
+    paymentDescription.textContent = `Стартовая цена: ${selectedProduct.price}. Добавьте игру в корзину, затем откройте личный кабинет.`;
     paymentFeedback.textContent = "";
     createOrderButton.textContent = currentUser ? "Добавить в корзину" : "Войти, чтобы добавить";
     paymentModal.showModal();
@@ -190,7 +190,7 @@
     }
     if (!selectedProduct) return;
     if (!addToCart(selectedProduct)) return;
-    paymentFeedback.textContent = "Игра добавлена в корзину. Откройте полный кабинет для демо-оплаты.";
+    paymentFeedback.textContent = "Игра добавлена в корзину. Откройте полный кабинет для оформления.";
     createOrderButton.disabled = true;
     window.setTimeout(() => { createOrderButton.disabled = false; }, 800);
   });

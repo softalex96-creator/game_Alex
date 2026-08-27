@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Статус оплаты заказа LevelUp" />
+    <title>Оплата не завершена — LevelUp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="payment-result.css" />
+  </head>
+  <body>
+    <header class="header container payment-header">
+      <a class="logo" href="index.html" aria-label="LevelUp — на главную">LEVEL<span>UP</span></a>
+      <a class="payment-header__link" href="index.html">← Вернуться в каталог</a>
+    </header>
+    <main class="payment-result container">
+      <section class="payment-result__card payment-result__card--failure" aria-labelledby="payment-result-title">
+        <div class="payment-result__icon" aria-hidden="true">
+          <svg viewBox="0 0 56 56" fill="none"><path d="m20 20 16 16m0-16-16 16"/><circle cx="28" cy="28" r="23"/></svg>
+        </div>
+        <p class="eyebrow">Статус платежа</p>
+        <h1 id="payment-result-title">Оплата не завершена</h1>
+        <p class="payment-result__lead" role="status" data-payment-status>Платёж не был подтверждён. Вернитесь в корзину и попробуйте оформить заказ ещё раз.</p>
+        <section class="payment-order" data-payment-order-card hidden aria-label="Детали заказа">
+          <div class="payment-order__head"><div><span>Заказ</span><strong data-payment-order-number></strong></div><b data-payment-order-status>Не подтверждён</b></div>
+          <div class="payment-order__items" data-payment-items></div>
+          <dl class="payment-order__facts"><div><dt>Платформа</dt><dd data-payment-platform>—</dd></div><div><dt>Регион</dt><dd data-payment-region>—</dd></div><div><dt>Сумма</dt><dd data-payment-total>—</dd></div></dl>
+        </section>
+        <div class="payment-result__actions">
+          <a class="button button-primary" href="cabinet.html">Вернуться в корзину</a>
+          <a class="button button-outline" href="index.html#catalog">В каталог</a>
+        </div>
+        <p class="payment-result__note">Если деньги были списаны, обратитесь в поддержку и укажите номер заказа.</p>
+      </section>
+    </main>
+    <footer class="footer container payment-footer"><a class="logo" href="index.html">LEVEL<span>UP</span></a><p>© 2026 LevelUp.</p></footer>
+    <script src="payment-result.js"></script>
+  </body>
+</html>

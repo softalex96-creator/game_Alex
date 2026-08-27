@@ -1,0 +1,18 @@
+[Unit]
+Description=LevelUp payment service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/levelup/payment-service
+EnvironmentFile=/opt/levelup/.env
+ExecStart=/usr/bin/node /opt/levelup/payment-service/server.js
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/levelup/data
+
+[Install]
+WantedBy=multi-user.target

@@ -22,7 +22,7 @@ function priceText(amount, currency) {
   const { factor, suffix, decimals } = levelUpCurrencies[currency];
   const value = amount * factor;
   const formatted = new Intl.NumberFormat("ru-RU", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value);
-  return amount > 0 ? `от ${formatted} ${suffix}` : "Недоступно";
+  return amount > 0 ? `${formatted} ${suffix}` : "Недоступно";
 }
 
 function renderCurrency(currency) {
