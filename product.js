@@ -1,4 +1,7 @@
 (() => {
+  const coverImages = {
+    "gta-vi": "gta-vi.jpg", "world-of-warcraft": "world-of-warcraft.jpg", "mobile-legends": "mobile-legends.jpg", "pubg-mobile": "pubg-mobile.jpg", "pubg-battlegrounds": "pubg-battlegrounds.jpg", "genshin-impact": "genshin-impact.jpg", "honkai-star-rail": "honkai-star-rail.jpg", "zenless-zone-zero": "zenless-zone-zero.jpg", "wuthering-waves": "wuthering-waves.jpg", valorant: "valorant.jpg", roblox: "roblox.jpg", minecraft: "minecraft.jpg", fortnite: "fortnite.jpg", "brawl-stars": "brawl-stars.jpg", "clash-royale": "clash-royale.jpg", "marvel-rivals": "marvel-rivals.jpg", "league-of-legends": "league-of-legends.jpg", "apex-legends": "apex-legends.jpg", "delta-force": "delta-force.jpg", "honor-of-kings": "honor-of-kings.jpg"
+  };
   const product = (window.levelUpProducts || []).find((item) => item.id === new URLSearchParams(location.search).get("id"));
   const page = document.querySelector("[data-product-page]");
   if (!product || !page) {
@@ -29,6 +32,8 @@
   const visual = page.querySelector("[data-product-visual]");
   const index = (window.levelUpProducts || []).indexOf(product) + 1;
   visual.classList.add(`product-visual--${index}`);
-  visual.dataset.mark = product.title.split(/\s|:/)[0].slice(0, 3).toUpperCase();
+  visual.dataset.mark = "";
+  const coverImage = coverImages[product.id];
+  if (coverImage) visual.style.setProperty("background-image", `url("assets/game-covers/${coverImage}")`, "important");
   page.querySelector("[data-product-request]").href = `index.html?product=${encodeURIComponent(product.id)}#catalog`;
 })();
