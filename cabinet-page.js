@@ -11,6 +11,27 @@ const elements = {
 let currentUser = null;
 let selectedOrderIds = new Set();
 const minimumOrderAmount = 1000;
+const gameAccountRequirements = {
+  "world-of-warcraft": { label: "BattleTag или e-mail Battle.net", placeholder: "Например: Player#1234", hint: "Укажите BattleTag или почту Battle.net. Пароль не нужен." },
+  "mobile-legends": { label: "User ID и Zone ID", placeholder: "Например: 12345678 (1234)", hint: "Откройте профиль в игре: там отображаются User ID и Zone ID." },
+  "pubg-mobile": { label: "Player ID", placeholder: "Например: 5123456789", hint: "Нужен числовой Player ID из профиля PUBG MOBILE." },
+  "pubg-battlegrounds": { label: "Steam ID или ссылка на профиль", placeholder: "https://steamcommunity.com/id/...", hint: "Укажите публичную ссылку Steam или Steam ID." },
+  "genshin-impact": { label: "UID Genshin Impact", placeholder: "Например: 7xxxxxxxx", hint: "UID указан внизу экрана в игре." },
+  "honkai-star-rail": { label: "UID Honkai: Star Rail", placeholder: "Например: 7xxxxxxxx", hint: "UID указан в профиле или внизу экрана игры." },
+  "zenless-zone-zero": { label: "UID Zenless Zone Zero", placeholder: "Например: 1xxxxxxxx", hint: "UID указан в профиле игрока." },
+  "wuthering-waves": { label: "UID Wuthering Waves", placeholder: "Введите UID", hint: "UID указан в профиле игрока." },
+  valorant: { label: "Riot ID", placeholder: "Например: Player#RU1", hint: "Укажите Riot ID вместе с тегом после символа #." },
+  roblox: { label: "Имя пользователя Roblox", placeholder: "Например: Builderman", hint: "Укажите @username из профиля Roblox, не отображаемое имя." },
+  minecraft: { label: "Никнейм Minecraft или Xbox gamertag", placeholder: "Например: AlexPlayer", hint: "Для цифрового кода пароль или почта Microsoft не требуются." },
+  fortnite: { label: "Epic Account ID", placeholder: "Введите Epic Account ID", hint: "В Fortnite: Настройки → Учётная запись и конфиденциальность → Epic Account ID." },
+  "brawl-stars": { label: "Тег игрока Brawl Stars", placeholder: "Например: #ABC123", hint: "Тег указан в профиле игрока." },
+  "clash-royale": { label: "Тег игрока Clash Royale", placeholder: "Например: #ABC123", hint: "Тег указан в профиле игрока." },
+  "marvel-rivals": { label: "UID Marvel Rivals", placeholder: "Введите UID игрока", hint: "UID можно скопировать из профиля в игре." },
+  "league-of-legends": { label: "Riot ID", placeholder: "Например: Player#RU1", hint: "Укажите Riot ID вместе с тегом после символа #." },
+  "apex-legends": { label: "EA ID", placeholder: "Введите EA ID", hint: "Укажите публичный EA ID без пароля." },
+  "delta-force": { label: "Player ID Delta Force", placeholder: "Введите Player ID", hint: "Player ID указан в профиле игры." },
+  "honor-of-kings": { label: "Player ID Honor of Kings", placeholder: "Введите Player ID", hint: "Player ID указан в профиле игры." }
+};
 
 function userKey(kind) { return currentUser ? `levelup-${kind}-${currentUser.uid}` : null; }
 function read(kind) { try { return JSON.parse(localStorage.getItem(userKey(kind)) || "[]"); } catch { return []; } }
@@ -24,6 +45,13 @@ function orderId(order, index) { return order.id || `${order.createdAt || "legac
 function priceValue(price) { return Number(String(price).replace(/\D/g, "")) || 0; }
 function rubles(value) { const amount = Math.round(value * 0.9); return `${amount.toLocaleString("ru-RU")} ₽`; }
 function priceInRubles(price) { return rubles(priceValue(price)); }
+function inferGameId(order) {
+  if (order.gameId) return order.gameId;
+  const title = String(order.product || "").toLowerCase();
+  return Object.keys(gameAccountRequirements).find((id) => title.includes(id.replaceAll("-", " ")) || title.includes(id.replaceAll("-", ""))) || "";
+}
+function accountRequirement(order) { return gameAccountRequirements[inferGameId(order)] || { label: "Игровой идентификатор", placeholder: "UID, Player ID или никнейм", hint: "Укажите идентификатор игрового аккаунта. Пароль и коды подтверждения не нужны." }; }
+function saveGameAccount(id, gameAccount) { write("orders", read("orders").map((order, index) => orderId(order, index) === id ? { ...order, gameAccount: gameAccount.trim() } : order)); }
 function pendingOrders() { return read("orders").map((order, index) => ({ ...order, id: orderId(order, index) })).filter((order) => order.paymentStatus !== "paid" && priceValue(order.price) >= minimumOrderAmount); }
 function paymentMethod() { return elements.paymentMethodInputs.find((input) => input.checked)?.value || "card"; }
 function paymentMethodLabel(method) { return method === "mobile" ? "Мобильная коммерция" : "Банковская карта"; }
@@ -64,6 +92,33 @@ function renderOrders() {
     const paid = order.paymentStatus === "paid";
     const item = card(order.product, `${priceInRubles(order.price)} · ${formatDate(order.createdAt)}`, paid ? "Оплачено" : "В корзине", paid ? "accepted" : "waiting");
     if (!paid) {
+      const requirement = accountRequirement(order);
+      const account = document.createElement("div");
+      account.className = "cart-account";
+      const label = document.createElement("label");
+      label.htmlFor = `game-account-${order.id}`;
+      label.textContent = requirement.label;
+      const input = document.createElement("input");
+      input.id = `game-account-${order.id}`;
+      input.name = `game-account-${order.id}`;
+      input.type = "text";
+      input.autocomplete = "username";
+      input.maxLength = 120;
+      input.placeholder = requirement.placeholder;
+      input.value = order.gameAccount || "";
+      input.required = true;
+      const hint = document.createElement("small");
+      hint.id = `game-account-hint-${order.id}`;
+      hint.textContent = `${requirement.hint} Данные сохраняются только в этом браузере до оформления.`;
+      const error = document.createElement("p");
+      error.className = "cart-account__error";
+      error.id = `game-account-error-${order.id}`;
+      error.hidden = true;
+      input.setAttribute("aria-describedby", `${hint.id} ${error.id}`);
+      input.addEventListener("input", () => { input.removeAttribute("aria-invalid"); error.hidden = true; saveGameAccount(order.id, input.value); });
+      input.addEventListener("blur", () => saveGameAccount(order.id, input.value));
+      account.append(label, input, hint, error);
+      item.append(account);
       const select = document.createElement("label"); select.className = "cart-select";
       const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.checked = selectedOrderIds.has(order.id); checkbox.setAttribute("aria-label", `Выбрать ${order.product}`);
       checkbox.addEventListener("change", () => { checkbox.checked ? selectedOrderIds.add(order.id) : selectedOrderIds.delete(order.id); renderCartSummary(); });
@@ -117,8 +172,18 @@ elements.paymentMethodInputs.forEach((input) => input.addEventListener("change",
 function openPaymentDialog() {
   const selected = pendingOrders().filter((order) => selectedOrderIds.has(order.id));
   if (!selected.length) return;
+  const missingAccount = selected.find((order) => !String(order.gameAccount || "").trim());
+  if (missingAccount) {
+    const input = document.getElementById(`game-account-${missingAccount.id}`);
+    const error = document.getElementById(`game-account-error-${missingAccount.id}`);
+    if (input) input.setAttribute("aria-invalid", "true");
+    if (error) { error.textContent = `Укажите: ${accountRequirement(missingAccount).label}.`; error.hidden = false; }
+    elements.feedback.textContent = "Заполните игровой идентификатор для выбранной позиции.";
+    input?.focus();
+    return;
+  }
   elements.paymentItems.replaceChildren();
-  selected.forEach((order) => { const item = document.createElement("div"); const title = document.createElement("strong"); const price = document.createElement("span"); title.textContent = order.product; price.textContent = priceInRubles(order.price); item.append(title, price); elements.paymentItems.append(item); });
+  selected.forEach((order) => { const item = document.createElement("div"); const title = document.createElement("strong"); const target = document.createElement("small"); const price = document.createElement("span"); title.textContent = order.product; target.textContent = `${accountRequirement(order).label}: ${order.gameAccount}`; price.textContent = priceInRubles(order.price); item.append(title, target, price); elements.paymentItems.append(item); });
   if (elements.paymentFeedback) elements.paymentFeedback.textContent = "";
 
   if (!elements.paymentModal?.open && typeof elements.paymentModal?.showModal === "function") {

@@ -86,3 +86,16 @@
 @media (max-width: 560px) { .payment-entry--mobile { grid-template-columns: auto 1fr; }.payment-entry__intro strong { font-size: 15px; } }
 
 .payment-availability { display: inline-flex; align-items: center; min-height: 30px; margin: 12px 0 2px; padding: 0 10px; border: 1px solid rgba(188,160,255,.28); border-radius: 999px; color: #cfc2ff; background: rgba(117,83,212,.1); font-size: 11px; font-weight: 800; }
+
+/* Игровые реквизиты собираются отдельно для каждой позиции корзины. */
+.cabinet-record { flex-wrap: wrap; }
+.cart-account { display: grid; flex: 1 0 100%; gap: 6px; order: 3; padding-top: 2px; }
+.cart-account label { color: #e9e3f7; font-size: 12px; font-weight: 800; }
+.cart-account input { width: 100%; min-height: 42px; box-sizing: border-box; border: 1px solid rgba(196,174,255,.3); border-radius: 10px; padding: 10px 11px; color: #fff; background: rgba(8,8,20,.36); font: inherit; font-size: 13px; }
+.cart-account input:focus { outline: 2px solid rgba(161,129,255,.7); outline-offset: 1px; }
+.cart-account input[aria-invalid="true"] { border-color: #ff879f; }
+.cart-account small { color: #aea5c1; font-size: 10px; line-height: 1.45; }
+.cart-account__error { margin: 0; color: #ffc2cd; font-size: 11px; font-weight: 700; }
+.demo-payment__items > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.demo-payment__items > div small { grid-column: 1; margin-top: 3px; color: #bdb3d1; font-size: 10px; overflow-wrap: anywhere; }
+.demo-payment__items > div span { grid-column: 2; grid-row: 1 / span 2; }

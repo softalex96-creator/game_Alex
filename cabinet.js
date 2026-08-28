@@ -150,7 +150,7 @@
   window.addEventListener("levelup-add-to-cart", (event) => {
     const product = event.detail;
     if (!product) return;
-    addToCart({ product: product.title, price: `${product.price} ₽` });
+    addToCart({ product: product.title, price: `${product.price} ₽`, gameId: product.id });
   });
 
   cartButton?.addEventListener("click", () => {
