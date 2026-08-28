@@ -122,7 +122,7 @@ function renderOrders() {
       const select = document.createElement("label"); select.className = "cart-select";
       const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.checked = selectedOrderIds.has(order.id); checkbox.setAttribute("aria-label", `Выбрать ${order.product}`);
       checkbox.addEventListener("change", () => { checkbox.checked ? selectedOrderIds.add(order.id) : selectedOrderIds.delete(order.id); renderCartSummary(); });
-      const label = document.createElement("span"); label.textContent = "К оплате"; select.append(checkbox, label); item.append(select);
+      const selectLabel = document.createElement("span"); selectLabel.textContent = "К оплате"; select.append(checkbox, selectLabel); item.append(select);
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "cart-remove";
