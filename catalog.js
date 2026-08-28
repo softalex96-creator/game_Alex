@@ -1,6 +1,8 @@
 (() => {
   const products = window.levelUpProducts || [];
-  const cards = [...document.querySelectorAll(".game-card")];
+  const allCards = [...document.querySelectorAll(".game-card")];
+  const cards = allCards.slice(0, products.length);
+  allCards.slice(products.length).forEach((card) => card.remove());
   const grid = document.querySelector(".game-grid");
   const search = document.querySelector("[data-catalog-search]");
   const result = document.querySelector("[data-catalog-result]");
@@ -17,7 +19,7 @@
   };
 
   function productOptions(product) {
-    return product.options || [];
+    return (product.options || []).filter((option) => option.price >= 1000);
   }
 
   function rubPrice(amount) {

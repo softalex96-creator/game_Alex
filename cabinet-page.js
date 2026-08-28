@@ -10,6 +10,7 @@ const elements = {
 };
 let currentUser = null;
 let selectedOrderIds = new Set();
+const minimumOrderAmount = 1000;
 
 function userKey(kind) { return currentUser ? `levelup-${kind}-${currentUser.uid}` : null; }
 function read(kind) { try { return JSON.parse(localStorage.getItem(userKey(kind)) || "[]"); } catch { return []; } }
@@ -23,7 +24,7 @@ function orderId(order, index) { return order.id || `${order.createdAt || "legac
 function priceValue(price) { return Number(String(price).replace(/\D/g, "")) || 0; }
 function rubles(value) { const amount = Math.round(value * 0.9); return `${amount.toLocaleString("ru-RU")} ₽`; }
 function priceInRubles(price) { return rubles(priceValue(price)); }
-function pendingOrders() { return read("orders").map((order, index) => ({ ...order, id: orderId(order, index) })).filter((order) => order.paymentStatus !== "paid"); }
+function pendingOrders() { return read("orders").map((order, index) => ({ ...order, id: orderId(order, index) })).filter((order) => order.paymentStatus !== "paid" && priceValue(order.price) >= minimumOrderAmount); }
 function paymentMethod() { return elements.paymentMethodInputs.find((input) => input.checked)?.value || "card"; }
 function paymentMethodLabel(method) { return method === "mobile" ? "Мобильная коммерция" : "Банковская карта"; }
 function renderPaymentMethod() { const method = paymentMethod(); elements.paymentMethodPanels.forEach((panel) => { panel.hidden = panel.dataset.paymentMethodPanel !== method; }); if (elements.paymentCardInput) { elements.paymentCardInput.disabled = method !== "card"; elements.paymentCardInput.required = method === "card"; } if (elements.paymentPhoneInput) { elements.paymentPhoneInput.disabled = method !== "mobile"; elements.paymentPhoneInput.required = method === "mobile"; } if (elements.paymentSubmit) elements.paymentSubmit.textContent = method === "mobile" ? "Оплатить" : "Продолжить с картой"; }
@@ -48,7 +49,7 @@ function resetCartSummary() {
 }
 
 function removePendingOrder(orderIdToRemove, productName) {
-  const orders = read("orders").map((order, index) => ({ ...order, id: orderId(order, index) }));
+  const orders = read("orders").map((order, index) => ({ ...order, id: orderId(order, index) })).filter((order) => order.paymentStatus === "paid" || priceValue(order.price) >= minimumOrderAmount);
   write("orders", orders.filter((order) => order.id !== orderIdToRemove));
   selectedOrderIds.delete(orderIdToRemove);
   render();

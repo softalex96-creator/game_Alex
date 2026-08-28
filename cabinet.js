@@ -28,6 +28,7 @@
   const guestStorageKey = "levelup-guest-cart";
   const cartButton = document.querySelector("[data-cart-button]");
   const cartCount = document.querySelector("[data-cart-count]");
+  const minimumOrderAmount = 1000;
 
   function storageKey() { return currentUser ? `levelup-orders-${currentUser.uid}` : guestStorageKey; }
 
@@ -38,7 +39,8 @@
   function readOrders() {
     try {
       return JSON.parse(localStorage.getItem(storageKey()) || "[]")
-        .map((order, index) => ({ ...order, id: orderId(order, index) }));
+        .map((order, index) => ({ ...order, id: orderId(order, index) }))
+        .filter((order) => Number(String(order.price).replace(/\D/g, "")) >= minimumOrderAmount);
     } catch { return []; }
   }
 
@@ -131,7 +133,7 @@
   }
 
   function addToCart(product) {
-    if (!product) return false;
+    if (!product || Number(String(product.price).replace(/\D/g, "")) < minimumOrderAmount) return false;
     const orders = readOrders();
     orders.push({ ...product, id: crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`, createdAt: new Date().toISOString() });
     writeOrders(orders);
