@@ -17,6 +17,28 @@
   const genres = {
     "gta-vi": "Экшен", "world-of-warcraft": "RPG", "mobile-legends": "RPG", "pubg-mobile": "Экшен", "pubg-battlegrounds": "Экшен", "genshin-impact": "RPG", "honkai-star-rail": "RPG", "zenless-zone-zero": "Экшен", "wuthering-waves": "RPG", valorant: "Экшен", roblox: "Приключение", minecraft: "Приключение", fortnite: "Экшен", "brawl-stars": "Экшен", "clash-royale": "Стратегия", "clash-of-clans": "Стратегия", "marvel-rivals": "Экшен", "league-of-legends": "RPG", "apex-legends": "Экшен", "delta-force": "Экшен", "arena-breakout": "Экшен", "free-fire": "Экшен", steam: "Каталог", "afk-journey": "RPG", "honor-of-kings": "RPG", nikke: "RPG", "identity-v": "Приключение", "love-and-deepspace": "RPG", tarisland: "RPG", "pubg-new-state": "Экшен"
   };
+  const coverImages = {
+    "gta-vi": "gta-vi.jpg",
+    "world-of-warcraft": "world-of-warcraft.jpg",
+    "mobile-legends": "mobile-legends.jpg",
+    "pubg-mobile": "pubg-mobile.jpg",
+    "pubg-battlegrounds": "pubg-battlegrounds.jpg",
+    "genshin-impact": "genshin-impact.jpg",
+    "honkai-star-rail": "honkai-star-rail.jpg",
+    "zenless-zone-zero": "zenless-zone-zero.jpg",
+    "wuthering-waves": "wuthering-waves.jpg",
+    valorant: "valorant.jpg",
+    roblox: "roblox.jpg",
+    minecraft: "minecraft.jpg",
+    fortnite: "fortnite.jpg",
+    "brawl-stars": "brawl-stars.jpg",
+    "clash-royale": "clash-royale.jpg",
+    "marvel-rivals": "marvel-rivals.jpg",
+    "league-of-legends": "league-of-legends.jpg",
+    "apex-legends": "apex-legends.jpg",
+    "delta-force": "delta-force.jpg",
+    "honor-of-kings": "honor-of-kings.jpg"
+  };
 
   function productOptions(product) {
     return (product.options || []).filter((option) => option.price >= 1000);
@@ -141,7 +163,11 @@
     // Static card markup has legacy labels; clear them when the current product has none.
     card.dataset.badge = product.badge || "";
     const cover = card.querySelector(".slot-cover");
-    if (cover) cover.dataset.mark = product.mark || product.title.slice(0, 3).toUpperCase();
+    if (cover) {
+      cover.dataset.mark = product.mark || product.title.slice(0, 3).toUpperCase();
+      const image = coverImages[product.id];
+      if (image) cover.style.setProperty("background-image", `url("assets/game-covers/${image}")`, "important");
+    }
     const label = card.querySelector(".game-label");
     const offer = card.querySelector("h3");
     const price = card.querySelector("h3 + p");
