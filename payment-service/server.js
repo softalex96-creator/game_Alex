@@ -27,10 +27,12 @@ function json(response, status, body, request) {
 }
 function md5(value) { return crypto.createHash("md5").update(value, "utf8").digest("hex"); }
 function parseBody(request) { return new Promise((resolve, reject) => { let data = ""; request.on("data", (chunk) => { data += chunk; if (data.length > 50_000) reject(new Error("Request too large")); }); request.on("end", () => resolve(data)); request.on("error", reject); }); }
-function requestSignature(fields) {
-  const template = (process.env.BETA_TRANSFER_REQUEST_SIGNATURE_FIELDS || "").split(",").map((name) => name.trim()).filter(Boolean);
-  if (!template.length || !process.env.BETA_TRANSFER_API_SECRET) return null;
-  return md5(template.map((name) => name === "apiSecret" ? process.env.BETA_TRANSFER_API_SECRET : fields[name] ?? "").join(""));
+function requestSignature(parameters) {
+  const apiSecret = process.env.BETA_TRANSFER_API_SECRET;
+  if (!apiSecret) return null;
+  // BetaTransfer requires the values in request-body order, concatenated with no separator,
+  // followed by the API secret. Keep this array in the exact order sent below.
+  return md5(parameters.map((value) => String(value ?? "")).join("") + apiSecret);
 }
 function normalizeItems(value) {
   if (!Array.isArray(value) || value.length < 1 || value.length > 10) throw new Error("Choose from 1 to 10 items");
@@ -44,12 +46,32 @@ async function createProviderPayment(order, request) {
   const apiKey = process.env.BETA_TRANSFER_API_KEY;
   const apiSecret = process.env.BETA_TRANSFER_API_SECRET;
   if (!apiKey || !apiSecret) throw new Error("Payment gateway credentials are not configured");
-  const fields = {
-    orderId: order.id, amount: String(order.amount), currency: "RUB", paymentSystem: "", urlResult: process.env.CALLBACK_URL || "", urlSuccess: process.env.SUCCESS_URL || "", urlFail: process.env.FAILURE_URL || "", locale: "ru", redirect: "0", payerId: "", payerPhone: "", payerName: "", payerEmail: "", payer_firstname: "", payer_lastname: "", payer_postcode: "", payer_address: "", payer_country: "", ip: request.socket.remoteAddress || "", user_comment: `LevelUp order ${order.id}`, fullCallback: "1"
-  };
-  const sign = requestSignature(fields);
+  const fields = [
+    ["orderId", order.id],
+    ["amount", String(order.amount)],
+    ["currency", "RUB"],
+    ["paymentSystem", ""],
+    ["urlResult", process.env.CALLBACK_URL || ""],
+    ["urlSuccess", process.env.SUCCESS_URL || ""],
+    ["urlFail", process.env.FAILURE_URL || ""],
+    ["locale", "ru"],
+    ["redirect", "0"],
+    ["payerId", ""],
+    ["payerPhone", ""],
+    ["payerName", ""],
+    ["payerEmail", ""],
+    ["payer_firstname", ""],
+    ["payer_lastname", ""],
+    ["payer_postcode", ""],
+    ["payer_address", ""],
+    ["payer_country", ""],
+    ["ip", request.socket.remoteAddress || ""],
+    ["user_comment", `LevelUp order ${order.id}`],
+    ["fullCallback", "1"]
+  ];
+  const sign = requestSignature(fields.map(([, value]) => value));
   if (!sign) throw new Error("Provider signature format is not configured");
-  const body = new URLSearchParams({ ...fields, sign });
+  const body = new URLSearchParams([...fields, ["sign", sign]]);
   const provider = await fetch(`https://merchant.betatransfer.io/api/payment?token=${encodeURIComponent(apiKey)}`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" }, body });
   const payload = await provider.json().catch(() => ({}));
   if (!provider.ok || !payload.url) throw new Error("Payment gateway did not create an order");
