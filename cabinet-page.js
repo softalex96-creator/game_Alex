@@ -113,14 +113,21 @@ document.querySelector("[data-cabinet-google]")?.addEventListener("click", async
 document.querySelector("[data-cabinet-steam]")?.addEventListener("click", () => { window.location.assign("https://levelup-steam-auth.steam-worker.workers.dev/steam/login"); });
 document.querySelector("[data-cabinet-signout]")?.addEventListener("click", async () => { await signOutLevelUp(); });
 elements.paymentMethodInputs.forEach((input) => input.addEventListener("change", renderPaymentMethod));
-elements.openDemoPayment?.addEventListener("click", () => {
+function openPaymentDialog() {
   const selected = pendingOrders().filter((order) => selectedOrderIds.has(order.id));
   if (!selected.length) return;
   elements.paymentItems.replaceChildren();
   selected.forEach((order) => { const item = document.createElement("div"); const title = document.createElement("strong"); const price = document.createElement("span"); title.textContent = order.product; price.textContent = priceInRubles(order.price); item.append(title, price); elements.paymentItems.append(item); });
-  elements.paymentFeedback.textContent = "";
-  elements.paymentModal.showModal();
-});
+  if (elements.paymentFeedback) elements.paymentFeedback.textContent = "";
+
+  if (!elements.paymentModal?.open && typeof elements.paymentModal?.showModal === "function") {
+    elements.paymentModal.showModal();
+  } else if (elements.paymentModal) {
+    elements.paymentModal.setAttribute("open", "");
+  }
+}
+
+elements.openDemoPayment?.addEventListener("click", openPaymentDialog);
 elements.paymentModal?.querySelector(".close")?.addEventListener("click", () => elements.paymentModal.close());
 document.querySelector("[data-payment-close]")?.addEventListener("click", () => elements.paymentModal.close());
 document.querySelector("[data-support-form]")?.addEventListener("submit", (event) => {
