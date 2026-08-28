@@ -13,4 +13,6 @@ the `token` query parameter.
 
 BetaTransfer webhooks use a separate signature mechanism: `md5(amount +
 orderId + webhookSecret)`. Keep callback processing disabled until the webhook
-secret and the provider's exact callback payload have been configured.
+secret has been placed in `/opt/levelup/.env`. The callback accepts the
+provider's form-encoded notification, validates its signature and order amount,
+then updates the order to `paid` only when the provider reports `success`.

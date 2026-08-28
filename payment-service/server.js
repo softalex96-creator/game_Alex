@@ -27,6 +27,16 @@ function json(response, status, body, request) {
 }
 function md5(value) { return crypto.createHash("md5").update(value, "utf8").digest("hex"); }
 function parseBody(request) { return new Promise((resolve, reject) => { let data = ""; request.on("data", (chunk) => { data += chunk; if (data.length > 50_000) reject(new Error("Request too large")); }); request.on("end", () => resolve(data)); request.on("error", reject); }); }
+async function parseProviderPayload(request) {
+  const raw = await parseBody(request);
+  if ((request.headers["content-type"] || "").includes("application/json")) return JSON.parse(raw || "{}");
+  return Object.fromEntries(new URLSearchParams(raw));
+}
+function hasValidSignature(received, expected) {
+  const actual = Buffer.from(String(received || ""), "utf8");
+  const wanted = Buffer.from(expected, "utf8");
+  return actual.length === wanted.length && crypto.timingSafeEqual(actual, wanted);
+}
 function requestSignature(parameters) {
   const apiSecret = process.env.BETA_TRANSFER_API_SECRET;
   if (!apiSecret) return null;
@@ -88,7 +98,8 @@ http.createServer(async (request, response) => {
     const order = readOrders()[orderId];
     if (!order) return json(response, 404, { error: "Order not found" }, request);
     const firstItem = order.items?.[0] || {};
-    return json(response, 200, { id: order.id, amount: order.amount, statusLabel: order.status === "paid" ? "Оплачено" : "В обработке", platform: firstItem.platform || "—", region: firstItem.region || "—", items: order.items.map(({ gameTitle, optionName, title, price }) => ({ gameTitle, optionName, title, price })) }, request);
+    const statusLabel = order.status === "paid" ? "Оплачено" : order.status === "failed" ? "Платёж не выполнен" : "В обработке";
+    return json(response, 200, { id: order.id, amount: order.amount, statusLabel, platform: firstItem.platform || "—", region: firstItem.region || "—", items: order.items.map(({ gameTitle, optionName, title, price }) => ({ gameTitle, optionName, title, price })) }, request);
   }
   if (request.method === "POST" && url.pathname === "/payments/betatransfer/create") {
     try {
@@ -101,9 +112,27 @@ http.createServer(async (request, response) => {
     } catch (error) { console.error("payment_create", error.message); return json(response, 422, { error: "Unable to start payment" }, request); }
   }
   if (request.method === "POST" && url.pathname === "/payments/betatransfer/webhook") {
-    // Webhook signature verification is deliberately fail-closed until BetaTransfer's field order is configured.
-    console.warn("Rejected webhook until signature verification is configured");
-    return json(response, 503, { error: "Webhook verification is not configured" }, request);
+    try {
+      const payload = await parseProviderPayload(request);
+      const webhookSecret = process.env.BETA_TRANSFER_WEBHOOK_SECRET;
+      if (!webhookSecret) return json(response, 503, { error: "Webhook verification is not configured" }, request);
+      const expectedSign = md5(`${payload.amount ?? ""}${payload.orderId ?? ""}${webhookSecret}`);
+      if (!hasValidSignature(payload.sign, expectedSign)) return json(response, 403, { error: "Invalid signature" }, request);
+      if (!/^LU-\d+-[a-z0-9-]{8,}$/i.test(payload.orderId || "")) return json(response, 400, { error: "Invalid order" }, request);
+      const orders = readOrders(); const order = orders[payload.orderId];
+      if (!order) return json(response, 404, { error: "Order not found" }, request);
+      if (String(payload.orderAmount) !== String(order.amount) || payload.currency !== order.currency) return json(response, 422, { error: "Order details do not match" }, request);
+      const providerStatus = String(payload.status || "").toLowerCase();
+      order.providerId = payload.id || order.providerId;
+      order.providerStatus = providerStatus;
+      order.paidAmount = payload.paidAmount || "";
+      order.updatedAt = new Date().toISOString();
+      if (providerStatus === "success") order.status = "paid";
+      else if (["error", "cancel", "cancelled", "expired"].includes(providerStatus)) order.status = "failed";
+      else order.status = "awaiting_payment";
+      orders[order.id] = order; writeOrders(orders);
+      return json(response, 200, { ok: true }, request);
+    } catch (error) { console.error("payment_webhook", error.message); return json(response, 400, { error: "Invalid callback" }, request); }
   }
   return json(response, 404, { error: "Not found" }, request);
 }).listen(port, "127.0.0.1", () => console.log(`LevelUp payment service listening on ${port}`));
