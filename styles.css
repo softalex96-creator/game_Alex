@@ -172,6 +172,31 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-card:nth-child(28) .slot-cover::before { background-image: url("assets/game-slots/catalog/naruto-card-v2.jpg"); }
 .slot-card:nth-child(29) .slot-cover::before { background-image: url("assets/game-slots/catalog/one-piece-card-v2.jpg"); }
 .slot-card:nth-child(30) .slot-cover::before { background-image: url("assets/game-slots/catalog/pacman-card-v2.jpg"); }
+
+/* Individual catalog art — original illustrations kept local for reliable loading. */
+.slot-card[data-id] .slot-cover::before { content: "" !important; inset: 0 !important; z-index: 2 !important; display: block !important; background: linear-gradient(105deg, rgba(7,7,15,.16), transparent 58%, rgba(7,7,15,.38)) !important; }
+.slot-card[data-id] .slot-cover::after { content: "" !important; inset: 0 !important; z-index: 3 !important; border: 0 !important; border-radius: 0 !important; background: linear-gradient(180deg, transparent 36%, rgba(9,8,18,.42)) !important; transform: none !important; }
+.game-label { width: 100%; overflow: visible; overflow-wrap: anywhere; text-overflow: clip; white-space: normal; }
+.slot-card[data-id="gta-vi"] .slot-cover { background-image: url("assets/game-covers/gta-vi.jpg") !important; }
+.slot-card[data-id="world-of-warcraft"] .slot-cover { background-image: url("assets/game-covers/world-of-warcraft.jpg") !important; }
+.slot-card[data-id="mobile-legends"] .slot-cover { background-image: url("assets/game-covers/mobile-legends.jpg") !important; }
+.slot-card[data-id="pubg-mobile"] .slot-cover { background-image: url("assets/game-covers/pubg-mobile.jpg") !important; }
+.slot-card[data-id="pubg-battlegrounds"] .slot-cover { background-image: url("assets/game-covers/pubg-battlegrounds.jpg") !important; }
+.slot-card[data-id="genshin-impact"] .slot-cover { background-image: url("assets/game-covers/genshin-impact.jpg") !important; }
+.slot-card[data-id="honkai-star-rail"] .slot-cover { background-image: url("assets/game-covers/honkai-star-rail.jpg") !important; }
+.slot-card[data-id="zenless-zone-zero"] .slot-cover { background-image: url("assets/game-covers/zenless-zone-zero.jpg") !important; }
+.slot-card[data-id="wuthering-waves"] .slot-cover { background-image: url("assets/game-covers/wuthering-waves.jpg") !important; }
+.slot-card[data-id="valorant"] .slot-cover { background-image: url("assets/game-covers/valorant.jpg") !important; }
+.slot-card[data-id="roblox"] .slot-cover { background-image: url("assets/game-covers/roblox.jpg") !important; }
+.slot-card[data-id="minecraft"] .slot-cover { background-image: url("assets/game-covers/minecraft.jpg") !important; }
+.slot-card[data-id="fortnite"] .slot-cover { background-image: url("assets/game-covers/fortnite.jpg") !important; }
+.slot-card[data-id="brawl-stars"] .slot-cover { background-image: url("assets/game-covers/brawl-stars.jpg") !important; }
+.slot-card[data-id="clash-royale"] .slot-cover { background-image: url("assets/game-covers/clash-royale.jpg") !important; }
+.slot-card[data-id="marvel-rivals"] .slot-cover { background-image: url("assets/game-covers/marvel-rivals.jpg") !important; }
+.slot-card[data-id="league-of-legends"] .slot-cover { background-image: url("assets/game-covers/league-of-legends.jpg") !important; }
+.slot-card[data-id="apex-legends"] .slot-cover { background-image: url("assets/game-covers/apex-legends.jpg") !important; }
+.slot-card[data-id="delta-force"] .slot-cover { background-image: url("assets/game-covers/delta-force.jpg") !important; }
+.slot-card[data-id="honor-of-kings"] .slot-cover { background-image: url("assets/game-covers/honor-of-kings.jpg") !important; }
 .slot-card:nth-child(3) .slot-cover::after,
 .slot-card:nth-child(4) .slot-cover::after,
 .slot-card:nth-child(5) .slot-cover::after,
@@ -225,6 +250,86 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-card[data-id]:nth-child(4n) .slot-cover { background-image: radial-gradient(circle at 25% 20%, rgba(166,255,138,.5), transparent 23%), linear-gradient(135deg, #146557, #11292c 70%) !important; }
 .slot-card[data-id] .slot-cover::before { content: attr(data-mark) !important; inset: 0 !important; z-index: 0 !important; display: grid; place-items: center; color: rgba(255,255,255,.96); background: none !important; font-size: clamp(20px, 2vw, 29px); font-style: normal; font-weight: 800; letter-spacing: -.07em; line-height: 1; text-shadow: 0 3px 16px rgba(0,0,0,.48); }
 .slot-card[data-id] .slot-cover::after { inset: -70% 30% -60% -20% !important; z-index: -1 !important; border: 2px solid rgba(255,255,255,.3); border-radius: 50%; background: none !important; transform: rotate(24deg); }
+
+/* Финальный приоритет обложек: расположен после всех устаревших правил каталога. */
+.slot-card[data-id] .slot-cover { background-position: center; background-size: cover; }
+.slot-card[data-id] .slot-cover::before { content: "" !important; inset: 0 !important; z-index: 2 !important; display: block !important; background: linear-gradient(105deg, rgba(8,8,20,.38), transparent 58%, rgba(8,8,20,.14)) !important; }
+.slot-card[data-id] .slot-cover::after { content: "" !important; inset: 0 !important; z-index: 3 !important; border: 0 !important; border-radius: 0 !important; background: linear-gradient(180deg, transparent 36%, rgba(8,8,20,.5)) !important; transform: none !important; }
+.game-label { width: 100%; overflow: visible; overflow-wrap: anywhere; text-overflow: clip; white-space: normal; }
+.slot-card[data-id="gta-vi"] .slot-cover { background-image: url("assets/game-covers/gta-vi.jpg") !important; }
+.slot-card[data-id="world-of-warcraft"] .slot-cover { background-image: url("assets/game-covers/world-of-warcraft.jpg") !important; }
+.slot-card[data-id="mobile-legends"] .slot-cover { background-image: url("assets/game-covers/mobile-legends.jpg") !important; }
+.slot-card[data-id="pubg-mobile"] .slot-cover { background-image: url("assets/game-covers/pubg-mobile.jpg") !important; }
+.slot-card[data-id="pubg-battlegrounds"] .slot-cover { background-image: url("assets/game-covers/pubg-battlegrounds.jpg") !important; }
+.slot-card[data-id="genshin-impact"] .slot-cover { background-image: url("assets/game-covers/genshin-impact.jpg") !important; }
+.slot-card[data-id="honkai-star-rail"] .slot-cover { background-image: url("assets/game-covers/honkai-star-rail.jpg") !important; }
+.slot-card[data-id="zenless-zone-zero"] .slot-cover { background-image: url("assets/game-covers/zenless-zone-zero.jpg") !important; }
+.slot-card[data-id="wuthering-waves"] .slot-cover { background-image: url("assets/game-covers/wuthering-waves.jpg") !important; }
+.slot-card[data-id="valorant"] .slot-cover { background-image: url("assets/game-covers/valorant.jpg") !important; }
+.slot-card[data-id="roblox"] .slot-cover { background-image: url("assets/game-covers/roblox.jpg") !important; }
+.slot-card[data-id="minecraft"] .slot-cover { background-image: url("assets/game-covers/minecraft.jpg") !important; }
+.slot-card[data-id="fortnite"] .slot-cover { background-image: url("assets/game-covers/fortnite.jpg") !important; }
+.slot-card[data-id="brawl-stars"] .slot-cover { background-image: url("assets/game-covers/brawl-stars.jpg") !important; }
+.slot-card[data-id="clash-royale"] .slot-cover { background-image: url("assets/game-covers/clash-royale.jpg") !important; }
+.slot-card[data-id="marvel-rivals"] .slot-cover { background-image: url("assets/game-covers/marvel-rivals.jpg") !important; }
+.slot-card[data-id="league-of-legends"] .slot-cover { background-image: url("assets/game-covers/league-of-legends.jpg") !important; }
+.slot-card[data-id="apex-legends"] .slot-cover { background-image: url("assets/game-covers/apex-legends.jpg") !important; }
+.slot-card[data-id="delta-force"] .slot-cover { background-image: url("assets/game-covers/delta-force.jpg") !important; }
+.slot-card[data-id="honor-of-kings"] .slot-cover { background-image: url("assets/game-covers/honor-of-kings.jpg") !important; }
+
+/* Финальная привязка оригинальных обложек. Этот блок должен оставаться последним:
+   старые правила витрины используют технические сокращения для фоновых карточек. */
+.slot-card[data-id] .slot-cover {
+  background-position: center;
+  background-size: cover;
+}
+
+.slot-card[data-id] .slot-cover::before {
+  content: "" !important;
+  inset: 0 !important;
+  z-index: 2 !important;
+  display: block !important;
+  background: linear-gradient(105deg, rgba(8, 8, 20, .38), transparent 58%, rgba(8, 8, 20, .14)) !important;
+}
+
+.slot-card[data-id] .slot-cover::after {
+  content: "" !important;
+  inset: 0 !important;
+  z-index: 3 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, transparent 36%, rgba(8, 8, 20, .5)) !important;
+  transform: none !important;
+}
+
+.game-label {
+  width: 100%;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.slot-card[data-id="gta-vi"] .slot-cover { background-image: url("assets/game-covers/gta-vi.jpg") !important; }
+.slot-card[data-id="world-of-warcraft"] .slot-cover { background-image: url("assets/game-covers/world-of-warcraft.jpg") !important; }
+.slot-card[data-id="mobile-legends"] .slot-cover { background-image: url("assets/game-covers/mobile-legends.jpg") !important; }
+.slot-card[data-id="pubg-mobile"] .slot-cover { background-image: url("assets/game-covers/pubg-mobile.jpg") !important; }
+.slot-card[data-id="pubg-battlegrounds"] .slot-cover { background-image: url("assets/game-covers/pubg-battlegrounds.jpg") !important; }
+.slot-card[data-id="genshin-impact"] .slot-cover { background-image: url("assets/game-covers/genshin-impact.jpg") !important; }
+.slot-card[data-id="honkai-star-rail"] .slot-cover { background-image: url("assets/game-covers/honkai-star-rail.jpg") !important; }
+.slot-card[data-id="zenless-zone-zero"] .slot-cover { background-image: url("assets/game-covers/zenless-zone-zero.jpg") !important; }
+.slot-card[data-id="wuthering-waves"] .slot-cover { background-image: url("assets/game-covers/wuthering-waves.jpg") !important; }
+.slot-card[data-id="valorant"] .slot-cover { background-image: url("assets/game-covers/valorant.jpg") !important; }
+.slot-card[data-id="roblox"] .slot-cover { background-image: url("assets/game-covers/roblox.jpg") !important; }
+.slot-card[data-id="minecraft"] .slot-cover { background-image: url("assets/game-covers/minecraft.jpg") !important; }
+.slot-card[data-id="fortnite"] .slot-cover { background-image: url("assets/game-covers/fortnite.jpg") !important; }
+.slot-card[data-id="brawl-stars"] .slot-cover { background-image: url("assets/game-covers/brawl-stars.jpg") !important; }
+.slot-card[data-id="clash-royale"] .slot-cover { background-image: url("assets/game-covers/clash-royale.jpg") !important; }
+.slot-card[data-id="marvel-rivals"] .slot-cover { background-image: url("assets/game-covers/marvel-rivals.jpg") !important; }
+.slot-card[data-id="league-of-legends"] .slot-cover { background-image: url("assets/game-covers/league-of-legends.jpg") !important; }
+.slot-card[data-id="apex-legends"] .slot-cover { background-image: url("assets/game-covers/apex-legends.jpg") !important; }
+.slot-card[data-id="delta-force"] .slot-cover { background-image: url("assets/game-covers/delta-force.jpg") !important; }
+.slot-card[data-id="honor-of-kings"] .slot-cover { background-image: url("assets/game-covers/honor-of-kings.jpg") !important; }
 .game-card--archive { overflow: hidden; border-color: rgba(163,173,191,.33); background: linear-gradient(145deg, rgba(47,51,65,.92), rgba(25,27,37,.97)); box-shadow: none; }
 .game-card--archive .slot-cover { filter: saturate(.25) brightness(.68); }
 .game-card--archive::after { content: "ПРОДАЖИ ЗАВЕРШЕНЫ"; position: absolute; z-index: 7; top: 50%; left: 50%; width: calc(100% - 28px); padding: 10px 12px; transform: translate(-50%, -50%); color: rgba(243,246,251,.96); border: 1px solid rgba(255,255,255,.28); border-radius: 9px; background: rgba(33,37,49,.9); box-shadow: 0 5px 18px rgba(0,0,0,.3); font-size: 9px; font-weight: 900; letter-spacing: .1em; pointer-events: none; text-align: center; }
@@ -275,3 +380,29 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .slot-card[data-id]:nth-child(4n) .slot-cover { background-image: radial-gradient(circle at 25% 20%, rgba(166,255,138,.5), transparent 23%), linear-gradient(135deg, #146557, #11292c 70%) !important; }
 .slot-card[data-id] .slot-cover::before { content: attr(data-mark) !important; inset: 0 !important; z-index: 0 !important; display: grid; place-items: center; color: rgba(255,255,255,.96); background: none !important; font-size: clamp(20px, 2vw, 29px); font-style: normal; font-weight: 800; letter-spacing: -.07em; line-height: 1; text-shadow: 0 3px 16px rgba(0,0,0,.48); }
 .slot-card[data-id] .slot-cover::after { inset: -70% 30% -60% -20% !important; z-index: -1 !important; border: 2px solid rgba(255,255,255,.3); border-radius: 50%; background: none !important; transform: rotate(24deg); }
+
+/* ФИНАЛЬНЫЙ ПРИОРИТЕТ ОБЛОЖЕК — намеренно последняя секция styles.css. */
+.slot-card[data-id] .slot-cover { background-position: center; background-size: cover; }
+.slot-card[data-id] .slot-cover::before { content: "" !important; inset: 0 !important; z-index: 2 !important; display: block !important; background: linear-gradient(105deg, rgba(8,8,20,.38), transparent 58%, rgba(8,8,20,.14)) !important; }
+.slot-card[data-id] .slot-cover::after { content: "" !important; inset: 0 !important; z-index: 3 !important; border: 0 !important; border-radius: 0 !important; background: linear-gradient(180deg, transparent 36%, rgba(8,8,20,.5)) !important; transform: none !important; }
+.game-label { width: 100%; overflow: visible; overflow-wrap: anywhere; text-overflow: clip; white-space: normal; }
+.slot-card[data-id="gta-vi"] .slot-cover { background-image: url("assets/game-covers/gta-vi.jpg") !important; }
+.slot-card[data-id="world-of-warcraft"] .slot-cover { background-image: url("assets/game-covers/world-of-warcraft.jpg") !important; }
+.slot-card[data-id="mobile-legends"] .slot-cover { background-image: url("assets/game-covers/mobile-legends.jpg") !important; }
+.slot-card[data-id="pubg-mobile"] .slot-cover { background-image: url("assets/game-covers/pubg-mobile.jpg") !important; }
+.slot-card[data-id="pubg-battlegrounds"] .slot-cover { background-image: url("assets/game-covers/pubg-battlegrounds.jpg") !important; }
+.slot-card[data-id="genshin-impact"] .slot-cover { background-image: url("assets/game-covers/genshin-impact.jpg") !important; }
+.slot-card[data-id="honkai-star-rail"] .slot-cover { background-image: url("assets/game-covers/honkai-star-rail.jpg") !important; }
+.slot-card[data-id="zenless-zone-zero"] .slot-cover { background-image: url("assets/game-covers/zenless-zone-zero.jpg") !important; }
+.slot-card[data-id="wuthering-waves"] .slot-cover { background-image: url("assets/game-covers/wuthering-waves.jpg") !important; }
+.slot-card[data-id="valorant"] .slot-cover { background-image: url("assets/game-covers/valorant.jpg") !important; }
+.slot-card[data-id="roblox"] .slot-cover { background-image: url("assets/game-covers/roblox.jpg") !important; }
+.slot-card[data-id="minecraft"] .slot-cover { background-image: url("assets/game-covers/minecraft.jpg") !important; }
+.slot-card[data-id="fortnite"] .slot-cover { background-image: url("assets/game-covers/fortnite.jpg") !important; }
+.slot-card[data-id="brawl-stars"] .slot-cover { background-image: url("assets/game-covers/brawl-stars.jpg") !important; }
+.slot-card[data-id="clash-royale"] .slot-cover { background-image: url("assets/game-covers/clash-royale.jpg") !important; }
+.slot-card[data-id="marvel-rivals"] .slot-cover { background-image: url("assets/game-covers/marvel-rivals.jpg") !important; }
+.slot-card[data-id="league-of-legends"] .slot-cover { background-image: url("assets/game-covers/league-of-legends.jpg") !important; }
+.slot-card[data-id="apex-legends"] .slot-cover { background-image: url("assets/game-covers/apex-legends.jpg") !important; }
+.slot-card[data-id="delta-force"] .slot-cover { background-image: url("assets/game-covers/delta-force.jpg") !important; }
+.slot-card[data-id="honor-of-kings"] .slot-cover { background-image: url("assets/game-covers/honor-of-kings.jpg") !important; }
