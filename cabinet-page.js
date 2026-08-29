@@ -68,7 +68,7 @@ function saveGameAccount(id, gameAccount) { write("orders", read("orders").map((
 function pendingOrders() { return read("orders").map((order, index) => ({ ...order, id: orderId(order, index) })).filter((order) => order.paymentStatus !== "paid" && priceValue(order.price) >= minimumOrderAmount); }
 function paymentMethod() { return elements.paymentMethodInputs.find((input) => input.checked)?.value || "card"; }
 function paymentMethodLabel(method) { return method === "mobile" ? "Мобильная коммерция" : "Банковская карта"; }
-function renderPaymentMethod() { const method = paymentMethod(); elements.paymentMethodPanels.forEach((panel) => { panel.hidden = panel.dataset.paymentMethodPanel !== method; }); if (elements.paymentCardInput) { elements.paymentCardInput.disabled = method !== "card"; elements.paymentCardInput.required = method === "card"; } if (elements.paymentPhoneInput) { elements.paymentPhoneInput.disabled = method !== "mobile"; elements.paymentPhoneInput.required = method === "mobile"; } if (elements.paymentSubmit) elements.paymentSubmit.textContent = method === "mobile" ? "Оплатить" : "Продолжить с картой"; }
+function renderPaymentMethod() { const method = paymentMethod(); elements.paymentMethodPanels.forEach((panel) => { panel.hidden = panel.dataset.paymentMethodPanel !== method; }); if (elements.paymentCardInput) { elements.paymentCardInput.disabled = method !== "card"; elements.paymentCardInput.required = method === "card"; } if (elements.paymentPhoneInput) { elements.paymentPhoneInput.disabled = method !== "mobile"; elements.paymentPhoneInput.required = method === "mobile"; } if (elements.paymentSubmit) elements.paymentSubmit.textContent = method === "mobile" ? "Мобильная оплата скоро" : "Перейти к защищённой оплате"; }
 
 function renderCartSummary() {
   const orders = pendingOrders();
@@ -239,4 +239,5 @@ document.querySelector("[data-support-form]")?.addEventListener("submit", (event
   tickets.push({ topic: data.get("topic"), message: data.get("message").trim(), createdAt: new Date().toISOString() }); write("tickets", tickets); form.reset(); elements.supportFeedback.textContent = "Обращение сохранено. Ответ появится здесь после подключения поддержки."; renderTickets();
 });
 window.addEventListener("levelup-auth", (event) => setUser(event.detail));
+renderPaymentMethod();
 setUser(window.levelUpUser);
