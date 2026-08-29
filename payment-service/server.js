@@ -25,6 +25,7 @@ function json(response, status, body, request) {
   if (request.headers.origin === origin) headers["Access-Control-Allow-Origin"] = origin;
   response.writeHead(status, headers); response.end(JSON.stringify(body));
 }
+function text(response, status, body) { response.writeHead(status, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }); response.end(body); }
 function md5(value) { return crypto.createHash("md5").update(value, "utf8").digest("hex"); }
 function parseBody(request) { return new Promise((resolve, reject) => { let data = ""; request.on("data", (chunk) => { data += chunk; if (data.length > 50_000) reject(new Error("Request too large")); }); request.on("end", () => resolve(data)); request.on("error", reject); }); }
 async function parseProviderPayload(request) {
@@ -122,24 +123,21 @@ http.createServer(async (request, response) => {
   if (request.method === "POST" && url.pathname === "/payments/betatransfer/webhook") {
     try {
       const payload = await parseProviderPayload(request);
-      const webhookSecret = process.env.BETA_TRANSFER_WEBHOOK_SECRET;
-      if (!webhookSecret) return json(response, 503, { error: "Webhook verification is not configured" }, request);
-      const expectedSign = md5(`${payload.amount ?? ""}${payload.orderId ?? ""}${webhookSecret}`);
+      const apiSecret = process.env.BETA_TRANSFER_API_SECRET;
+      if (!apiSecret) return text(response, 503, "Webhook verification is not configured");
+      const expectedSign = md5(`${payload.amount ?? ""}${payload.orderId ?? ""}${apiSecret}`);
       if (!hasValidSignature(payload.sign, expectedSign)) return json(response, 403, { error: "Invalid signature" }, request);
       if (!/^LU-\d+-[a-z0-9-]{8,}$/i.test(payload.orderId || "")) return json(response, 400, { error: "Invalid order" }, request);
       const orders = readOrders(); const order = orders[payload.orderId];
       if (!order) return json(response, 404, { error: "Order not found" }, request);
       if (String(payload.orderAmount) !== String(order.amount) || payload.currency !== order.currency) return json(response, 422, { error: "Order details do not match" }, request);
-      const providerStatus = String(payload.status || "").toLowerCase();
       order.providerId = payload.id || order.providerId;
-      order.providerStatus = providerStatus;
+      order.providerStatus = "success";
       order.paidAmount = payload.paidAmount || "";
       order.updatedAt = new Date().toISOString();
-      if (providerStatus === "success") order.status = "paid";
-      else if (["error", "cancel", "cancelled", "expired"].includes(providerStatus)) order.status = "failed";
-      else order.status = "awaiting_payment";
+      order.status = "paid";
       orders[order.id] = order; writeOrders(orders);
-      return json(response, 200, { ok: true }, request);
+      return text(response, 200, "OK");
     } catch (error) { console.error("payment_webhook", error.message); return json(response, 400, { error: "Invalid callback" }, request); }
   }
   return json(response, 404, { error: "Not found" }, request);
