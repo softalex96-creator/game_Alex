@@ -5,7 +5,7 @@ const elements = {
   user: document.querySelector("[data-cabinet-user]"), login: document.querySelector("[data-cabinet-login]"), dashboard: document.querySelector("[data-cabinet-dashboard]"),
   name: document.querySelector("[data-cabinet-name]"), email: document.querySelector("[data-cabinet-email]"), avatar: document.querySelector("[data-cabinet-avatar]"),
   feedback: document.querySelector("[data-cabinet-feedback]"), orders: document.querySelector("[data-cabinet-orders]"), transactions: document.querySelector("[data-cabinet-transactions]"), tickets: document.querySelector("[data-cabinet-tickets]"),
-  orderCount: document.querySelector("[data-cabinet-order-count]"), ticketCount: document.querySelector("[data-cabinet-ticket-count]"), supportFeedback: document.querySelector("[data-support-feedback]"),
+  orderCount: document.querySelector("[data-cabinet-order-count]"), transactionCount: document.querySelector("[data-cabinet-transaction-count]"), transactionTab: document.querySelector("[data-cabinet-tab='transactions']"), ticketCount: document.querySelector("[data-cabinet-ticket-count]"), supportFeedback: document.querySelector("[data-support-feedback]"),
   cartSummary: document.querySelector("[data-cart-summary]"), cartSelectedCount: document.querySelector("[data-cart-selected-count]"), cartTotal: document.querySelector("[data-cart-total]"), openDemoPayment: document.querySelector("[data-open-demo-payment]"),
   paymentModal: document.querySelector("[data-demo-payment]"), paymentItems: document.querySelector("[data-demo-payment-items]"), paymentForm: document.querySelector("[data-demo-payment-form]"), paymentFeedback: document.querySelector("[data-demo-payment-feedback]"), paymentMethodInputs: [...document.querySelectorAll("[name='payment-method']")], paymentMethodPanels: [...document.querySelectorAll("[data-payment-method-panel]")], paymentSubmit: document.querySelector("[data-demo-payment-submit]"), paymentCardInput: document.querySelector("[data-payment-card]"), paymentPhoneInput: document.querySelector("[data-payment-phone]"),
 };
@@ -153,6 +153,8 @@ function renderOrders() {
 
 function renderTransactions() {
   const transactions = read("transactions").filter((transaction) => transaction.paymentStatus === "paid"); elements.transactions.replaceChildren();
+  elements.transactionCount.textContent = String(transactions.length);
+  elements.transactionTab.setAttribute("aria-label", `Транзакции: ${transactions.length} подтверждённых оплат`);
   if (!transactions.length) { elements.transactions.append(empty("Подтверждённых платежей пока нет.")); return; }
   transactions.slice().reverse().forEach((transaction) => elements.transactions.append(card(transaction.product, `${priceInRubles(transaction.price)} · ${paymentMethodLabel(transaction.method)} · ${formatDate(transaction.createdAt)}`, "Оплачено", "accepted")));
 }
