@@ -27,6 +27,7 @@ function json(response, status, body, request) {
 }
 function text(response, status, body) { response.writeHead(status, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }); response.end(body); }
 function md5(value) { return crypto.createHash("md5").update(value, "utf8").digest("hex"); }
+function validOrderId(value) { return /^LU(?:\d+[a-f0-9]{8}|-\d+-[a-z0-9-]{8,})$/i.test(String(value || "")); }
 function parseBody(request) { return new Promise((resolve, reject) => { let data = ""; request.on("data", (chunk) => { data += chunk; if (data.length > 50_000) reject(new Error("Request too large")); }); request.on("end", () => resolve(data)); request.on("error", reject); }); }
 async function parseProviderPayload(request) {
   const raw = await parseBody(request);
@@ -61,40 +62,31 @@ function normalizeItems(value) {
     return { gameId: product.id, optionIndex: Number(optionIndex), gameAccount: account, gameTitle: product.title, optionName: option.name, platform: product.platform, region: product.region, title: `${product.title} — ${option.name}`, price: option.price };
   });
 }
-async function createProviderPayment(order, request) {
+async function createProviderPayment(order) {
   const apiKey = process.env.BETA_TRANSFER_API_KEY;
   const apiSecret = process.env.BETA_TRANSFER_API_SECRET;
   if (!apiKey || !apiSecret) throw new Error("Payment gateway credentials are not configured");
   const fields = [
-    ["orderId", order.id],
-    ["amount", String(order.amount)],
+    ["amount", order.amount.toFixed(2)],
     ["currency", "RUB"],
     ["paymentSystem", ""],
+    ["orderId", order.id],
     ["urlResult", process.env.CALLBACK_URL || ""],
     ["urlSuccess", orderReturnUrl(process.env.SUCCESS_URL, order.id)],
-    ["urlFail", orderReturnUrl(process.env.FAILURE_URL, order.id)],
-    ["locale", "ru"],
-    ["redirect", "0"],
-    ["payerId", ""],
-    ["payerPhone", ""],
-    ["payerName", ""],
-    ["payerEmail", ""],
-    ["payer_firstname", ""],
-    ["payer_lastname", ""],
-    ["payer_postcode", ""],
-    ["payer_address", ""],
-    ["payer_country", ""],
-    ["ip", request.socket.remoteAddress || ""],
-    ["user_comment", `LevelUp order ${order.id}`],
-    ["fullCallback", "1"]
+    ["urlFail", orderReturnUrl(process.env.FAILURE_URL, order.id)]
   ];
   const sign = requestSignature(fields.map(([, value]) => value));
   if (!sign) throw new Error("Provider signature format is not configured");
   const body = new URLSearchParams([...fields, ["sign", sign]]);
   const provider = await fetch(`https://merchant.betatransfer.io/api/payment?token=${encodeURIComponent(apiKey)}`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" }, body });
   const payload = await provider.json().catch(() => ({}));
-  if (!provider.ok || !payload.url) throw new Error("Payment gateway did not create an order");
-  return payload;
+  const paymentUrl = payload.url || payload.Url || payload.urlPayment || payload.UrlPayment;
+  if (!provider.ok || !paymentUrl) {
+    const providerError = payload.errors || payload.Errors || payload.error || payload.Error || payload.status || payload.Status || `HTTP ${provider.status}`;
+    console.error("payment_provider_rejected", JSON.stringify(providerError));
+    throw new Error("Payment gateway did not create an order");
+  }
+  return { ...payload, id: payload.id || payload.Id, hash: payload.hash || payload.Hash, url: paymentUrl };
 }
 
 http.createServer(async (request, response) => {
@@ -103,7 +95,7 @@ http.createServer(async (request, response) => {
   if (request.method === "GET" && url.pathname === "/health") return json(response, 200, { ok: true, catalogItems: catalog.size }, request);
   if (request.method === "GET" && url.pathname === "/payments/betatransfer/order") {
     const orderId = url.searchParams.get("orderId") || "";
-    if (!/^LU-\d+-[a-z0-9-]{8,}$/i.test(orderId)) return json(response, 400, { error: "Invalid order" }, request);
+    if (!validOrderId(orderId)) return json(response, 400, { error: "Invalid order" }, request);
     const order = readOrders()[orderId];
     if (!order) return json(response, 404, { error: "Order not found" }, request);
     const firstItem = order.items?.[0] || {};
@@ -114,8 +106,8 @@ http.createServer(async (request, response) => {
     try {
       if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
       const { items } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items);
-      const order = { id: `LU-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`, amount: selected.reduce((sum, item) => sum + item.price, 0), currency: "RUB", items: selected, status: "created", createdAt: new Date().toISOString() };
-      const provider = await createProviderPayment(order, request); order.providerId = provider.id; order.providerHash = provider.hash; order.status = "awaiting_payment";
+      const order = { id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`, amount: selected.reduce((sum, item) => sum + item.price, 0), currency: "RUB", items: selected, status: "created", createdAt: new Date().toISOString() };
+      const provider = await createProviderPayment(order); order.providerId = provider.id; order.providerHash = provider.hash; order.status = "awaiting_payment";
       const orders = readOrders(); orders[order.id] = order; writeOrders(orders);
       return json(response, 201, { orderId: order.id, paymentUrl: provider.url }, request);
     } catch (error) { console.error("payment_create", error.message); return json(response, 422, { error: "Unable to start payment" }, request); }
@@ -127,10 +119,10 @@ http.createServer(async (request, response) => {
       if (!apiSecret) return text(response, 503, "Webhook verification is not configured");
       const expectedSign = md5(`${payload.amount ?? ""}${payload.orderId ?? ""}${apiSecret}`);
       if (!hasValidSignature(payload.sign, expectedSign)) return json(response, 403, { error: "Invalid signature" }, request);
-      if (!/^LU-\d+-[a-z0-9-]{8,}$/i.test(payload.orderId || "")) return json(response, 400, { error: "Invalid order" }, request);
+      if (!validOrderId(payload.orderId)) return json(response, 400, { error: "Invalid order" }, request);
       const orders = readOrders(); const order = orders[payload.orderId];
       if (!order) return json(response, 404, { error: "Order not found" }, request);
-      if (String(payload.orderAmount) !== String(order.amount) || payload.currency !== order.currency) return json(response, 422, { error: "Order details do not match" }, request);
+      if (Number(payload.orderAmount) !== order.amount || String(payload.currency || "").toUpperCase() !== order.currency) return json(response, 422, { error: "Order details do not match" }, request);
       order.providerId = payload.id || order.providerId;
       order.providerStatus = "success";
       order.paidAmount = payload.paidAmount || "";
