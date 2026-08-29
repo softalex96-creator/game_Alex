@@ -69,7 +69,7 @@ async function createProviderPayment(order) {
   const fields = [
     ["amount", order.amount.toFixed(2)],
     ["currency", "RUB"],
-    ["paymentSystem", "Card"],
+    ["paymentSystem", "Card2"],
     ["orderId", order.id],
     ["urlResult", process.env.CALLBACK_URL || ""],
     ["urlSuccess", orderReturnUrl(process.env.SUCCESS_URL, order.id)],
