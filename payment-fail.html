@@ -22,7 +22,7 @@
           <svg viewBox="0 0 56 56" fill="none"><path d="m20 20 16 16m0-16-16 16"/><circle cx="28" cy="28" r="23"/></svg>
         </div>
         <p class="eyebrow">Статус платежа</p>
-        <h1 id="payment-result-title">Оплата не завершена</h1>
+        <h1 id="payment-result-title" data-payment-result-title>Оплата не завершена</h1>
         <p class="payment-result__lead" role="status" data-payment-status>Платёж не был подтверждён. Вернитесь в корзину и попробуйте оформить заказ ещё раз.</p>
         <section class="payment-order" data-payment-order-card hidden aria-label="Детали заказа">
           <div class="payment-order__head"><div><span>Заказ</span><strong data-payment-order-number></strong></div><b data-payment-order-status>Не подтверждён</b></div>
@@ -37,6 +37,6 @@
       </section>
     </main>
     <footer class="footer container payment-footer"><a class="logo" href="index.html">LEVEL<span>UP</span></a><p>© 2026 LevelUp.</p></footer>
-    <script src="payment-result.js"></script>
+    <script type="module" src="payment-result.js?v=payment-sync-1"></script>
   </body>
 </html>

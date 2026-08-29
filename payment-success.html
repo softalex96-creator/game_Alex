@@ -22,7 +22,7 @@
           <svg viewBox="0 0 56 56" fill="none"><path d="M16 29.5 24.1 37 40.5 19"/><circle cx="28" cy="28" r="23"/></svg>
         </div>
         <p class="eyebrow">Статус платежа</p>
-        <h1 id="payment-result-title">Платёж получен</h1>
+        <h1 id="payment-result-title" data-payment-result-title>Платёж получен</h1>
         <p class="payment-result__lead" role="status" data-payment-status>Мы получили информацию об оплате. Статус заказа обновится после подтверждения от платёжного провайдера.</p>
         <section class="payment-order" data-payment-order-card hidden aria-label="Детали заказа">
           <div class="payment-order__head"><div><span>Заказ</span><strong data-payment-order-number></strong></div><b data-payment-order-status>В обработке</b></div>
@@ -30,13 +30,13 @@
           <dl class="payment-order__facts"><div><dt>Платформа</dt><dd data-payment-platform>—</dd></div><div><dt>Регион</dt><dd data-payment-region>—</dd></div><div><dt>Сумма</dt><dd data-payment-total>—</dd></div></dl>
         </section>
         <div class="payment-result__actions">
-          <a class="button button-primary" href="cabinet.html">Открыть личный кабинет</a>
+          <a class="button button-primary" href="cabinet.html#transactions">Открыть историю транзакций</a>
           <a class="button button-outline" href="index.html#catalog">В каталог</a>
         </div>
         <p class="payment-result__note">Выдача товара начинается после подтверждения платежа.</p>
       </section>
     </main>
     <footer class="footer container payment-footer"><a class="logo" href="index.html">LEVEL<span>UP</span></a><p>© 2026 LevelUp.</p></footer>
-    <script src="payment-result.js"></script>
+    <script type="module" src="payment-result.js?v=payment-sync-1"></script>
   </body>
 </html>

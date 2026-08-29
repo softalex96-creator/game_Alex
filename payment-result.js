@@ -1,8 +1,11 @@
+import { fetchAndSyncPayment } from "./payment-sync.js";
+
 (() => {
-  const apiOrigin = "https://api.gamemaster.cc";
   const params = new URLSearchParams(window.location.search);
   const orderId = params.get("orderId") || params.get("order_id") || params.get("id");
   const card = document.querySelector("[data-payment-order-card]");
+  const status = document.querySelector("[data-payment-status]");
+  const title = document.querySelector("[data-payment-result-title]");
 
   function rubles(value) { return `${Number(value).toLocaleString("ru-RU")} ₽`; }
   function initials(title) { return String(title || "LU").split(/\s+/).slice(0, 2).map((word) => word[0]).join("").toUpperCase(); }
@@ -29,11 +32,36 @@
     card.hidden = false;
   }
 
+  function renderStatus(order) {
+    renderOrder(order);
+    if (order.status === "paid") {
+      card?.closest(".payment-result__card")?.classList.remove("payment-result__card--failure");
+      const icon = document.querySelector(".payment-result__icon");
+      if (icon) icon.innerHTML = '<svg viewBox="0 0 56 56" fill="none" aria-hidden="true"><path d="M16 29.5 24.1 37 40.5 19"/><circle cx="28" cy="28" r="23"/></svg>';
+      if (title) title.textContent = "Оплата подтверждена";
+      if (status) status.textContent = "Заказ оплачен. Мы перенесли его из корзины в историю транзакций.";
+      const primaryAction = document.querySelector(".payment-result__actions .button-primary");
+      if (primaryAction) { primaryAction.href = "cabinet.html#transactions"; primaryAction.textContent = "Открыть историю транзакций"; }
+      document.title = "Оплата подтверждена — LevelUp";
+      return true;
+    }
+    if (status) status.textContent = "Платёж принят. Ждём подтверждение провайдера — обычно это занимает несколько секунд.";
+    return false;
+  }
+
   const validOrderId = safeOrderId(orderId);
   if (!validOrderId) return;
 
-  fetch(`${apiOrigin}/payments/betatransfer/order?orderId=${encodeURIComponent(validOrderId)}`, { credentials: "omit" })
-    .then((response) => response.ok ? response.json() : null)
-    .then((order) => { if (order) renderOrder(order); })
-    .catch(() => {});
+  let attempts = 0;
+  async function checkPayment() {
+    attempts += 1;
+    try {
+      const order = await fetchAndSyncPayment(validOrderId);
+      if (renderStatus(order) || attempts >= 30) return;
+    } catch {
+      if (attempts >= 30) { if (status) status.textContent = "Не удалось автоматически проверить статус. Заказ сохранён — откройте личный кабинет чуть позже."; return; }
+    }
+    window.setTimeout(checkPayment, 2000);
+  }
+  checkPayment();
 })();

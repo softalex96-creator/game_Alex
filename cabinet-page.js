@@ -1,4 +1,5 @@
 import { signInWithGoogle, signOutLevelUp } from "./firebase-auth.js";
+import { reconcileUserPayments, rememberPayment } from "./payment-sync.js";
 
 const elements = {
   user: document.querySelector("[data-cabinet-user]"), login: document.querySelector("[data-cabinet-login]"), dashboard: document.querySelector("[data-cabinet-dashboard]"),
@@ -170,6 +171,11 @@ function setUser(user) {
   elements.name.textContent = currentUser.displayName || "Игрок LevelUp"; elements.email.textContent = currentUser.email || "Steam-аккаунт";
   if (currentUser.photoURL) { elements.avatar.src = currentUser.photoURL; elements.avatar.hidden = false; } else { elements.avatar.hidden = true; }
   render();
+  reconcileUserPayments(currentUser.uid).then((confirmed) => {
+    if (!confirmed) return;
+    render();
+    elements.feedback.textContent = confirmed === 1 ? "Оплата подтверждена. Заказ перенесён в транзакции." : `Подтверждено оплат: ${confirmed}. Заказы перенесены в транзакции.`;
+  }).catch(() => {});
 }
 
 function selectTab(name) {
@@ -224,6 +230,7 @@ elements.paymentSubmit?.addEventListener("click", async () => {
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok || !result.paymentUrl || !result.orderId) throw new Error(result.error || "Платёжный сервис не создал заказ.");
+    rememberPayment(result.orderId, currentUser?.uid, selected, "card");
     sessionStorage.setItem("levelup-last-order-id", result.orderId);
     window.location.assign(result.paymentUrl);
   } catch (error) {
@@ -241,3 +248,4 @@ document.querySelector("[data-support-form]")?.addEventListener("submit", (event
 window.addEventListener("levelup-auth", (event) => setUser(event.detail));
 renderPaymentMethod();
 setUser(window.levelUpUser);
+if (window.location.hash === "#transactions") selectTab("transactions");

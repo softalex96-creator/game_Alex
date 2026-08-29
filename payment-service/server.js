@@ -99,7 +99,7 @@ http.createServer(async (request, response) => {
     if (!order) return json(response, 404, { error: "Order not found" }, request);
     const firstItem = order.items?.[0] || {};
     const statusLabel = order.status === "paid" ? "Оплачено" : order.status === "failed" ? "Платёж не выполнен" : "В обработке";
-    return json(response, 200, { id: order.id, amount: order.amount, statusLabel, platform: firstItem.platform || "—", region: firstItem.region || "—", items: order.items.map(({ gameTitle, optionName, title, price }) => ({ gameTitle, optionName, title, price })) }, request);
+    return json(response, 200, { id: order.id, amount: order.amount, status: order.status, statusLabel, updatedAt: order.updatedAt || null, platform: firstItem.platform || "—", region: firstItem.region || "—", items: order.items.map(({ gameTitle, optionName, title, price }) => ({ gameTitle, optionName, title, price })) }, request);
   }
   if (request.method === "POST" && url.pathname === "/payments/betatransfer/create") {
     try {
@@ -128,6 +128,7 @@ http.createServer(async (request, response) => {
       order.updatedAt = new Date().toISOString();
       order.status = "paid";
       orders[order.id] = order; writeOrders(orders);
+      console.log("payment_paid", order.id, order.amount, order.currency);
       return text(response, 200, "OK");
     } catch (error) { console.error("payment_webhook", error.message); return json(response, 400, { error: "Invalid callback" }, request); }
   }
