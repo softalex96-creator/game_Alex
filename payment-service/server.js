@@ -82,8 +82,7 @@ async function createProviderPayment(order) {
   const payload = await provider.json().catch(() => ({}));
   const paymentUrl = payload.url || payload.Url || payload.urlPayment || payload.UrlPayment;
   if (!provider.ok || !paymentUrl) {
-    const providerError = payload.errors || payload.Errors || payload.error || payload.Error || payload.status || payload.Status || `HTTP ${provider.status}`;
-    console.error("payment_provider_rejected", JSON.stringify(providerError));
+    console.error("payment_provider_rejected", provider.status, JSON.stringify(payload));
     throw new Error("Payment gateway did not create an order");
   }
   return { ...payload, id: payload.id || payload.Id, hash: payload.hash || payload.Hash, url: paymentUrl };
