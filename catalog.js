@@ -137,7 +137,7 @@
       }
       selected.forEach((name) => {
         const option = options.find((item) => item.name === name);
-        addToCart({ ...product, title: `${product.title} — ${name}`, price: option?.price || product.price });
+        addToCart({ ...product, title: `${product.title} — ${name}`, price: option?.price || product.price, optionIndex: product.options.indexOf(option) });
       });
       infoModal.close();
     };

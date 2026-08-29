@@ -44,12 +44,20 @@ function requestSignature(parameters) {
   // followed by the API secret. Keep this array in the exact order sent below.
   return md5(parameters.map((value) => String(value ?? "")).join("") + apiSecret);
 }
+function orderReturnUrl(value, orderId) {
+  if (!value) return "";
+  const url = new URL(value);
+  url.searchParams.set("orderId", orderId);
+  return url.toString();
+}
 function normalizeItems(value) {
   if (!Array.isArray(value) || value.length < 1 || value.length > 10) throw new Error("Choose from 1 to 10 items");
-  return value.map(({ gameId, optionIndex }) => {
+  return value.map(({ gameId, optionIndex, gameAccount }) => {
     const product = catalog.get(gameId); const option = product?.options?.[Number(optionIndex)];
     if (!product || !Number.isInteger(Number(optionIndex)) || !option || !Number.isInteger(option.price) || option.price <= 0) throw new Error("Unsupported catalog item");
-    return { gameId: product.id, optionIndex: Number(optionIndex), gameTitle: product.title, optionName: option.name, platform: product.platform, region: product.region, title: `${product.title} — ${option.name}`, price: option.price };
+    const account = String(gameAccount || "").trim();
+    if (account.length < 2 || account.length > 120) throw new Error("Invalid game account");
+    return { gameId: product.id, optionIndex: Number(optionIndex), gameAccount: account, gameTitle: product.title, optionName: option.name, platform: product.platform, region: product.region, title: `${product.title} — ${option.name}`, price: option.price };
   });
 }
 async function createProviderPayment(order, request) {
@@ -62,8 +70,8 @@ async function createProviderPayment(order, request) {
     ["currency", "RUB"],
     ["paymentSystem", ""],
     ["urlResult", process.env.CALLBACK_URL || ""],
-    ["urlSuccess", process.env.SUCCESS_URL || ""],
-    ["urlFail", process.env.FAILURE_URL || ""],
+    ["urlSuccess", orderReturnUrl(process.env.SUCCESS_URL, order.id)],
+    ["urlFail", orderReturnUrl(process.env.FAILURE_URL, order.id)],
     ["locale", "ru"],
     ["redirect", "0"],
     ["payerId", ""],

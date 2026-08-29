@@ -8,6 +8,7 @@ const elements = {
   cartSummary: document.querySelector("[data-cart-summary]"), cartSelectedCount: document.querySelector("[data-cart-selected-count]"), cartTotal: document.querySelector("[data-cart-total]"), openDemoPayment: document.querySelector("[data-open-demo-payment]"),
   paymentModal: document.querySelector("[data-demo-payment]"), paymentItems: document.querySelector("[data-demo-payment-items]"), paymentForm: document.querySelector("[data-demo-payment-form]"), paymentFeedback: document.querySelector("[data-demo-payment-feedback]"), paymentMethodInputs: [...document.querySelectorAll("[name='payment-method']")], paymentMethodPanels: [...document.querySelectorAll("[data-payment-method-panel]")], paymentSubmit: document.querySelector("[data-demo-payment-submit]"), paymentCardInput: document.querySelector("[data-payment-card]"), paymentPhoneInput: document.querySelector("[data-payment-phone]"),
 };
+const paymentApiOrigin = "https://api.gamemaster.cc";
 let currentUser = null;
 let selectedOrderIds = new Set();
 const minimumOrderAmount = 1000;
@@ -43,7 +44,7 @@ function card(title, subtitle, badge, variant = "pending") { const item = docume
 
 function orderId(order, index) { return order.id || `${order.createdAt || "legacy"}-${order.product}-${index}`; }
 function priceValue(price) { return Number(String(price).replace(/\D/g, "")) || 0; }
-function rubles(value) { const amount = Math.round(value * 0.9); return `${amount.toLocaleString("ru-RU")} ₽`; }
+function rubles(value) { return `${Math.round(value).toLocaleString("ru-RU")} ₽`; }
 function priceInRubles(price) { return rubles(priceValue(price)); }
 function inferGameId(order) {
   if (order.gameId) return order.gameId;
@@ -51,6 +52,18 @@ function inferGameId(order) {
   return Object.keys(gameAccountRequirements).find((id) => title.includes(id.replaceAll("-", " ")) || title.includes(id.replaceAll("-", ""))) || "";
 }
 function accountRequirement(order) { return gameAccountRequirements[inferGameId(order)] || { label: "Игровой идентификатор", placeholder: "UID, Player ID или никнейм", hint: "Укажите идентификатор игрового аккаунта. Пароль и коды подтверждения не нужны." }; }
+function providerItem(order) {
+  const gameId = inferGameId(order);
+  const product = (window.levelUpProducts || []).find((item) => item.id === gameId);
+  const savedIndex = Number(order.optionIndex);
+  const optionIndex = Number.isInteger(savedIndex) && product?.options?.[savedIndex]
+    ? savedIndex
+    : product?.options?.findIndex((option) => option.price === priceValue(order.price) || String(order.product || "").endsWith(option.name));
+  if (!gameId || !Number.isInteger(optionIndex) || optionIndex < 0) throw new Error("Не удалось определить выбранный товар. Удалите его из корзины и добавьте заново.");
+  const gameAccount = String(order.gameAccount || "").trim();
+  if (gameAccount.length < 2 || gameAccount.length > 120) throw new Error(`Проверьте поле «${accountRequirement(order).label}».`);
+  return { gameId, optionIndex, gameAccount };
+}
 function saveGameAccount(id, gameAccount) { write("orders", read("orders").map((order, index) => orderId(order, index) === id ? { ...order, gameAccount: gameAccount.trim() } : order)); }
 function pendingOrders() { return read("orders").map((order, index) => ({ ...order, id: orderId(order, index) })).filter((order) => order.paymentStatus !== "paid" && priceValue(order.price) >= minimumOrderAmount); }
 function paymentMethod() { return elements.paymentMethodInputs.find((input) => input.checked)?.value || "card"; }
@@ -196,6 +209,30 @@ function openPaymentDialog() {
 elements.openDemoPayment?.addEventListener("click", openPaymentDialog);
 elements.paymentModal?.querySelector(".close")?.addEventListener("click", () => elements.paymentModal.close());
 document.querySelector("[data-payment-close]")?.addEventListener("click", () => elements.paymentModal.close());
+elements.paymentSubmit?.addEventListener("click", async () => {
+  const selected = pendingOrders().filter((order) => selectedOrderIds.has(order.id));
+  elements.paymentSubmit.disabled = true;
+  elements.paymentSubmit.setAttribute("aria-busy", "true");
+  elements.paymentSubmit.textContent = "Создаём заказ…";
+  elements.paymentFeedback.textContent = "Связываемся с защищённой платёжной страницей.";
+  try {
+    const response = await fetch(`${paymentApiOrigin}/payments/betatransfer/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "omit",
+      body: JSON.stringify({ items: selected.map(providerItem) }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.paymentUrl || !result.orderId) throw new Error(result.error || "Платёжный сервис не создал заказ.");
+    sessionStorage.setItem("levelup-last-order-id", result.orderId);
+    window.location.assign(result.paymentUrl);
+  } catch (error) {
+    elements.paymentFeedback.textContent = `${error.message || "Не удалось открыть оплату."} Проверьте данные и попробуйте ещё раз.`;
+    elements.paymentSubmit.disabled = false;
+    elements.paymentSubmit.removeAttribute("aria-busy");
+    elements.paymentSubmit.textContent = "Перейти к защищённой оплате";
+  }
+});
 document.querySelector("[data-support-form]")?.addEventListener("submit", (event) => {
   event.preventDefault(); if (!currentUser) return;
   const form = event.currentTarget; const data = new FormData(form); const tickets = read("tickets");

@@ -87,6 +87,12 @@
 @media (max-width: 560px) { .payment-entry--mobile { grid-template-columns: auto 1fr; }.payment-entry__intro strong { font-size: 15px; } }
 
 .payment-availability { display: inline-flex; align-items: center; min-height: 30px; margin: 12px 0 2px; padding: 0 10px; border: 1px solid rgba(188,160,255,.28); border-radius: 999px; color: #cfc2ff; background: rgba(117,83,212,.1); font-size: 11px; font-weight: 800; }
+.payment-availability--ready { border-color: rgba(114,237,177,.38); color: #9cf2c3; background: rgba(51,153,105,.12); }
+.payment-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.payment-actions .button { min-height: 48px; }
+.payment-cancel { border: 1px solid var(--line); color: #d8d0e8; background: rgba(255,255,255,.04); }
+.payment-feedback { min-height: 22px; margin: 0 0 12px !important; }
+[data-demo-payment-submit][aria-busy="true"] { cursor: wait; opacity: .78; }
 
 /* Игровые реквизиты собираются отдельно для каждой позиции корзины. */
 .cabinet-record { flex-wrap: wrap; }
