@@ -69,7 +69,7 @@ function saveGameAccount(id, gameAccount) { write("orders", read("orders").map((
 function pendingOrders() { return read("orders").map((order, index) => ({ ...order, id: orderId(order, index) })).filter((order) => order.paymentStatus !== "paid" && priceValue(order.price) >= minimumOrderAmount); }
 function paymentMethod() { return elements.paymentMethodInputs.find((input) => input.checked)?.value || "card"; }
 function paymentMethodLabel(method) { return method === "mobile" ? "Мобильная коммерция" : "Банковская карта"; }
-function renderPaymentMethod() { const method = paymentMethod(); elements.paymentMethodPanels.forEach((panel) => { panel.hidden = panel.dataset.paymentMethodPanel !== method; }); if (elements.paymentCardInput) { elements.paymentCardInput.disabled = method !== "card"; elements.paymentCardInput.required = method === "card"; } if (elements.paymentPhoneInput) { elements.paymentPhoneInput.disabled = method !== "mobile"; elements.paymentPhoneInput.required = method === "mobile"; } if (elements.paymentSubmit) elements.paymentSubmit.textContent = method === "mobile" ? "Мобильная оплата скоро" : "Перейти к защищённой оплате"; }
+function renderPaymentMethod() { const method = paymentMethod(); elements.paymentMethodPanels.forEach((panel) => { panel.hidden = panel.dataset.paymentMethodPanel !== method; }); if (elements.paymentCardInput) { elements.paymentCardInput.disabled = method !== "card"; elements.paymentCardInput.required = method === "card"; } if (elements.paymentPhoneInput) { elements.paymentPhoneInput.disabled = method !== "mobile"; elements.paymentPhoneInput.required = method === "mobile"; } if (elements.paymentSubmit) elements.paymentSubmit.textContent = method === "mobile" ? "Мобильная оплата скоро" : "ОПЛАТИТЬ"; }
 
 function renderCartSummary() {
   const orders = pendingOrders();
@@ -241,7 +241,7 @@ elements.paymentSubmit?.addEventListener("click", async () => {
     elements.paymentFeedback.textContent = `${error.message || "Не удалось открыть оплату."} Проверьте данные и попробуйте ещё раз.`;
     elements.paymentSubmit.disabled = false;
     elements.paymentSubmit.removeAttribute("aria-busy");
-    elements.paymentSubmit.textContent = "Перейти к защищённой оплате";
+    elements.paymentSubmit.textContent = "ОПЛАТИТЬ";
   }
 });
 document.querySelector("[data-support-form]")?.addEventListener("submit", (event) => {
