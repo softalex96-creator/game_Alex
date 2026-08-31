@@ -29,6 +29,16 @@ function setFeedback(message) { if (feedback) feedback.textContent = message; }
 export async function signInWithGoogle() { return signInWithPopup(auth, provider); }
 export async function signOutLevelUp() { return signOut(auth); }
 
+async function registerLevelUpUser(user) {
+  const idToken = await user.getIdToken();
+  const response = await fetch("https://api.gamemaster.cc/users/register", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${idToken}` },
+    credentials: "omit",
+  });
+  if (!response.ok) throw new Error("Unable to register LevelUp user");
+}
+
 function signInMessage(error) {
   if (error.code === "auth/popup-closed-by-user") return "Вход отменён. Попробуйте ещё раз, когда будете готовы.";
   if (error.code === "auth/popup-blocked") return "Браузер заблокировал окно входа. Разрешите всплывающие окна для сайта и повторите попытку.";
@@ -65,4 +75,5 @@ onAuthStateChanged(auth, (user) => {
     image.hidden = false;
   });
   showAccountView("profile");
+  registerLevelUpUser(user).catch(() => {});
 });

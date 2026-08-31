@@ -1,4 +1,4 @@
-import { signInWithGoogle, signOutLevelUp } from "./firebase-auth.js";
+import { signInWithGoogle, signOutLevelUp } from "./firebase-auth.js?v=resend-email-1";
 import { reconcileUserPayments, rememberPayment } from "./payment-sync.js";
 
 const elements = {
@@ -224,9 +224,11 @@ elements.paymentSubmit?.addEventListener("click", async () => {
   elements.paymentSubmit.textContent = "Создаём заказ…";
   elements.paymentFeedback.textContent = "Связываемся с защищённой платёжной страницей.";
   try {
+    if (!currentUser) throw new Error("Сначала войдите в аккаунт Google.");
+    const idToken = await currentUser.getIdToken();
     const response = await fetch(`${paymentApiOrigin}/payments/betatransfer/create`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
       credentials: "omit",
       body: JSON.stringify({ items: selected.map(providerItem) }),
     });

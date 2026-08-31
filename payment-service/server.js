@@ -4,12 +4,16 @@ import http from "node:http";
 import path from "node:path";
 import vm from "node:vm";
 import { fileURLToPath } from "node:url";
+import { authenticateFirebaseRequest } from "./firebase.js";
+import { createDeliveryCode, sendPaymentEmail, sendWelcomeEmail } from "./email.js";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 3000);
 const origin = process.env.PUBLIC_ORIGIN || "https://gamemaster.cc";
 const ordersFile = process.env.ORDERS_FILE || path.join(dirname, "data", "orders.json");
+const usersFile = process.env.USERS_FILE || path.join(dirname, "data", "users.json");
 const catalogFile = process.env.CATALOG_FILE || path.join(dirname, "..", "catalog-data.js");
+const paymentEmailsInFlight = new Set();
 
 function loadCatalog() {
   const sandbox = { window: {} };
@@ -20,6 +24,8 @@ function loadCatalog() {
 const catalog = loadCatalog();
 function readOrders() { try { return JSON.parse(fs.readFileSync(ordersFile, "utf8")); } catch { return {}; } }
 function writeOrders(orders) { fs.mkdirSync(path.dirname(ordersFile), { recursive: true, mode: 0o700 }); fs.writeFileSync(ordersFile, JSON.stringify(orders, null, 2), { mode: 0o600 }); }
+function readUsers() { try { return JSON.parse(fs.readFileSync(usersFile, "utf8")); } catch { return {}; } }
+function writeUsers(users) { fs.mkdirSync(path.dirname(usersFile), { recursive: true, mode: 0o700 }); fs.writeFileSync(usersFile, JSON.stringify(users, null, 2), { mode: 0o600 }); }
 function json(response, status, body, request) {
   const headers = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
   if (request.headers.origin === origin) headers["Access-Control-Allow-Origin"] = origin;
@@ -88,10 +94,61 @@ async function createProviderPayment(order) {
   return { ...payload, id: payload.id || payload.Id, hash: payload.hash || payload.Hash, url: paymentUrl };
 }
 
+async function registerUser(user) {
+  const users = readUsers();
+  const previous = users[user.uid] || {};
+  if (previous.welcomeEmail?.status === "sent") return { created: false, emailSent: true };
+  const record = { ...previous, uid: user.uid, email: user.email, displayName: user.displayName, createdAt: previous.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString(), welcomeEmail: { status: "sending", updatedAt: new Date().toISOString() } };
+  users[user.uid] = record; writeUsers(users);
+  try {
+    const emailId = await sendWelcomeEmail(user);
+    const current = readUsers();
+    current[user.uid] = { ...record, welcomeEmail: { status: "sent", emailId, sentAt: new Date().toISOString() } };
+    writeUsers(current);
+    console.log("welcome_email_sent", user.uid);
+    return { created: !previous.createdAt, emailSent: true };
+  } catch (error) {
+    const current = readUsers();
+    current[user.uid] = { ...record, welcomeEmail: { status: "failed", updatedAt: new Date().toISOString() } };
+    writeUsers(current);
+    console.error("welcome_email_failed", user.uid, error.message);
+    throw error;
+  }
+}
+
+async function deliverPaymentEmail(orderId) {
+  const orders = readOrders(); const order = orders[orderId];
+  if (!order || order.status !== "paid" || !order.customer?.email || order.paymentEmail?.status === "sent" || paymentEmailsInFlight.has(orderId)) return;
+  paymentEmailsInFlight.add(orderId);
+  order.paymentEmail = { status: "sending", updatedAt: new Date().toISOString() };
+  orders[order.id] = order; writeOrders(orders);
+  try {
+    const emailId = await sendPaymentEmail(order);
+    const current = readOrders();
+    if (!current[order.id]) return;
+    current[order.id].paymentEmail = { status: "sent", emailId, sentAt: new Date().toISOString() };
+    writeOrders(current);
+    console.log("payment_email_sent", order.id);
+  } catch (error) {
+    const current = readOrders();
+    if (current[order.id]) { current[order.id].paymentEmail = { status: "failed", updatedAt: new Date().toISOString() }; writeOrders(current); }
+    console.error("payment_email_failed", order.id, error.message);
+  } finally {
+    paymentEmailsInFlight.delete(orderId);
+  }
+}
+
 http.createServer(async (request, response) => {
   const url = new URL(request.url, `http://${request.headers.host}`);
-  if (request.method === "OPTIONS") { response.writeHead(204, { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" }); return response.end(); }
+  if (request.method === "OPTIONS") { response.writeHead(204, { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization" }); return response.end(); }
   if (request.method === "GET" && url.pathname === "/health") return json(response, 200, { ok: true, catalogItems: catalog.size }, request);
+  if (request.method === "POST" && url.pathname === "/users/register") {
+    try {
+      if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
+      const user = await authenticateFirebaseRequest(request);
+      return json(response, 200, { ok: true, ...(await registerUser(user)) }, request);
+    } catch (error) { console.error("user_register", error.message); return json(response, 401, { error: "Unable to register user" }, request); }
+  }
   if (request.method === "GET" && url.pathname === "/payments/betatransfer/order") {
     const orderId = url.searchParams.get("orderId") || "";
     if (!validOrderId(orderId)) return json(response, 400, { error: "Invalid order" }, request);
@@ -104,8 +161,9 @@ http.createServer(async (request, response) => {
   if (request.method === "POST" && url.pathname === "/payments/betatransfer/create") {
     try {
       if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
+      const user = await authenticateFirebaseRequest(request);
       const { items } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items);
-      const order = { id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`, amount: selected.reduce((sum, item) => sum + item.price, 0), currency: "RUB", items: selected, status: "created", createdAt: new Date().toISOString() };
+      const order = { id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`, amount: selected.reduce((sum, item) => sum + item.price, 0), currency: "RUB", items: selected, customer: user, status: "created", createdAt: new Date().toISOString() };
       const provider = await createProviderPayment(order); order.providerId = provider.id; order.providerHash = provider.hash; order.status = "awaiting_payment";
       const orders = readOrders(); orders[order.id] = order; writeOrders(orders);
       return json(response, 201, { orderId: order.id, paymentUrl: provider.url }, request);
@@ -127,10 +185,17 @@ http.createServer(async (request, response) => {
       order.paidAmount = payload.paidAmount || "";
       order.updatedAt = new Date().toISOString();
       order.status = "paid";
+      order.deliveryCode ||= createDeliveryCode();
+      if (!order.paymentEmail || order.paymentEmail.status === "failed") order.paymentEmail = { status: "pending", updatedAt: new Date().toISOString() };
       orders[order.id] = order; writeOrders(orders);
       console.log("payment_paid", order.id, order.amount, order.currency);
-      return text(response, 200, "OK");
+      text(response, 200, "OK");
+      void deliverPaymentEmail(order.id);
+      return;
     } catch (error) { console.error("payment_webhook", error.message); return json(response, 400, { error: "Invalid callback" }, request); }
   }
   return json(response, 404, { error: "Not found" }, request);
-}).listen(port, "127.0.0.1", () => console.log(`LevelUp payment service listening on ${port}`));
+}).listen(port, "127.0.0.1", () => {
+  console.log(`LevelUp payment service listening on ${port}`);
+  for (const order of Object.values(readOrders())) if (order.status === "paid" && order.customer?.email && order.paymentEmail?.status !== "sent") void deliverPaymentEmail(order.id);
+});
