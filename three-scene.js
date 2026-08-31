@@ -98,24 +98,22 @@ if (howStage && !reducedMotion) {
 
   const group = new THREE.Group();
   scene.add(group);
-  const curve = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-0.65, 0.74, 0), new THREE.Vector3(-0.37, 1.12, 0), new THREE.Vector3(0.24, 1.12, 0),
-    new THREE.Vector3(0.6, 0.72, 0), new THREE.Vector3(0.45, 0.28, 0), new THREE.Vector3(0.02, 0.05, 0),
-    new THREE.Vector3(-0.05, -0.34, 0),
-  ]);
-  const question = new THREE.Mesh(
-    new THREE.TubeGeometry(curve, 96, 0.165, 16, false),
-    new THREE.MeshStandardMaterial({ color: 0xeefbff, emissive: 0x2c83ff, emissiveIntensity: 2.25, metalness: 0.82, roughness: 0.12 }),
+  const core = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(.54, 2),
+    new THREE.MeshStandardMaterial({ color: 0xcff9ff, emissive: 0x2e9dff, emissiveIntensity: 2.4, metalness: .72, roughness: .12 }),
   );
-  const questionAura = new THREE.Mesh(
-    new THREE.TubeGeometry(curve, 96, 0.245, 16, false),
-    new THREE.MeshBasicMaterial({ color: 0x6b4dff, transparent: true, opacity: .15 }),
+  const coreAura = new THREE.Mesh(
+    new THREE.SphereGeometry(.86, 32, 32),
+    new THREE.MeshBasicMaterial({ color: 0x7654ff, transparent: true, opacity: .13 }),
   );
-  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.19, 24, 24), new THREE.MeshStandardMaterial({ color: 0xffa6e5, emissive: 0xde2db3, emissiveIntensity: 2.2, metalness: 0.7, roughness: 0.16 }));
-  dot.position.y = -0.82;
-  const dotAura = new THREE.Mesh(new THREE.SphereGeometry(0.29, 20, 20), new THREE.MeshBasicMaterial({ color: 0xff6fcf, transparent: true, opacity: .12 }));
-  dotAura.position.copy(dot.position);
-  group.add(questionAura, question, dotAura, dot);
+  group.add(coreAura, core);
+  const nodes = new THREE.Group();
+  [[-1.22, .38, 0x79e7ff], [1.18, .36, 0xc898ff], [.1, -1.07, 0xffa4d6]].forEach(([x, y, color], index) => {
+    const node = new THREE.Mesh(new THREE.SphereGeometry(index === 2 ? .14 : .17, 20, 20), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 1.65, metalness: .55, roughness: .18 }));
+    node.position.set(x, y, .1);
+    nodes.add(node);
+  });
+  group.add(nodes);
   const rings = new THREE.Group();
   [1.1, 1.46, 1.78].forEach((radius, index) => {
     const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, index === 1 ? .025 : .016, 8, 96), new THREE.MeshBasicMaterial({ color: [0x54eaff, 0xc07bff, 0xff8fd3][index], transparent: true, opacity: index === 1 ? .76 : .54 }));
@@ -123,6 +121,12 @@ if (howStage && !reducedMotion) {
     rings.add(ring);
   });
   group.add(rings);
+  const signalLines = new THREE.Group();
+  [[-1.22, .38], [1.18, .36], [.1, -1.07]].forEach(([x, y]) => {
+    const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(x, y, .08)]);
+    signalLines.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0x9aeaff, transparent: true, opacity: .48 })));
+  });
+  group.add(signalLines);
   const dataParticles = new THREE.BufferGeometry();
   const dataParticleCount = 96;
   const dataPositions = new Float32Array(dataParticleCount * 3);
@@ -158,8 +162,11 @@ if (howStage && !reducedMotion) {
     group.rotation.y = elapsed * .52;
     group.rotation.x = Math.sin(elapsed * .75) * .16;
     group.position.y = Math.sin(elapsed * .9) * .11;
-    questionAura.rotation.y = -elapsed * .8;
-    dotAura.scale.setScalar(1 + Math.sin(elapsed * 2.4) * .12);
+    core.rotation.y = elapsed * .86;
+    core.rotation.x = elapsed * .36;
+    coreAura.scale.setScalar(1 + Math.sin(elapsed * 2.4) * .12);
+    nodes.rotation.z = elapsed * -.42;
+    signalLines.rotation.z = elapsed * -.42;
     rings.rotation.z = -elapsed * .38;
     particleField.rotation.z = elapsed * .17;
     renderer.render(scene, camera);
