@@ -1,14 +1,12 @@
 const levelUpCurrencies = {
-  KGS: { factor: 1.08, suffix: "сом", decimals: 0 },
-  RUB: { factor: 1, suffix: "₽", decimals: 0 },
-  BYN: { factor: 0.037, suffix: "Br", decimals: 2 },
+  KGS: { suffix: "сом", decimals: 0 },
+  RUB: { suffix: "₽", decimals: 0 },
+  BYN: { suffix: "BYN", decimals: 2 },
 };
-
-const currencyNotes = {
-  ru: { KGS: "Цены пересчитаны в KGS ориентировочно. Наличие и финальная стоимость подтверждаются перед оплатой.", RUB: "Цены указаны в RUB как ориентир по открытым витринам. Наличие и финальная стоимость подтверждаются перед оплатой.", BYN: "Цены пересчитаны в BYN ориентировочно. Наличие и финальная стоимость подтверждаются перед оплатой." },
-  ky: { KGS: "Баалар KGS менен. Башка валюталарга эсептөө багыт берүү үчүн гана; сайтта төлөм азырынча туташтырылган эмес.", RUB: "Баалар RUB менен багыт берүүчү эсептөөдө көрсөтүлдү. Акыркы баа төлөмгө чейин такталат.", BYN: "Баалар BYN менен багыт берүүчү эсептөөдө көрсөтүлдү. Акыркы баа төлөмгө чейин такталат." },
-  be: { KGS: "Цэны ў KGS. Пераразлік у іншыя валюты носіць даведачны характар; аплата на сайце пакуль не падключана.", RUB: "Цэны паказаны ў RUB па арыентыровачным пераразліку. Канчатковы кошт пацвярджаецца перад аплатай.", BYN: "Цэны паказаны ў BYN па арыентыровачным пераразліку. Канчатковы кошт пацвярджаецца перад аплатай." },
-};
+const currencyForLanguage = { ru: "RUB", ky: "KGS", be: "BYN" };
+const currencyApi = "https://api.gamemaster.cc/rates/cbr";
+let cbrRates = { RUB: 1 };
+let cbrDate = null;
 
 const currencySelects = [...document.querySelectorAll("[data-currency-select]")];
 const currencyNote = document.querySelector("[data-currency-note]");
@@ -19,25 +17,49 @@ const priceElements = [...document.querySelectorAll(".game-card")].map((card) =>
 }).filter(({ price, amount }) => price && Number.isFinite(amount));
 
 function priceText(amount, currency) {
-  const { factor, suffix, decimals } = levelUpCurrencies[currency];
-  const value = amount * factor;
+  const { suffix, decimals } = levelUpCurrencies[currency];
+  const rublesPerUnit = cbrRates[currency];
+  const value = currency === "RUB" ? amount : amount / rublesPerUnit;
   const formatted = new Intl.NumberFormat("ru-RU", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value);
   return amount > 0 ? `${formatted} ${suffix}` : "Недоступно";
 }
 
-function renderCurrency(currency) {
-  const selected = levelUpCurrencies[currency] ? currency : "RUB";
-  priceElements.forEach(({ price, amount }) => { price.textContent = priceText(amount, selected); });
-  currencySelects.forEach((select) => { select.value = selected; });
-  const language = document.documentElement.lang || "ru";
-  if (currencyNote) currencyNote.textContent = (currencyNotes[language] || currencyNotes.ru)[selected];
-  window.dispatchEvent(new CustomEvent("levelup-currency-change", { detail: selected }));
-  try { localStorage.setItem("levelup-currency-v2", selected); } catch { /* The selector still works without browser storage. */ }
+function noteText(language, currency) {
+  const date = cbrDate ? ` на ${cbrDate}` : "";
+  const messages = {
+    ru: `Цены пересчитаны по официальному курсу ЦБ РФ${date}. Итоговая оплата проходит в RUB.`,
+    ky: `Баалар Россия Банкынын расмий курсу боюнча${date} эсептелди. Төлөмдүн акыркы суммасы RUB менен жүргүзүлөт.`,
+    be: `Цэны пералічаныя па афіцыйным курсе Банка Расіі${date}. Канчатковая аплата праводзіцца ў RUB.`,
+  };
+  return messages[language] || messages.ru;
 }
 
-let savedCurrency = "RUB";
-try { savedCurrency = localStorage.getItem("levelup-currency-v2") || "RUB"; } catch { /* RUB is the default. */ }
-renderCurrency(savedCurrency);
+function renderCurrency(currency) {
+  const selected = levelUpCurrencies[currency] ? currency : "RUB";
+  const activeCurrency = cbrRates[selected] ? selected : "RUB";
+  priceElements.forEach(({ price, amount }) => { price.textContent = priceText(amount, activeCurrency); });
+  currencySelects.forEach((select) => { select.value = activeCurrency; });
+  const language = document.documentElement.lang || "ru";
+  if (currencyNote) currencyNote.textContent = noteText(language, activeCurrency);
+  window.dispatchEvent(new CustomEvent("levelup-currency-change", { detail: activeCurrency }));
+  try { localStorage.setItem("levelup-currency-v3", activeCurrency); } catch { /* The selector still works without browser storage. */ }
+}
+
+async function loadOfficialRates() {
+  const response = await fetch(currencyApi, { cache: "no-store" });
+  if (!response.ok) throw new Error("Official exchange rates are unavailable");
+  const payload = await response.json();
+  if (!payload?.ok || !payload.rates?.KGS || !payload.rates?.BYN) throw new Error("Official exchange rates are incomplete");
+  cbrRates = payload.rates;
+  cbrDate = payload.date;
+}
+
+const initialLanguage = document.documentElement.lang || "ru";
+renderCurrency(currencyForLanguage[initialLanguage] || "RUB");
+loadOfficialRates().then(() => renderCurrency(currencyForLanguage[document.documentElement.lang] || "RUB")).catch(() => {
+  renderCurrency("RUB");
+  if (currencyNote) currencyNote.textContent = "Курс ЦБ РФ временно недоступен. Цены отображены в RUB.";
+});
 
 currencySelects.forEach((select) => select.addEventListener("change", () => renderCurrency(select.value)));
-window.addEventListener("levelup-language-change", () => renderCurrency(currencySelects[0]?.value || savedCurrency));
+window.addEventListener("levelup-language-change", () => renderCurrency(currencyForLanguage[document.documentElement.lang] || "RUB"));

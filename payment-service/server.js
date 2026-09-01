@@ -14,11 +14,31 @@ const ordersFile = process.env.ORDERS_FILE || path.join(dirname, "data", "orders
 const usersFile = process.env.USERS_FILE || path.join(dirname, "data", "users.json");
 const catalogFile = process.env.CATALOG_FILE || path.join(dirname, "..", "catalog-data.js");
 const paymentEmailsInFlight = new Set();
+const cbrRatesCache = { expiresAt: 0, value: null };
 
 function loadCatalog() {
   const sandbox = { window: {} };
   vm.runInNewContext(fs.readFileSync(catalogFile, "utf8"), sandbox, { filename: "catalog-data.js" });
   return new Map((sandbox.window.levelUpProducts || []).map((item) => [item.id, item]));
+}
+
+function cbrRate(xml, code) {
+  const match = xml.match(new RegExp(`<Valute[^>]*>[\\s\\S]*?<CharCode>${code}</CharCode>[\\s\\S]*?<VunitRate>([^<]+)</VunitRate>[\\s\\S]*?</Valute>`));
+  const value = Number(match?.[1]?.replace(",", "."));
+  if (!Number.isFinite(value) || value <= 0) throw new Error(`CBR rate ${code} is unavailable`);
+  return value;
+}
+
+async function loadCbrRates() {
+  if (cbrRatesCache.value && cbrRatesCache.expiresAt > Date.now()) return cbrRatesCache.value;
+  const response = await fetch("https://www.cbr.ru/scripts/XML_daily.asp", { headers: { Accept: "application/xml" } });
+  if (!response.ok) throw new Error(`CBR request failed: ${response.status}`);
+  const xml = new TextDecoder("windows-1251").decode(await response.arrayBuffer());
+  const date = xml.match(/<ValCurs Date="([^"]+)"/)?.[1] || null;
+  const value = { base: "RUB", date, rates: { RUB: 1, KGS: cbrRate(xml, "KGS"), BYN: cbrRate(xml, "BYN") } };
+  cbrRatesCache.value = value;
+  cbrRatesCache.expiresAt = Date.now() + 6 * 60 * 60 * 1000;
+  return value;
 }
 
 const catalog = loadCatalog();
@@ -140,8 +160,12 @@ async function deliverPaymentEmail(orderId) {
 
 http.createServer(async (request, response) => {
   const url = new URL(request.url, `http://${request.headers.host}`);
-  if (request.method === "OPTIONS") { response.writeHead(204, { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization" }); return response.end(); }
+  if (request.method === "OPTIONS") { response.writeHead(204, { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization" }); return response.end(); }
   if (request.method === "GET" && url.pathname === "/health") return json(response, 200, { ok: true, catalogItems: catalog.size }, request);
+  if (request.method === "GET" && url.pathname === "/rates/cbr") {
+    try { return json(response, 200, { ok: true, ...(await loadCbrRates()) }, request); }
+    catch (error) { console.error("cbr_rates", error.message); return json(response, 502, { ok: false, error: "Official exchange rates are temporarily unavailable" }, request); }
+  }
   if (request.method === "POST" && url.pathname === "/users/register") {
     try {
       if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
