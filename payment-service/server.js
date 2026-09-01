@@ -6,6 +6,7 @@ import vm from "node:vm";
 import { fileURLToPath } from "node:url";
 import { authenticateFirebaseRequest } from "./firebase.js";
 import { createDeliveryCode, sendPaymentEmail, sendWelcomeEmail } from "./email.js";
+import { createWink2PayInvoice, getWink2PayStatus, hasValidWink2PaySignature } from "./wink2pay.js";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 3000);
@@ -114,6 +115,31 @@ async function createProviderPayment(order) {
   return { ...payload, id: payload.id || payload.Id, hash: payload.hash || payload.Hash, url: paymentUrl };
 }
 
+function setOrderPaymentStatus(order, providerStatus, paidAmount = "") {
+  order.providerStatus = providerStatus;
+  order.updatedAt = new Date().toISOString();
+  if (providerStatus === "complete") {
+    order.status = "paid";
+    order.paidAmount = paidAmount || order.amount;
+    order.deliveryCode ||= createDeliveryCode();
+    if (!order.paymentEmail || order.paymentEmail.status === "failed") order.paymentEmail = { status: "pending", updatedAt: order.updatedAt };
+  } else if (["failed", "partial_complete"].includes(providerStatus)) {
+    order.status = "failed";
+  } else {
+    order.status = "awaiting_payment";
+  }
+}
+
+async function refreshWink2PayOrder(order) {
+  if (order.provider !== "wink2pay" || ["paid", "failed"].includes(order.status)) return order;
+  const payload = await getWink2PayStatus(order.id);
+  setOrderPaymentStatus(order, payload.payment_status, payload.amount_paid);
+  order.providerId = payload.id || order.providerId;
+  const orders = readOrders(); orders[order.id] = order; writeOrders(orders);
+  if (order.status === "paid") void deliverPaymentEmail(order.id);
+  return order;
+}
+
 async function registerUser(user) {
   const users = readUsers();
   const previous = users[user.uid] || {};
@@ -176,8 +202,10 @@ http.createServer(async (request, response) => {
   if (request.method === "GET" && url.pathname === "/payments/betatransfer/order") {
     const orderId = url.searchParams.get("orderId") || "";
     if (!validOrderId(orderId)) return json(response, 400, { error: "Invalid order" }, request);
-    const order = readOrders()[orderId];
+    let order = readOrders()[orderId];
     if (!order) return json(response, 404, { error: "Order not found" }, request);
+    try { order = await refreshWink2PayOrder(order); }
+    catch (error) { console.error("wink2pay_status", order.id, error.message); }
     const firstItem = order.items?.[0] || {};
     const statusLabel = order.status === "paid" ? "Оплачено" : order.status === "failed" ? "Платёж не выполнен" : "В обработке";
     return json(response, 200, { id: order.id, amount: order.amount, status: order.status, statusLabel, updatedAt: order.updatedAt || null, platform: firstItem.platform || "—", region: firstItem.region || "—", items: order.items.map(({ gameTitle, optionName, title, price }) => ({ gameTitle, optionName, title, price })) }, request);
@@ -188,10 +216,35 @@ http.createServer(async (request, response) => {
       const user = await authenticateFirebaseRequest(request);
       const { items } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items);
       const order = { id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`, amount: selected.reduce((sum, item) => sum + item.price, 0), currency: "RUB", items: selected, customer: user, status: "created", createdAt: new Date().toISOString() };
-      const provider = await createProviderPayment(order); order.providerId = provider.id; order.providerHash = provider.hash; order.status = "awaiting_payment";
+      const provider = await createProviderPayment(order); order.provider = "betatransfer"; order.providerId = provider.id; order.providerHash = provider.hash; order.status = "awaiting_payment";
       const orders = readOrders(); orders[order.id] = order; writeOrders(orders);
       return json(response, 201, { orderId: order.id, paymentUrl: provider.url }, request);
     } catch (error) { console.error("payment_create", error.message); return json(response, 422, { error: "Unable to start payment" }, request); }
+  }
+  if (request.method === "POST" && url.pathname === "/payments/wink2pay/create") {
+    try {
+      if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
+      const user = await authenticateFirebaseRequest(request);
+      const { items } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items);
+      const order = {
+        id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`,
+        amount: selected.reduce((sum, item) => sum + item.price, 0), currency: "RUB", items: selected,
+        customer: user, provider: "wink2pay", status: "created", createdAt: new Date().toISOString(),
+        notificationUrl: process.env.WINK2PAY_NOTIFICATION_URL || "",
+      };
+      order.finishUrl = orderReturnUrl(process.env.WINK2PAY_FINISH_URL || process.env.SUCCESS_URL, order.id);
+      if (!order.finishUrl || !order.notificationUrl) throw new Error("Wink2Pay callback URLs are not configured");
+      const provider = await createWink2PayInvoice(order);
+      order.providerId = provider.id || provider.invoice_id;
+      order.providerStatus = provider.status;
+      order.status = "awaiting_payment";
+      delete order.finishUrl; delete order.notificationUrl;
+      const orders = readOrders(); orders[order.id] = order; writeOrders(orders);
+      return json(response, 201, { orderId: order.id, paymentUrl: provider.url, redirectMethod: provider.method || "GET", formData: provider.form_data || {} }, request);
+    } catch (error) {
+      console.error("wink2pay_create", error.providerStatus || "", error.providerCode || "", error.message);
+      return json(response, 422, { error: "Unable to start SBP payment" }, request);
+    }
   }
   if (request.method === "POST" && url.pathname === "/payments/betatransfer/webhook") {
     try {
@@ -217,6 +270,30 @@ http.createServer(async (request, response) => {
       void deliverPaymentEmail(order.id);
       return;
     } catch (error) { console.error("payment_webhook", error.message); return json(response, 400, { error: "Invalid callback" }, request); }
+  }
+  if (request.method === "POST" && url.pathname === "/payments/wink2pay/webhook") {
+    try {
+      const payload = await parseProviderPayload(request);
+      const apiSecret = process.env.WINK2PAY_API_SECRET;
+      if (!apiSecret) return text(response, 503, "Webhook verification is not configured");
+      if (!hasValidWink2PaySignature(payload, { path: url.pathname, secret: apiSecret })) return json(response, 403, { error: "Invalid signature" }, request);
+      if (payload.webhook_type && payload.webhook_type !== "invoice") return text(response, 200, "IGNORED");
+      if (!validOrderId(payload.order)) return json(response, 400, { error: "Invalid order" }, request);
+      if (String(payload.merchant_id) !== String(process.env.WINK2PAY_MERCHANT_ID)) return json(response, 422, { error: "Merchant does not match" }, request);
+      if (payload.product_id && String(payload.product_id) !== String(process.env.WINK2PAY_ENDPOINT_ID)) return json(response, 422, { error: "Endpoint does not match" }, request);
+      const orders = readOrders(); const order = orders[payload.order];
+      if (!order || order.provider !== "wink2pay") return json(response, 404, { error: "Order not found" }, request);
+      if (order.webhookIds?.includes(payload.webhook_id)) return text(response, 200, "OK");
+      if (Number(payload.amount) !== order.amount || String(payload.currency || "").toUpperCase() !== order.currency) return json(response, 422, { error: "Order details do not match" }, request);
+      order.webhookIds = [...(order.webhookIds || []).slice(-19), payload.webhook_id].filter(Boolean);
+      order.providerId = payload.invoice_id || order.providerId;
+      setOrderPaymentStatus(order, payload.status, payload.amount_paid);
+      orders[order.id] = order; writeOrders(orders);
+      console.log("wink2pay_webhook", order.id, payload.status);
+      text(response, 200, "OK");
+      if (order.status === "paid") void deliverPaymentEmail(order.id);
+      return;
+    } catch (error) { console.error("wink2pay_webhook", error.message); return json(response, 400, { error: "Invalid callback" }, request); }
   }
   return json(response, 404, { error: "Not found" }, request);
 }).listen(port, "127.0.0.1", () => {

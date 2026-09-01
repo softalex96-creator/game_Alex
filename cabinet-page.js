@@ -67,9 +67,17 @@ function providerItem(order) {
 }
 function saveGameAccount(id, gameAccount) { write("orders", read("orders").map((order, index) => orderId(order, index) === id ? { ...order, gameAccount: gameAccount.trim() } : order)); }
 function pendingOrders() { return read("orders").map((order, index) => ({ ...order, id: orderId(order, index) })).filter((order) => order.paymentStatus !== "paid" && priceValue(order.price) >= minimumOrderAmount); }
-function paymentMethod() { return elements.paymentMethodInputs.find((input) => input.checked)?.value || "card"; }
-function paymentMethodLabel(method) { return method === "mobile" ? "Мобильная коммерция" : "Банковская карта"; }
-function renderPaymentMethod() { const method = paymentMethod(); elements.paymentMethodPanels.forEach((panel) => { panel.hidden = panel.dataset.paymentMethodPanel !== method; }); if (elements.paymentCardInput) { elements.paymentCardInput.disabled = method !== "card"; elements.paymentCardInput.required = method === "card"; } if (elements.paymentPhoneInput) { elements.paymentPhoneInput.disabled = method !== "mobile"; elements.paymentPhoneInput.required = method === "mobile"; } if (elements.paymentSubmit) elements.paymentSubmit.textContent = method === "mobile" ? "Мобильная оплата скоро" : "ОПЛАТИТЬ"; }
+function paymentMethod() { return elements.paymentMethodInputs.find((input) => input.checked)?.value || "betatransfer"; }
+function paymentMethodLabel(method) { return method === "wink2pay" ? "СБП · Wink2PayLink" : "Банковская карта · BetaTransfer"; }
+function renderPaymentMethod() { if (elements.paymentSubmit) elements.paymentSubmit.textContent = paymentMethod() === "wink2pay" ? "ОПЛАТИТЬ ПО СБП" : "ОПЛАТИТЬ КАРТОЙ"; }
+
+function redirectToPayment(result) {
+  if (String(result.redirectMethod || "GET").toUpperCase() !== "POST") return window.location.assign(result.paymentUrl);
+  const form = document.createElement("form");
+  form.method = "POST"; form.action = result.paymentUrl; form.hidden = true;
+  Object.entries(result.formData || {}).forEach(([name, value]) => { const input = document.createElement("input"); input.type = "hidden"; input.name = name; input.value = String(value); form.append(input); });
+  document.body.append(form); form.submit();
+}
 
 function renderCartSummary() {
   const orders = pendingOrders();
@@ -226,7 +234,8 @@ elements.paymentSubmit?.addEventListener("click", async () => {
   try {
     if (!currentUser) throw new Error("Сначала войдите в аккаунт Google.");
     const idToken = await currentUser.getIdToken();
-    const response = await fetch(`${paymentApiOrigin}/payments/betatransfer/create`, {
+    const method = paymentMethod();
+    const response = await fetch(`${paymentApiOrigin}/payments/${method}/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
       credentials: "omit",
@@ -234,14 +243,14 @@ elements.paymentSubmit?.addEventListener("click", async () => {
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok || !result.paymentUrl || !result.orderId) throw new Error(result.error || "Платёжный сервис не создал заказ.");
-    rememberPayment(result.orderId, currentUser?.uid, selected, "card");
+    rememberPayment(result.orderId, currentUser?.uid, selected, method);
     sessionStorage.setItem("levelup-last-order-id", result.orderId);
-    window.location.assign(result.paymentUrl);
+    redirectToPayment(result);
   } catch (error) {
     elements.paymentFeedback.textContent = `${error.message || "Не удалось открыть оплату."} Проверьте данные и попробуйте ещё раз.`;
     elements.paymentSubmit.disabled = false;
     elements.paymentSubmit.removeAttribute("aria-busy");
-    elements.paymentSubmit.textContent = "ОПЛАТИТЬ";
+    renderPaymentMethod();
   }
 });
 document.querySelector("[data-support-form]")?.addEventListener("submit", (event) => {

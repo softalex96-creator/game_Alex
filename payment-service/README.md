@@ -1,7 +1,8 @@
 # LevelUp payment service
 
 This small server is intentionally separate from the static GitHub Pages site.
-It validates the selected catalog items on the server, creates a provider order,
+It validates the selected catalog items on the server, creates a provider order
+with BetaTransfer (bank cards) or Wink2PayLink (`pulse_sbp`),
 receives payment callbacks, verifies Firebase users and sends transactional email
 through Resend. Credentials belong only in `/opt/levelup/.env`
 on the VPS.
@@ -21,3 +22,17 @@ The frontend sends a Firebase ID token to `/users/register` and payment creation
 The server validates it with Firebase Identity Toolkit, stores only the verified
 profile and sends the welcome email once. A verified paid callback creates one
 persisted 16-digit delivery code and one idempotent Resend payment email.
+
+## Wink2PayLink / SBP
+
+Wink2PayLink uses the redirect integration: payment details never pass through
+LevelUp. Requests and callbacks are signed as JWS HS256 according to the provider
+specification. The callback must be publicly reachable at
+`https://api.gamemaster.cc/payments/wink2pay/webhook`.
+
+Copy the `WINK2PAY_*` settings from `.env.example` into `/opt/levelup/.env`, set
+the current `WINK2PAY_API_SECRET`, then restart the service. Never put the secret
+into this repository or the static site.
+
+For non-final orders, the result endpoint also polls Wink2PayLink `/status`.
+Webhook delivery is idempotent through `webhook_id`.
