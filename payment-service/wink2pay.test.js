@@ -39,10 +39,10 @@ test("invoice creation signs the exact body and preserves POST redirect data", a
     request = { url, options, body: JSON.parse(options.body) };
     return { ok: true, json: async () => ({ status: "redirect", url: "https://pay.example/", method: "POST", form_data: { token: "abc" }, id: "invoice-1" }) };
   };
-  const env = { WINK2PAY_MERCHANT_ID: "merchant", WINK2PAY_ENDPOINT_ID: "endpoint", WINK2PAY_API_SECRET: "secret", WINK2PAY_PAYMENT_METHOD: "pulse_sbp" };
+  const env = { WINK2PAY_MERCHANT_ID: "merchant", WINK2PAY_ENDPOINT_ID: "endpoint", WINK2PAY_API_SECRET: "secret" };
   const result = await createWink2PayInvoice({ id: "LU1", amount: 1000, currency: "RUB", customer: { uid: "user", email: "user@example.com" }, finishUrl: "https://example.com/success", notificationUrl: "https://api.example.com/webhook" }, { fetchImpl, env });
   assert.equal(request.url, "https://secure-api.wink2paylink.com/init");
-  assert.equal(request.body.payment_method, "pulse_sbp");
+  assert.equal("payment_method" in request.body, false);
   assert.equal(request.body.device_browser_java_enabled, "True");
   assert.equal(request.body.save_card, false);
   assert.equal(request.body.signature, signWink2Pay({ path: "/init", post: request.body, secret: "secret" }));

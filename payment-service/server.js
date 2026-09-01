@@ -243,7 +243,7 @@ http.createServer(async (request, response) => {
       return json(response, 201, { orderId: order.id, paymentUrl: provider.url, redirectMethod: provider.method || "GET", formData: provider.form_data || {} }, request);
     } catch (error) {
       console.error("wink2pay_create", error.providerStatus || "", error.providerCode || "", error.message);
-      return json(response, 422, { error: "Unable to start SBP payment" }, request);
+      return json(response, 422, { error: "Не удалось открыть оплату по СБП" }, request);
     }
   }
   if (request.method === "POST" && url.pathname === "/payments/betatransfer/webhook") {

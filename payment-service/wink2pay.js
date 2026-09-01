@@ -62,7 +62,6 @@ export async function createWink2PayInvoice(order, { fetchImpl = fetch, env = pr
     merchant_id: merchantId,
     notification_url: order.notificationUrl,
     order: order.id,
-    payment_method: env.WINK2PAY_PAYMENT_METHOD || "pulse_sbp",
     save_card: false,
   };
   post.signature = signWink2Pay({ path, post, secret });
