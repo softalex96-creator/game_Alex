@@ -6,7 +6,7 @@ function sortedStrings(values = {}) {
   return Object.fromEntries(Object.entries(values)
     .filter(([key, value]) => key !== "signature" && key !== "api_secret" && value !== undefined && value !== null)
     .sort(([left], [right]) => left.localeCompare(right))
-    .map(([key, value]) => [key, String(value)]));
+    .map(([key, value]) => [key, typeof value === "boolean" ? (value ? "True" : "False") : String(value)]));
 }
 
 function asciiJson(value) {
@@ -22,7 +22,11 @@ export function signWink2Pay({ path, get = {}, post = {}, secret, webhook = fals
   const header = base64url(asciiJson({ alg: "HS256" }));
   const requestData = webhook
     ? { GET: sortedStrings(get), PATH: path, POST: sortedStrings(post) }
-    : { PATH: path, GET: sortedStrings(get), POST: sortedStrings(post) };
+    : {
+        PATH: path,
+        ...(Object.keys(get).length ? { GET: sortedStrings(get) } : {}),
+        ...(Object.keys(post).length ? { POST: sortedStrings(post) } : {}),
+      };
   const payload = base64url(asciiJson(requestData));
   const raw = `${header}.${payload}`;
   const signature = crypto.createHmac("sha256", secret).update(raw, "utf8").digest("base64url");
@@ -51,6 +55,7 @@ export async function createWink2PayInvoice(order, { fetchImpl = fetch, env = pr
     currency: order.currency,
     customer: order.customer.uid,
     description: `LevelUp order ${order.id}`,
+    device_browser_java_enabled: "True",
     email: order.customer.email,
     endpoint_id: endpointId,
     finish_url: order.finishUrl,
@@ -58,6 +63,7 @@ export async function createWink2PayInvoice(order, { fetchImpl = fetch, env = pr
     notification_url: order.notificationUrl,
     order: order.id,
     payment_method: env.WINK2PAY_PAYMENT_METHOD || "pulse_sbp",
+    save_card: false,
   };
   post.signature = signWink2Pay({ path, post, secret });
   const response = await fetchImpl(`${env.WINK2PAY_API_URL || defaultBaseUrl}${path}`, {

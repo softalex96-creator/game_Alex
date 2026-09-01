@@ -9,6 +9,23 @@ test("signature is stable regardless of request field order", () => {
   assert.match(first, /^[A-Za-z0-9_-]{43}$/);
 });
 
+test("signature matches Wink2Pay normalization for booleans and omitted empty methods", () => {
+  const signature = signWink2Pay({
+    path: "/init",
+    post: {
+      amount: "1.00",
+      currency: "RUB",
+      device_browser_java_enabled: "True",
+      endpoint_id: "endpoint",
+      merchant_id: "merchant",
+      order: "LU1",
+      save_card: false,
+    },
+    secret: "test",
+  });
+  assert.equal(signature, "xU8wzTMfkClisqCnqte8PPKZxRlhtM0dR_eHIVZa8GY");
+});
+
 test("webhook verification excludes signature and uses timing-safe comparison", () => {
   const payload = { webhook_id: "event-1", order: "LU1", status: "complete", amount: "1000.0000" };
   payload.signature = signWink2Pay({ path: "/payments/wink2pay/webhook", post: payload, secret: "secret", webhook: true });
@@ -26,6 +43,8 @@ test("invoice creation signs the exact body and preserves POST redirect data", a
   const result = await createWink2PayInvoice({ id: "LU1", amount: 1000, currency: "RUB", customer: { uid: "user", email: "user@example.com" }, finishUrl: "https://example.com/success", notificationUrl: "https://api.example.com/webhook" }, { fetchImpl, env });
   assert.equal(request.url, "https://secure-api.wink2paylink.com/init");
   assert.equal(request.body.payment_method, "pulse_sbp");
+  assert.equal(request.body.device_browser_java_enabled, "True");
+  assert.equal(request.body.save_card, false);
   assert.equal(request.body.signature, signWink2Pay({ path: "/init", post: request.body, secret: "secret" }));
   assert.deepEqual(result.form_data, { token: "abc" });
 });
