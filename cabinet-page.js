@@ -68,8 +68,8 @@ function providerItem(order) {
 function saveGameAccount(id, gameAccount) { write("orders", read("orders").map((order, index) => orderId(order, index) === id ? { ...order, gameAccount: gameAccount.trim() } : order)); }
 function pendingOrders() { return read("orders").map((order, index) => ({ ...order, id: orderId(order, index) })).filter((order) => order.paymentStatus !== "paid" && priceValue(order.price) >= minimumOrderAmount); }
 function paymentMethod() { return elements.paymentMethodInputs.find((input) => input.checked)?.value || "betatransfer"; }
-function paymentMethodLabel(method) { return method === "wink2pay" ? "СБП" : "Оплата с карты"; }
-function renderPaymentMethod() { if (elements.paymentSubmit) elements.paymentSubmit.textContent = paymentMethod() === "wink2pay" ? "ОПЛАТИТЬ ПО СБП" : "ОПЛАТИТЬ КАРТОЙ"; }
+function paymentMethodLabel(method) { return ({ wink2pay: "СБП", betatransfer: "Оплата с карты", fkwallet: "FKWallet" })[method] || "Оплата"; }
+function renderPaymentMethod() { if (elements.paymentSubmit) elements.paymentSubmit.textContent = ({ wink2pay: "ОПЛАТИТЬ ПО СБП", betatransfer: "ОПЛАТИТЬ КАРТОЙ", fkwallet: "ОПЛАТИТЬ ЧЕРЕЗ FKWALLET" })[paymentMethod()] || "ОПЛАТИТЬ"; }
 
 function redirectToPayment(result) {
   if (String(result.redirectMethod || "GET").toUpperCase() !== "POST") return window.location.assign(result.paymentUrl);

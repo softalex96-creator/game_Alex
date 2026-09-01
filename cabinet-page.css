@@ -115,7 +115,7 @@
 .demo-payment { width: min(760px, calc(100% - 32px)); padding: 32px; }
 .demo-payment__items { margin: 20px 0; }
 .demo-payment__items > div { padding: 13px 15px; border-radius: 12px; }
-.demo-payment__methods { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 22px 0; }
+.demo-payment__methods { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 22px 0; }
 .demo-payment__method { min-height: 88px; box-sizing: border-box; gap: 11px !important; padding: 14px; border-radius: 14px; }
 .demo-payment__method b { font-size: 13px; }
 .demo-payment__method small { margin-top: 4px; line-height: 1.35; }
@@ -123,4 +123,5 @@
 .payment-method__icon { display: grid !important; width: 38px; height: 38px; flex: 0 0 38px; place-items: center; border: 1px solid rgba(194,174,255,.3); border-radius: 11px; color: #d9caff; background: rgba(125,91,217,.12); }
 .payment-method__icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .demo-payment__method--sbp:has(input:checked) { border-color: rgba(77,211,181,.72); background: linear-gradient(135deg, rgba(35,157,131,.2), rgba(124,84,226,.14)); }
+.demo-payment__method--wallet:has(input:checked) { border-color: rgba(109,185,255,.72); background: linear-gradient(135deg, rgba(44,127,203,.22), rgba(124,84,226,.14)); }
 @media (max-width: 720px) { .demo-payment { width: min(560px, calc(100% - 24px)); padding: 24px 18px; }.demo-payment__methods { grid-template-columns: 1fr; }.demo-payment__method { min-height: 72px; }.payment-method__logo { width: 38px; height: 38px; flex-basis: 38px; } }

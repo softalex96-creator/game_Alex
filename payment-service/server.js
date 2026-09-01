@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { authenticateFirebaseRequest } from "./firebase.js";
 import { createDeliveryCode, sendPaymentEmail, sendWelcomeEmail } from "./email.js";
 import { createWink2PayInvoice, getWink2PayStatus, hasValidWink2PaySignature } from "./wink2pay.js";
+import { createFkWalletPayment, signFkWalletWebhook } from "./fkwallet.js";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 3000);
@@ -66,6 +67,7 @@ function hasValidSignature(received, expected) {
   const wanted = Buffer.from(expected, "utf8");
   return actual.length === wanted.length && crypto.timingSafeEqual(actual, wanted);
 }
+function clientIp(request) { return String(request.headers["x-forwarded-for"] || request.socket.remoteAddress || "").split(",")[0].trim(); }
 function requestSignature(parameters) {
   const apiSecret = process.env.BETA_TRANSFER_API_SECRET;
   if (!apiSecret) return null;
@@ -246,6 +248,21 @@ http.createServer(async (request, response) => {
       return json(response, 422, { error: "Не удалось открыть оплату по СБП" }, request);
     }
   }
+  if (request.method === "POST" && url.pathname === "/payments/fkwallet/create") {
+    try {
+      if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
+      const user = await authenticateFirebaseRequest(request);
+      const { items } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items);
+      const order = { id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`, amount: selected.reduce((sum, item) => sum + item.price, 0), currency: "RUB", items: selected, customer: user, provider: "fkwallet", status: "created", createdAt: new Date().toISOString() };
+      const provider = await createFkWalletPayment(order, { customerIp: clientIp(request) });
+      order.providerId = provider.orderId; order.providerHash = provider.orderHash; order.status = "awaiting_payment";
+      const orders = readOrders(); orders[order.id] = order; writeOrders(orders);
+      return json(response, 201, { orderId: order.id, paymentUrl: provider.location }, request);
+    } catch (error) {
+      console.error("fkwallet_create", error.providerStatus || "", error.message);
+      return json(response, 422, { error: "Не удалось открыть оплату через FKWallet" }, request);
+    }
+  }
   if (request.method === "POST" && url.pathname === "/payments/betatransfer/webhook") {
     try {
       const payload = await parseProviderPayload(request);
@@ -294,6 +311,26 @@ http.createServer(async (request, response) => {
       if (order.status === "paid") void deliverPaymentEmail(order.id);
       return;
     } catch (error) { console.error("wink2pay_webhook", error.message); return json(response, 400, { error: "Invalid callback" }, request); }
+  }
+  if (request.method === "POST" && url.pathname === "/payments/fkwallet/webhook") {
+    try {
+      const payload = await parseProviderPayload(request);
+      const merchantId = process.env.FK_WALLET_SHOP_ID; const secret = process.env.FK_WALLET_SECRET_WORD_2;
+      if (!merchantId || !secret) return text(response, 503, "Webhook verification is not configured");
+      const orderId = payload.MERCHANT_ORDER_ID; const amount = payload.AMOUNT;
+      const expected = signFkWalletWebhook({ merchantId: payload.MERCHANT_ID, amount, orderId, secret });
+      if (!hasValidSignature(payload.SIGN, expected)) return text(response, 403, "Invalid signature");
+      if (String(payload.MERCHANT_ID) !== String(merchantId) || !validOrderId(orderId)) return text(response, 422, "Order does not match");
+      const orders = readOrders(); const order = orders[orderId];
+      if (!order || order.provider !== "fkwallet") return text(response, 404, "Order not found");
+      if (Number(amount) !== order.amount) return text(response, 422, "Amount does not match");
+      if (order.status !== "paid") {
+        order.providerId = payload.intid || order.providerId; order.providerStatus = "complete"; order.status = "paid"; order.updatedAt = new Date().toISOString(); order.deliveryCode ||= createDeliveryCode();
+        if (!order.paymentEmail || order.paymentEmail.status === "failed") order.paymentEmail = { status: "pending", updatedAt: order.updatedAt };
+        orders[order.id] = order; writeOrders(orders); void deliverPaymentEmail(order.id);
+      }
+      return text(response, 200, "YES");
+    } catch (error) { console.error("fkwallet_webhook", error.message); return text(response, 400, "Invalid callback"); }
   }
   return json(response, 404, { error: "Not found" }, request);
 }).listen(port, "127.0.0.1", () => {
