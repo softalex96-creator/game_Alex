@@ -13,7 +13,7 @@
   toast.setAttribute("aria-live", "polite");
   document.body.append(toast);
   let toastTimer;
-  const filters = { category: "all", platform: "all", genre: "all", publisher: "all", status: "all" };
+  const filters = { category: "all", platform: "all", genre: "all", publisher: "all", status: "all", rarity: "all" };
   const genres = {
     "gta-vi": "Экшен", "world-of-warcraft": "RPG", "mobile-legends": "RPG", "pubg-mobile": "Экшен", "pubg-battlegrounds": "Экшен", "genshin-impact": "RPG", "honkai-star-rail": "RPG", "zenless-zone-zero": "Экшен", "wuthering-waves": "RPG", valorant: "Экшен", roblox: "Приключение", minecraft: "Приключение", fortnite: "Экшен", "brawl-stars": "Экшен", "clash-royale": "Стратегия", "clash-of-clans": "Стратегия", "marvel-rivals": "Экшен", "league-of-legends": "RPG", "apex-legends": "Экшен", "delta-force": "Экшен", "arena-breakout": "Экшен", "free-fire": "Экшен", steam: "Каталог", "afk-journey": "RPG", "honor-of-kings": "RPG", nikke: "RPG", "identity-v": "Приключение", "love-and-deepspace": "RPG", tarisland: "RPG", "pubg-new-state": "Экшен"
   };
@@ -156,6 +156,14 @@
     toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 2800);
   }
 
+  const statusRow = document.querySelector(".catalog-filter-row:last-of-type");
+  if (statusRow) {
+    const rarityRow = document.createElement("div");
+    rarityRow.className = "catalog-filter-row catalog-rarity-row";
+    rarityRow.innerHTML = `<span>Редкость</span><button type="button" data-filter="rarity" data-value="all" aria-pressed="true">Все</button><button type="button" data-filter="rarity" data-value="epic" aria-pressed="false">EPIC</button><button type="button" data-filter="rarity" data-value="rare" aria-pressed="false">RARE</button><button type="button" data-filter="rarity" data-value="common" aria-pressed="false">COMMON</button>`;
+    statusRow.after(rarityRow);
+  }
+
   cards.forEach((card, index) => {
     const product = products[index];
     if (!product) return;
@@ -231,6 +239,7 @@
       && (filters.platform === "all" || card.dataset.platform === filters.platform)
       && (filters.genre === "all" || card.dataset.genre === filters.genre)
       && (filters.publisher === "all" || card.dataset.publisher === filters.publisher)
+      && (filters.rarity === "all" || card.dataset.rarity === filters.rarity)
       && (filters.status === "all" || (filters.status === "featured" && card.dataset.badge) || (filters.status === "archive" && card.dataset.archived === "true") || card.dataset.badge === filters.status);
   }
 
