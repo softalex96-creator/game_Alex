@@ -43,7 +43,7 @@ export function paymentEmail(order) {
   const itemsHtml = order.items.map((item) => `<li style="margin:6px 0">${escapeHtml(item.title)} — <strong>${escapeHtml(rubles(item.price))}</strong></li>`).join("");
   return {
     to: order.customer.email,
-    subject: `Оплата заказа ${order.id} подтверждена`,
+    subject: `Оплата заказа ${order.id} подтверждена — код внутри`,
     text: `Оплата прошла успешно.\n\nЗаказ: ${order.id}\nСумма: ${rubles(order.amount)}\n\n${itemsText}\n\nКод заказа: ${code}\n\nСохраните этот код. Пока он используется как идентификатор оплаченного заказа.`,
     html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#171522"><h1 style="color:#238b57">Оплата прошла успешно</h1><p>Заказ <strong>${escapeHtml(order.id)}</strong> оплачен на сумму <strong>${escapeHtml(rubles(order.amount))}</strong>.</p><ul style="padding-left:20px">${itemsHtml}</ul><div style="margin:24px 0;padding:18px;border-radius:12px;background:#f0ebff;text-align:center"><div style="color:#6c647b;font-size:12px;text-transform:uppercase;letter-spacing:.08em">Код заказа</div><div style="margin-top:8px;font-size:25px;font-weight:800;letter-spacing:.08em;color:#4f36a5">${escapeHtml(code)}</div></div><p>Сохраните этот код. Пока он используется как идентификатор оплаченного заказа.</p><p><a href="https://gamemaster.cc/cabinet.html#transactions" style="display:inline-block;padding:12px 18px;border-radius:10px;background:#7657e8;color:#fff;text-decoration:none;font-weight:700">Открыть транзакции</a></p></div>`,
     idempotencyKey: `payment-${order.id}`,

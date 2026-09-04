@@ -51,6 +51,22 @@ function readUsers() { try { return JSON.parse(fs.readFileSync(usersFile, "utf8"
 function writeUsers(users) { fs.mkdirSync(path.dirname(usersFile), { recursive: true, mode: 0o700 }); fs.writeFileSync(usersFile, JSON.stringify(users, null, 2), { mode: 0o600 }); }
 function readReviews() { try { return JSON.parse(fs.readFileSync(reviewsFile, "utf8")); } catch { return {}; } }
 function writeReviews(reviews) { fs.mkdirSync(path.dirname(reviewsFile), { recursive: true, mode: 0o700 }); fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), { mode: 0o600 }); }
+function userOwnsOrder(order, user) { return order?.customer?.uid === user.uid || (order?.customer?.email && order.customer.email.toLowerCase() === user.email.toLowerCase()); }
+function publicUserOrder(order) {
+  return { id: order.id, amount: order.amount || 0, currency: order.currency || "RUB", status: order.status, provider: order.provider || null, providerStatus: order.providerStatus || null, deliveryCode: order.deliveryCode || null, paymentEmailStatus: order.paymentEmail?.status || null, createdAt: order.createdAt, updatedAt: order.updatedAt || null, items: (order.items || []).map(({ gameTitle, optionName, title, price, gameAccount, platform, region }) => ({ gameTitle, optionName, title, price, gameAccount, platform, region })) };
+}
+function userNotifications(user, orders) {
+  const notifications = [{ id: `welcome-${user.uid}`, type: "welcome", title: "Профиль LevelUp активирован", body: "Теперь здесь будут собираться заказы, статусы и важные сообщения.", createdAt: user.createdAt || new Date().toISOString(), href: "/cabinet.html" }];
+  orders.forEach((order) => {
+    const itemTitle = order.items?.[0]?.gameTitle || "заказ";
+    const href = `/payment-success.html?orderId=${encodeURIComponent(order.id)}`;
+    if (order.status === "paid") notifications.push({ id: `${order.id}-paid`, type: "payment", title: `Оплата подтверждена: ${itemTitle}`, body: `Заказ ${order.id} принят. Код заказа доступен в письме и кабинете.`, createdAt: order.updatedAt || order.createdAt, href });
+    else if (order.status === "failed") notifications.push({ id: `${order.id}-failed`, type: "error", title: `Платёж не выполнен: ${itemTitle}`, body: "Проверьте способ оплаты или создайте заказ ещё раз.", createdAt: order.updatedAt || order.createdAt, href });
+    else notifications.push({ id: `${order.id}-pending`, type: "pending", title: `Заказ ожидает оплаты: ${itemTitle}`, body: "Вернитесь к платёжной странице, чтобы завершить оформление.", createdAt: order.updatedAt || order.createdAt, href });
+    if (order.status === "paid" && order.paymentEmail?.status === "sent") notifications.push({ id: `${order.id}-email`, type: "email", title: "Письмо с кодом отправлено", body: `Проверьте почту ${user.email}. Если письма нет, загляните в папку «Спам».`, createdAt: order.paymentEmail.sentAt || order.updatedAt || order.createdAt, href: "/cabinet.html#transactions" });
+  });
+  return notifications.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+}
 function json(response, status, body, request) {
   const headers = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
   if (request.headers.origin === origin) headers["Access-Control-Allow-Origin"] = origin;
@@ -196,6 +212,22 @@ http.createServer(async (request, response) => {
   if (request.method === "GET" && url.pathname === "/reviews") {
     const reviews = Object.values(readReviews()).filter((review) => review.status === "approved").sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return json(response, 200, { reviews: reviews.map(({ id, displayName, game, rating, message, createdAt }) => ({ id, displayName, game, rating, message, createdAt })) }, request);
+  }
+  if (request.method === "GET" && url.pathname === "/users/me/orders") {
+    try { const user = await authenticateFirebaseRequest(request); const orders = Object.values(readOrders()).filter((order) => userOwnsOrder(order, user)).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))); return json(response, 200, { orders: orders.map(publicUserOrder) }, request); }
+    catch (error) { console.error("user_orders", error.message); return json(response, 401, { error: "Unable to load your orders" }, request); }
+  }
+  if (request.method === "GET" && url.pathname === "/users/me/notifications") {
+    try { const user = await authenticateFirebaseRequest(request); const orders = Object.values(readOrders()).filter((order) => userOwnsOrder(order, user)); const profile = readUsers()[user.uid] || user; return json(response, 200, { notifications: userNotifications(profile, orders) }, request); }
+    catch (error) { console.error("user_notifications", error.message); return json(response, 401, { error: "Unable to load notifications" }, request); }
+  }
+  if (request.method === "GET" && url.pathname === "/users/me/preferences") {
+    try { const user = await authenticateFirebaseRequest(request); const profile = readUsers()[user.uid] || {}; return json(response, 200, { serviceEmails: true, promoEmails: profile.preferences?.promoEmails === true }, request); }
+    catch (error) { console.error("user_preferences", error.message); return json(response, 401, { error: "Unable to load preferences" }, request); }
+  }
+  if (request.method === "PATCH" && url.pathname === "/users/me/preferences") {
+    try { const user = await authenticateFirebaseRequest(request); const body = JSON.parse(await parseBody(request)); const users = readUsers(); const profile = users[user.uid] || { uid: user.uid, email: user.email, displayName: user.displayName, createdAt: new Date().toISOString() }; profile.preferences = { ...(profile.preferences || {}), promoEmails: body.promoEmails === true }; profile.updatedAt = new Date().toISOString(); users[user.uid] = profile; writeUsers(users); return json(response, 200, { serviceEmails: true, promoEmails: profile.preferences.promoEmails }, request); }
+    catch (error) { console.error("user_preferences_update", error.message); return json(response, 422, { error: "Unable to save preferences" }, request); }
   }
   if (request.method === "GET" && url.pathname === "/admin/reviews") {
     try { const user = await authenticateFirebaseRequest(request, fetch, false); if (user.email.trim().toLowerCase() !== "business@pulse80.cc") return json(response, 403, { error: "Admin access required" }, request); return json(response, 200, { reviews: Object.values(readReviews()).filter((review) => review.status === "pending") }, request); }
