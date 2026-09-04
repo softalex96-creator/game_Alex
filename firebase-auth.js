@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDQ5Hp_AUCYWacBpoFysKpZeYLOmStCtfk",
@@ -69,6 +69,7 @@ function showAccountView(name) {
 function setFeedback(message) { if (feedback) feedback.textContent = message; }
 
 export async function signInWithGoogle() { return signInWithPopup(auth, provider); }
+export async function signInWithEmail(email, password) { return signInWithEmailAndPassword(auth, email.trim(), password); }
 export async function signOutLevelUp() { return signOut(auth); }
 
 async function registerLevelUpUser(user) {

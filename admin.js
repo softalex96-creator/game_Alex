@@ -1,5 +1,5 @@
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { auth, signInWithGoogle, signOutLevelUp } from "./firebase-auth.js";
+import { auth, signInWithEmail, signInWithGoogle, signOutLevelUp } from "./firebase-auth.js";
 
 const STORE = "levelup-admin-ops-v1";
 const ADMIN_EMAILS = new Set(["business@pulse80.cc"]);
@@ -37,6 +37,7 @@ async function renderReviews(user) {
 }
 
 document.querySelector("[data-admin-sign-in]")?.addEventListener("click", async () => { elements.feedback.textContent = "Открываем защищённое окно Google…"; try { await signInWithGoogle(); } catch { elements.feedback.textContent = "Не удалось выполнить вход. Попробуйте ещё раз."; } });
+document.querySelector("[data-admin-email-form]")?.addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); const button = event.currentTarget.querySelector("button"); button.disabled = true; elements.feedback.textContent = "Проверяем доступ…"; try { await signInWithEmail(String(form.get("email")), String(form.get("password"))); } catch (error) { elements.feedback.textContent = error.code === "auth/invalid-credential" ? "Неверный email или пароль." : "Не удалось выполнить вход. Проверьте данные и настройки Firebase."; } finally { button.disabled = false; } });
 document.querySelector("[data-admin-sign-out]")?.addEventListener("click", () => signOutLevelUp());
 document.querySelectorAll("[data-open-order-dialog]").forEach((button) => button.addEventListener("click", () => open(elements.orderDialog)));
 document.querySelectorAll("[data-open-task-dialog]").forEach((button) => button.addEventListener("click", () => open(elements.taskDialog)));
