@@ -6,6 +6,7 @@ import vm from "node:vm";
 import { fileURLToPath } from "node:url";
 import { authenticateFirebaseRequest } from "./firebase.js";
 import { createDeliveryCode, sendPaymentEmail, sendWelcomeEmail } from "./email.js";
+import { applyReferralReward, calculatePromotion, referralCodeForUid } from "./promotions.js";
 import { createWink2PayInvoice, getWink2PayStatus, hasValidWink2PaySignature } from "./wink2pay.js";
 import { createFkWalletPayment, signFkWalletWebhook } from "./fkwallet.js";
 
@@ -66,6 +67,12 @@ function userNotifications(user, orders) {
     if (order.status === "paid" && order.paymentEmail?.status === "sent") notifications.push({ id: `${order.id}-email`, type: "email", title: "Письмо с кодом отправлено", body: `Проверьте почту ${user.email}. Если письма нет, загляните в папку «Спам».`, createdAt: order.paymentEmail.sentAt || order.updatedAt || order.createdAt, href: "/cabinet.html#transactions" });
   });
   return notifications.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+}
+function settleReferralReward(order) {
+  if (order?.status !== "paid" || order.promotion?.type !== "referral" || order.referralRewardedAt) return;
+  const users = readUsers();
+  if (applyReferralReward(users, order.promotion, order.customer, order.id)) writeUsers(users);
+  order.referralRewardedAt = new Date().toISOString();
 }
 function json(response, status, body, request) {
   const headers = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
@@ -155,6 +162,7 @@ async function refreshWink2PayOrder(order) {
   if (order.provider !== "wink2pay" || ["paid", "failed"].includes(order.status)) return order;
   const payload = await getWink2PayStatus(order.id);
   setOrderPaymentStatus(order, payload.payment_status, payload.amount_paid);
+  settleReferralReward(order);
   order.providerId = payload.id || order.providerId;
   const orders = readOrders(); orders[order.id] = order; writeOrders(orders);
   if (order.status === "paid") void deliverPaymentEmail(order.id);
@@ -164,8 +172,11 @@ async function refreshWink2PayOrder(order) {
 async function registerUser(user) {
   const users = readUsers();
   const previous = users[user.uid] || {};
-  if (previous.welcomeEmail?.status === "sent") return { created: false, emailSent: true };
-  const record = { ...previous, uid: user.uid, email: user.email, displayName: user.displayName, createdAt: previous.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString(), welcomeEmail: { status: "sending", updatedAt: new Date().toISOString() } };
+  if (previous.welcomeEmail?.status === "sent") {
+    if (!previous.referralCode) { users[user.uid] = { ...previous, referralCode: referralCodeForUid(user.uid), updatedAt: new Date().toISOString() }; writeUsers(users); }
+    return { created: false, emailSent: true };
+  }
+  const record = { ...previous, uid: user.uid, email: user.email, displayName: user.displayName, referralCode: previous.referralCode || referralCodeForUid(user.uid), createdAt: previous.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString(), welcomeEmail: { status: "sending", updatedAt: new Date().toISOString() } };
   users[user.uid] = record; writeUsers(users);
   try {
     const emailId = await sendWelcomeEmail(user);
@@ -224,6 +235,10 @@ http.createServer(async (request, response) => {
   if (request.method === "GET" && url.pathname === "/users/me/preferences") {
     try { const user = await authenticateFirebaseRequest(request); const profile = readUsers()[user.uid] || {}; return json(response, 200, { serviceEmails: true, promoEmails: profile.preferences?.promoEmails === true }, request); }
     catch (error) { console.error("user_preferences", error.message); return json(response, 401, { error: "Unable to load preferences" }, request); }
+  }
+  if (request.method === "GET" && url.pathname === "/users/me/promotions") {
+    try { const user = await authenticateFirebaseRequest(request); const profile = readUsers()[user.uid] || {}; return json(response, 200, { referralCode: profile.referralCode || referralCodeForUid(user.uid), bonusBalance: Number(profile.bonusBalance || 0), referralRewards: (profile.referralRewards || []).length, activePromo: { code: "LEVELUP5", percent: 5, minimum: 1000 } }, request); }
+    catch (error) { console.error("user_promotions", error.message); return json(response, 401, { error: "Unable to load promotions" }, request); }
   }
   if (request.method === "PATCH" && url.pathname === "/users/me/preferences") {
     try { const user = await authenticateFirebaseRequest(request); const body = JSON.parse(await parseBody(request)); const users = readUsers(); const profile = users[user.uid] || { uid: user.uid, email: user.email, displayName: user.displayName, createdAt: new Date().toISOString() }; profile.preferences = { ...(profile.preferences || {}), promoEmails: body.promoEmails === true }; profile.updatedAt = new Date().toISOString(); users[user.uid] = profile; writeUsers(users); return json(response, 200, { serviceEmails: true, promoEmails: profile.preferences.promoEmails }, request); }
@@ -284,8 +299,8 @@ http.createServer(async (request, response) => {
     try {
       if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
       const user = await authenticateFirebaseRequest(request);
-      const { items } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items);
-      const order = { id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`, amount: selected.reduce((sum, item) => sum + item.price, 0), currency: "RUB", items: selected, customer: user, status: "created", createdAt: new Date().toISOString() };
+      const { items, promoCode } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items); const promotion = calculatePromotion({ subtotal: selected.reduce((sum, item) => sum + item.price, 0), promoCode, customer: user, users: readUsers() });
+      const order = { id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`, amount: promotion.total, subtotal: selected.reduce((sum, item) => sum + item.price, 0), discount: promotion.discount, promotion, currency: "RUB", items: selected, customer: user, status: "created", createdAt: new Date().toISOString() };
       const provider = await createProviderPayment(order); order.provider = "betatransfer"; order.providerId = provider.id; order.providerHash = provider.hash; order.status = "awaiting_payment";
       const orders = readOrders(); orders[order.id] = order; writeOrders(orders);
       return json(response, 201, { orderId: order.id, paymentUrl: provider.url }, request);
@@ -295,10 +310,10 @@ http.createServer(async (request, response) => {
     try {
       if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
       const user = await authenticateFirebaseRequest(request);
-      const { items } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items);
+      const { items, promoCode } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items); const promotion = calculatePromotion({ subtotal: selected.reduce((sum, item) => sum + item.price, 0), promoCode, customer: user, users: readUsers() });
       const order = {
         id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`,
-        amount: selected.reduce((sum, item) => sum + item.price, 0), currency: "RUB", items: selected,
+        amount: promotion.total, subtotal: selected.reduce((sum, item) => sum + item.price, 0), discount: promotion.discount, promotion, currency: "RUB", items: selected,
         customer: user, provider: "wink2pay", status: "created", createdAt: new Date().toISOString(),
         notificationUrl: process.env.WINK2PAY_NOTIFICATION_URL || "",
       };
@@ -320,8 +335,8 @@ http.createServer(async (request, response) => {
     try {
       if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
       const user = await authenticateFirebaseRequest(request);
-      const { items } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items);
-      const order = { id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`, amount: selected.reduce((sum, item) => sum + item.price, 0), currency: "RUB", items: selected, customer: user, provider: "fkwallet", status: "created", createdAt: new Date().toISOString() };
+      const { items, promoCode } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items); const promotion = calculatePromotion({ subtotal: selected.reduce((sum, item) => sum + item.price, 0), promoCode, customer: user, users: readUsers() });
+      const order = { id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`, amount: promotion.total, subtotal: selected.reduce((sum, item) => sum + item.price, 0), discount: promotion.discount, promotion, currency: "RUB", items: selected, customer: user, provider: "fkwallet", status: "created", createdAt: new Date().toISOString() };
       const provider = await createFkWalletPayment(order, { customerIp: clientIp(request) });
       order.providerId = provider.orderId; order.providerHash = provider.orderHash; order.status = "awaiting_payment";
       const orders = readOrders(); orders[order.id] = order; writeOrders(orders);
@@ -348,6 +363,7 @@ http.createServer(async (request, response) => {
       order.updatedAt = new Date().toISOString();
       order.status = "paid";
       order.deliveryCode ||= createDeliveryCode();
+      settleReferralReward(order);
       if (!order.paymentEmail || order.paymentEmail.status === "failed") order.paymentEmail = { status: "pending", updatedAt: new Date().toISOString() };
       orders[order.id] = order; writeOrders(orders);
       console.log("payment_paid", order.id, order.amount, order.currency);
@@ -373,6 +389,7 @@ http.createServer(async (request, response) => {
       order.webhookIds = [...(order.webhookIds || []).slice(-19), payload.webhook_id].filter(Boolean);
       order.providerId = payload.invoice_id || order.providerId;
       setOrderPaymentStatus(order, payload.status, payload.amount_paid);
+      settleReferralReward(order);
       orders[order.id] = order; writeOrders(orders);
       console.log("wink2pay_webhook", order.id, payload.status);
       text(response, 200, "OK");
@@ -393,7 +410,7 @@ http.createServer(async (request, response) => {
       if (!order || order.provider !== "fkwallet") return text(response, 404, "Order not found");
       if (Number(amount) !== order.amount) return text(response, 422, "Amount does not match");
       if (order.status !== "paid") {
-        order.providerId = payload.intid || order.providerId; order.providerStatus = "complete"; order.status = "paid"; order.updatedAt = new Date().toISOString(); order.deliveryCode ||= createDeliveryCode();
+        order.providerId = payload.intid || order.providerId; order.providerStatus = "complete"; order.status = "paid"; order.updatedAt = new Date().toISOString(); order.deliveryCode ||= createDeliveryCode(); settleReferralReward(order);
         if (!order.paymentEmail || order.paymentEmail.status === "failed") order.paymentEmail = { status: "pending", updatedAt: order.updatedAt };
         orders[order.id] = order; writeOrders(orders); void deliverPaymentEmail(order.id);
       }

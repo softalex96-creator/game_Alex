@@ -5,7 +5,7 @@ const elements = {
   user: document.querySelector("[data-cabinet-user]"), login: document.querySelector("[data-cabinet-login]"), dashboard: document.querySelector("[data-cabinet-dashboard]"),
   name: document.querySelector("[data-cabinet-name]"), email: document.querySelector("[data-cabinet-email]"), avatar: document.querySelector("[data-cabinet-avatar]"),
   feedback: document.querySelector("[data-cabinet-feedback]"), orders: document.querySelector("[data-cabinet-orders]"), transactions: document.querySelector("[data-cabinet-transactions]"), tickets: document.querySelector("[data-cabinet-tickets]"),
-  orderCount: document.querySelector("[data-cabinet-order-count]"), transactionCount: document.querySelector("[data-cabinet-transaction-count]"), transactionTab: document.querySelector("[data-cabinet-tab='transactions']"), ticketCount: document.querySelector("[data-cabinet-ticket-count]"), notificationCount: document.querySelector("[data-cabinet-notification-count]"), notifications: document.querySelector("[data-cabinet-notifications]"), promoEmails: document.querySelector("[data-promo-emails]"), preferencesFeedback: document.querySelector("[data-preferences-feedback]"), supportFeedback: document.querySelector("[data-support-feedback]"),
+  orderCount: document.querySelector("[data-cabinet-order-count]"), transactionCount: document.querySelector("[data-cabinet-transaction-count]"), transactionTab: document.querySelector("[data-cabinet-tab='transactions']"), ticketCount: document.querySelector("[data-cabinet-ticket-count]"), notificationCount: document.querySelector("[data-cabinet-notification-count]"), notifications: document.querySelector("[data-cabinet-notifications]"), promoEmails: document.querySelector("[data-promo-emails]"), preferencesFeedback: document.querySelector("[data-preferences-feedback]"), referralCode: document.querySelector("[data-referral-code]"), referralBalance: document.querySelector("[data-referral-balance]"), supportFeedback: document.querySelector("[data-support-feedback]"),
   cartSummary: document.querySelector("[data-cart-summary]"), cartSelectedCount: document.querySelector("[data-cart-selected-count]"), cartTotal: document.querySelector("[data-cart-total]"), openDemoPayment: document.querySelector("[data-open-demo-payment]"),
   paymentModal: document.querySelector("[data-demo-payment]"), paymentItems: document.querySelector("[data-demo-payment-items]"), paymentForm: document.querySelector("[data-demo-payment-form]"), paymentFeedback: document.querySelector("[data-demo-payment-feedback]"), paymentMethodInputs: [...document.querySelectorAll("[name='payment-method']")], paymentMethodPanels: [...document.querySelectorAll("[data-payment-method-panel]")], paymentSubmit: document.querySelector("[data-demo-payment-submit]"), paymentCardInput: document.querySelector("[data-payment-card]"), paymentPhoneInput: document.querySelector("[data-payment-phone]"),
 };
@@ -14,6 +14,11 @@ let currentUser = null;
 let serverOrders = [];
 let selectedOrderIds = new Set();
 const minimumOrderAmount = 1000;
+if (elements.paymentModal && !elements.paymentModal.querySelector("[data-promo-code]")) {
+  const field = document.createElement("label"); field.className = "promo-code-field"; field.textContent = "Промокод";
+  const input = document.createElement("input"); input.type = "text"; input.dataset.promoCode = ""; input.maxLength = 40; input.autocomplete = "off"; input.placeholder = "Например, LEVELUP5";
+  const hint = document.createElement("small"); hint.textContent = "Скидка проверяется автоматически при создании заказа."; field.append(input, hint); elements.paymentModal.querySelector(".demo-payment__methods")?.before(field); elements.promoCode = input;
+}
 const gameAccountRequirements = {
   "world-of-warcraft": { label: "BattleTag или e-mail Battle.net", placeholder: "Например: Player#1234", hint: "Укажите BattleTag или почту Battle.net. Пароль не нужен." },
   "mobile-legends": { label: "User ID и Zone ID", placeholder: "Например: 12345678 (1234)", hint: "Откройте профиль в игре: там отображаются User ID и Zone ID." },
@@ -213,6 +218,12 @@ async function loadPreferences(user) {
   catch { if (elements.preferencesFeedback) elements.preferencesFeedback.textContent = "Настройки пока недоступны. Попробуйте обновить страницу."; }
 }
 
+async function loadPromotions(user) {
+  if (!user) return;
+  try { const token = await user.getIdToken(); const response = await fetch(`${paymentApiOrigin}/users/me/promotions`, { headers: { Authorization: `Bearer ${token}` }, credentials: "omit", cache: "no-store" }); const payload = await response.json().catch(() => ({})); if (!response.ok) throw new Error(payload.error || "Не удалось загрузить бонусы"); if (elements.referralCode) elements.referralCode.textContent = payload.referralCode || "—"; if (elements.referralBalance) elements.referralBalance.textContent = `${payload.bonusBalance || 0} бонусов`; }
+  catch { if (elements.referralCode) elements.referralCode.textContent = "Недоступно"; }
+}
+
 function render() { renderOrders(); renderTransactions(); renderTickets(); }
 function setUser(user) {
   currentUser = user || null;
@@ -225,6 +236,7 @@ function setUser(user) {
   loadServerNotifications(currentUser);
   loadServerOrders(currentUser);
   loadPreferences(currentUser);
+  loadPromotions(currentUser);
   reconcileUserPayments(currentUser.uid).then((confirmed) => {
     if (!confirmed) return;
     render();
@@ -290,7 +302,7 @@ elements.paymentSubmit?.addEventListener("click", async () => {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
       credentials: "omit",
-      body: JSON.stringify({ items: selected.map(providerItem) }),
+      body: JSON.stringify({ items: selected.map(providerItem), promoCode: elements.promoCode?.value.trim() || "" }),
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok || !result.paymentUrl || !result.orderId) throw new Error(result.error || "Платёжный сервис не создал заказ.");
