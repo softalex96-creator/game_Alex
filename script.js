@@ -70,14 +70,15 @@ const playerDashboard = document.querySelector(".gta-status");
 if (playerDashboard) {
   playerDashboard.classList.add("gta-player-dashboard");
   playerDashboard.setAttribute("aria-label", "Профиль игрока");
-  playerDashboard.innerHTML = `<div class="gta-player-head"><span class="gta-avatar" data-player-avatar>LU</span><div><small>ТВОЙ ПРОФИЛЬ</small><strong data-player-name>Новый игрок</strong></div><b>LVL 01</b></div><div class="gta-hud-badges"><span class="is-live"><i></i> ONLINE</span><span>NEW DROP</span></div><div class="gta-xp"><div><span>Прогресс уровня</span><strong data-player-xp>240 / 500 XP</strong></div><div class="gta-xp__track"><span data-player-xp-bar></span></div><small data-player-next>Ещё 260 XP до <b>Argentum</b></small></div><div class="gta-status__main"><span>СЛЕДУЮЩАЯ ЦЕЛЬ</span><strong>Открыть игровой мир</strong><small>Выбери товар в каталоге и добавь первый шаг в свой профиль.</small></div><div class="gta-activity" data-player-activity>Последняя активность: пока пусто</div><a class="gta-status__cta" href="#catalog">Начать путь <span aria-hidden="true">→</span></a><div class="gta-status__chips"><span><b>30</b> миров</span><span><b data-player-orders>0</b> заявок</span></div>`;
+  playerDashboard.innerHTML = `<div class="gta-player-head"><span class="gta-avatar" data-player-avatar>LU</span><div><small>ТВОЙ ПРОФИЛЬ</small><strong data-player-name>Новый игрок</strong></div><b data-player-level>LVL 01</b></div><div class="gta-hud-badges"><span class="is-live"><i></i> ONLINE</span><span>NEW DROP</span></div><div class="gta-xp"><div><span>Прогресс уровня</span><strong data-player-xp>240 / 500 XP</strong></div><div class="gta-xp__track"><span data-player-xp-bar></span></div><small data-player-next>Ещё 260 XP до <b>Argentum</b></small></div><div class="gta-status__main"><span>СЛЕДУЮЩАЯ ЦЕЛЬ</span><strong>Открыть игровой мир</strong><small>Выбери товар в каталоге и добавь первый шаг в свой профиль.</small></div><div class="gta-activity" data-player-activity>Последняя активность: пока пусто</div><a class="gta-status__cta" href="#catalog">Начать путь <span aria-hidden="true">→</span></a><div class="gta-status__chips"><span><b>30</b> миров</span><span><b data-player-orders>0</b> заявок</span></div>`;
   function updatePlayerDashboard(user) {
     if (!user) return;
     let orders = [];
     try { orders = JSON.parse(localStorage.getItem(`levelup-orders-${user.uid}`) || "[]"); } catch { orders = []; }
-    const xp = Math.min(500, 240 + orders.length * 80); const next = Math.max(0, 500 - xp);
+    const totalXp = 240 + orders.length * 80; const level = Math.min(99, Math.floor(totalXp / 500) + 1); const xp = totalXp % 500 || (totalXp > 0 ? 500 : 0); const next = Math.max(0, 500 - xp);
     playerDashboard.querySelector("[data-player-name]").textContent = user.displayName || "Игрок LevelUp";
     playerDashboard.querySelector("[data-player-avatar]").textContent = (user.displayName || "LU").trim().slice(0, 2).toUpperCase();
+    playerDashboard.querySelector("[data-player-level]").textContent = `LVL ${String(level).padStart(2, "0")}`;
     playerDashboard.querySelector("[data-player-xp]").textContent = `${xp} / 500 XP`;
     playerDashboard.querySelector("[data-player-xp-bar]").style.width = `${(xp / 500) * 100}%`;
     playerDashboard.querySelector("[data-player-next]").innerHTML = next ? `Ещё ${next} XP до <b>Argentum</b>` : "Ранг Argentum открыт";
