@@ -70,7 +70,7 @@ const playerDashboard = document.querySelector(".gta-status");
 if (playerDashboard) {
   playerDashboard.classList.add("gta-player-dashboard");
   playerDashboard.setAttribute("aria-label", "Профиль игрока");
-  playerDashboard.innerHTML = `<div class="gta-player-head"><span class="gta-avatar" data-player-avatar>LU</span><div><small>ТВОЙ ПРОФИЛЬ</small><strong data-player-name>Новый игрок</strong></div><b>LVL 01</b></div><div class="gta-hud-badges"><span class="is-live"><i></i> ONLINE</span><span>NEW DROP</span></div><div class="gta-xp"><div><span>Прогресс уровня</span><strong data-player-xp>240 / 500 XP</strong></div><div class="gta-xp__track"><span data-player-xp-bar></span></div><small data-player-next>Ещё 260 XP до <b>Argentum</b></small></div><div class="gta-status__main"><span>СЛЕДУЮЩАЯ ЦЕЛЬ</span><strong>Открыть игровой мир</strong><small>Выбери товар в каталоге и добавь первый шаг в свой профиль.</small></div><a class="gta-status__cta" href="#catalog">Начать путь <span aria-hidden="true">→</span></a><div class="gta-status__chips"><span><b>30</b> миров</span><span><b data-player-orders>0</b> заявок</span></div>`;
+  playerDashboard.innerHTML = `<div class="gta-player-head"><span class="gta-avatar" data-player-avatar>LU</span><div><small>ТВОЙ ПРОФИЛЬ</small><strong data-player-name>Новый игрок</strong></div><b>LVL 01</b></div><div class="gta-hud-badges"><span class="is-live"><i></i> ONLINE</span><span>NEW DROP</span></div><div class="gta-xp"><div><span>Прогресс уровня</span><strong data-player-xp>240 / 500 XP</strong></div><div class="gta-xp__track"><span data-player-xp-bar></span></div><small data-player-next>Ещё 260 XP до <b>Argentum</b></small></div><div class="gta-status__main"><span>СЛЕДУЮЩАЯ ЦЕЛЬ</span><strong>Открыть игровой мир</strong><small>Выбери товар в каталоге и добавь первый шаг в свой профиль.</small></div><div class="gta-activity" data-player-activity>Последняя активность: пока пусто</div><a class="gta-status__cta" href="#catalog">Начать путь <span aria-hidden="true">→</span></a><div class="gta-status__chips"><span><b>30</b> миров</span><span><b data-player-orders>0</b> заявок</span></div>`;
   function updatePlayerDashboard(user) {
     if (!user) return;
     let orders = [];
@@ -82,6 +82,9 @@ if (playerDashboard) {
     playerDashboard.querySelector("[data-player-xp-bar]").style.width = `${(xp / 500) * 100}%`;
     playerDashboard.querySelector("[data-player-next]").innerHTML = next ? `Ещё ${next} XP до <b>Argentum</b>` : "Ранг Argentum открыт";
     playerDashboard.querySelector("[data-player-orders]").textContent = String(orders.length);
+    const lastOrder = orders.slice().sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0];
+    const lastDate = lastOrder?.createdAt ? new Date(lastOrder.createdAt) : null;
+    playerDashboard.querySelector("[data-player-activity]").textContent = lastOrder ? `Последняя активность: ${lastOrder.product || "Новая заявка"}${lastDate && !Number.isNaN(lastDate.getTime()) ? ` · ${new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "short" }).format(lastDate)}` : ""}` : "Последняя активность: пока пусто";
   }
   window.addEventListener("levelup-auth", (event) => updatePlayerDashboard(event.detail));
 }
