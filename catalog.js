@@ -229,6 +229,8 @@
   window.addEventListener("levelup-cart-result", (event) => {
     const result = event.detail || {};
     showToast(result.message || "Товар добавлен в корзину", result.variant || "success");
+    const addedCard = result.productId && cards.find((card) => card.dataset.id === result.productId);
+    if (addedCard) { addedCard.classList.remove("is-added"); requestAnimationFrame(() => addedCard.classList.add("is-added")); window.setTimeout(() => addedCard.classList.remove("is-added"), 900); }
   });
 
   function matches(card) {

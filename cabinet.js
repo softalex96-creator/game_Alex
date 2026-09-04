@@ -140,7 +140,7 @@
     renderOrders();
     updateCartBadge();
     const suffix = currentUser ? "" : " Войдите в кабинет позже — корзина сохранится.";
-    window.dispatchEvent(new CustomEvent("levelup-cart-result", { detail: { message: `${product.product} добавлен в корзину.${suffix}`, variant: "success" } }));
+    window.dispatchEvent(new CustomEvent("levelup-cart-result", { detail: { message: `${product.product} добавлен в корзину.${suffix}`, variant: "success", productId: product.gameId } }));
     return true;
   }
 
