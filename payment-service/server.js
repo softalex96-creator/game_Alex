@@ -14,6 +14,7 @@ const port = Number(process.env.PORT || 3000);
 const origin = process.env.PUBLIC_ORIGIN || "https://gamemaster.cc";
 const ordersFile = process.env.ORDERS_FILE || path.join(dirname, "data", "orders.json");
 const usersFile = process.env.USERS_FILE || path.join(dirname, "data", "users.json");
+const reviewsFile = process.env.REVIEWS_FILE || path.join(dirname, "data", "reviews.json");
 const catalogFile = process.env.CATALOG_FILE || path.join(dirname, "..", "catalog-data.js");
 const paymentEmailsInFlight = new Set();
 const cbrRatesCache = { expiresAt: 0, value: null };
@@ -48,6 +49,8 @@ function readOrders() { try { return JSON.parse(fs.readFileSync(ordersFile, "utf
 function writeOrders(orders) { fs.mkdirSync(path.dirname(ordersFile), { recursive: true, mode: 0o700 }); fs.writeFileSync(ordersFile, JSON.stringify(orders, null, 2), { mode: 0o600 }); }
 function readUsers() { try { return JSON.parse(fs.readFileSync(usersFile, "utf8")); } catch { return {}; } }
 function writeUsers(users) { fs.mkdirSync(path.dirname(usersFile), { recursive: true, mode: 0o700 }); fs.writeFileSync(usersFile, JSON.stringify(users, null, 2), { mode: 0o600 }); }
+function readReviews() { try { return JSON.parse(fs.readFileSync(reviewsFile, "utf8")); } catch { return {}; } }
+function writeReviews(reviews) { fs.mkdirSync(path.dirname(reviewsFile), { recursive: true, mode: 0o700 }); fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), { mode: 0o600 }); }
 function json(response, status, body, request) {
   const headers = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
   if (request.headers.origin === origin) headers["Access-Control-Allow-Origin"] = origin;
@@ -190,6 +193,31 @@ http.createServer(async (request, response) => {
   const url = new URL(request.url, `http://${request.headers.host}`);
   if (request.method === "OPTIONS") { response.writeHead(204, { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization" }); return response.end(); }
   if (request.method === "GET" && url.pathname === "/health") return json(response, 200, { ok: true, catalogItems: catalog.size }, request);
+  if (request.method === "GET" && url.pathname === "/reviews") {
+    const reviews = Object.values(readReviews()).filter((review) => review.status === "approved").sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return json(response, 200, { reviews: reviews.map(({ id, displayName, game, rating, message, createdAt }) => ({ id, displayName, game, rating, message, createdAt })) }, request);
+  }
+  if (request.method === "GET" && url.pathname === "/admin/reviews") {
+    try { const user = await authenticateFirebaseRequest(request); if (user.email.trim().toLowerCase() !== "business@pulse80.cc") return json(response, 403, { error: "Admin access required" }, request); return json(response, 200, { reviews: Object.values(readReviews()).filter((review) => review.status === "pending") }, request); }
+    catch (error) { return json(response, 401, { error: "Unable to load reviews" }, request); }
+  }
+  if (request.method === "POST" && url.pathname === "/reviews") {
+    try {
+      if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
+      const user = await authenticateFirebaseRequest(request);
+      const body = JSON.parse(await parseBody(request));
+      const rating = Number(body.rating); const message = String(body.message || "").trim(); const game = String(body.game || "LevelUp").trim().slice(0, 80);
+      if (!Number.isInteger(rating) || rating < 1 || rating > 5 || message.length < 5 || message.length > 400) return json(response, 422, { error: "Invalid review" }, request);
+      const id = `REV-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+      const review = { id, uid: user.uid, displayName: user.displayName || "Игрок LevelUp", email: user.email, game, rating, message, status: "pending", createdAt: new Date().toISOString() };
+      const reviews = readReviews(); reviews[id] = review; writeReviews(reviews);
+      return json(response, 201, { ok: true, status: review.status }, request);
+    } catch (error) { console.error("review_create", error.message); return json(response, 422, { error: "Unable to submit review" }, request); }
+  }
+  if (request.method === "PATCH" && url.pathname.startsWith("/reviews/")) {
+    try { const user = await authenticateFirebaseRequest(request); if (request.headers.origin !== origin || user.email.trim().toLowerCase() !== "business@pulse80.cc") return json(response, 403, { error: "Admin access required" }, request); const id = decodeURIComponent(url.pathname.slice("/reviews/".length)); const body = JSON.parse(await parseBody(request)); if (!["approved", "rejected"].includes(body.status)) return json(response, 422, { error: "Invalid review status" }, request); const reviews = readReviews(); if (!reviews[id]) return json(response, 404, { error: "Review not found" }, request); reviews[id] = { ...reviews[id], status: body.status, moderatedAt: new Date().toISOString(), moderatedBy: user.email }; writeReviews(reviews); return json(response, 200, { ok: true, status: reviews[id].status }, request); }
+    catch (error) { console.error("review_moderate", error.message); return json(response, 422, { error: "Unable to moderate review" }, request); }
+  }
   if (request.method === "GET" && url.pathname === "/rates/cbr") {
     try { return json(response, 200, { ok: true, ...(await loadCbrRates()) }, request); }
     catch (error) { console.error("cbr_rates", error.message); return json(response, 502, { ok: false, error: "Official exchange rates are temporarily unavailable" }, request); }

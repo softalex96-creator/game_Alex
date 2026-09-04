@@ -14,6 +14,48 @@ export const auth = getAuth(initializeApp(firebaseConfig));
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+let idleTimer = null;
+let sessionExpired = false;
+
+function createSessionExpiredOverlay() {
+  if (document.querySelector("[data-session-expired]")) return document.querySelector("[data-session-expired]");
+  const overlay = document.createElement("section");
+  overlay.className = "session-expired";
+  overlay.dataset.sessionExpired = "true";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-labelledby", "session-expired-title");
+  overlay.innerHTML = `<div class="session-expired__glow" aria-hidden="true"></div><div class="session-expired__card"><span class="session-expired__mark" aria-hidden="true">↗</span><p class="eyebrow">СЕССИЯ LEVELUP</p><h1 id="session-expired-title">Пауза затянулась</h1><p>Мы вышли из аккаунта, потому что ты долго не продолжал сессию. Так безопаснее для твоего профиля и заказов.</p><button class="button button-primary" type="button" data-session-login>Войти снова <span aria-hidden="true">→</span></button><small>Всё готово к возвращению — продолжим с места, где остановились.</small></div>`;
+  document.body.append(overlay);
+  overlay.querySelector("[data-session-login]").addEventListener("click", () => {
+    overlay.remove();
+    sessionExpired = false;
+    if (accountModal) { accountModal.showModal?.(); showAccountView("start"); }
+    document.querySelector("[data-cabinet-login]")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  return overlay;
+}
+
+function clearIdleTimer() {
+  if (idleTimer) window.clearTimeout(idleTimer);
+  idleTimer = null;
+}
+
+function armIdleTimer(user) {
+  clearIdleTimer();
+  if (!user || sessionExpired) return;
+  idleTimer = window.setTimeout(async () => {
+    sessionExpired = true;
+    createSessionExpiredOverlay();
+    try { await signOut(auth); } catch { /* Keep the recovery screen visible even if the network is unavailable. */ }
+  }, IDLE_TIMEOUT_MS);
+}
+
+["pointerdown", "keydown", "touchstart", "scroll"].forEach((eventName) => {
+  window.addEventListener(eventName, () => { if (!sessionExpired && window.levelUpUser) armIdleTimer(window.levelUpUser); }, { passive: true });
+});
+
 const accountModal = document.getElementById("account-modal");
 const signInButton = document.getElementById("google-sign-in");
 const steamSignInButton = document.getElementById("steam-sign-in");
@@ -62,6 +104,7 @@ signOutButton?.addEventListener("click", async () => {
 
 onAuthStateChanged(auth, (user) => {
   window.levelUpUser = user;
+  armIdleTimer(user);
   window.dispatchEvent(new CustomEvent("levelup-auth", { detail: user }));
   if (!user) {
     showAccountView("start");

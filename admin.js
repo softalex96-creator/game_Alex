@@ -27,6 +27,15 @@ function render() { renderStats(); renderOrders(); renderTasks(); }
 function createTask(title, order = "", assignee = "") { state.tasks.push({ id: crypto.randomUUID?.() || String(Date.now()), title, order, assignee, done: false }); save(); render(); }
 function open(dialog) { dialog?.showModal(); }
 
+async function renderReviews(user) {
+  const content = document.querySelector(".admin-content");
+  if (!content || document.querySelector("[data-admin-reviews]")) return;
+  const panel = document.createElement("section"); panel.className = "admin-panel admin-reviews"; panel.dataset.adminReviews = "true";
+  panel.innerHTML = `<div class="admin-panel__heading"><div><p class="admin-kicker">МОДЕРАЦИЯ</p><h2>Отзывы игроков</h2></div><span data-admin-review-count>—</span></div><div class="admin-review-list" data-admin-review-list><p class="admin-empty">Загружаем отзывы…</p></div>`;
+  content.append(panel);
+  try { const response = await fetch("https://api.gamemaster.cc/admin/reviews", { headers: { Authorization: `Bearer ${await user.getIdToken()}` }, cache: "no-store" }); if (!response.ok) throw new Error("request"); const { reviews = [] } = await response.json(); const list = panel.querySelector("[data-admin-review-list]"); panel.querySelector("[data-admin-review-count]").textContent = String(reviews.length); list.replaceChildren(); if (!reviews.length) { list.innerHTML = `<p class="admin-empty"><strong>Очередь пуста</strong>Новых отзывов на проверку нет.</p>`; return; } reviews.forEach((review) => { const item = document.createElement("article"); item.className = "admin-review"; item.innerHTML = `<div><strong></strong><small></small><p></p></div><div class="admin-review__actions"><button class="admin-button admin-button--primary" data-review-action="approved">Опубликовать</button><button class="admin-button admin-button--ghost" data-review-action="rejected">Отклонить</button></div>`; item.querySelector("strong").textContent = `${review.displayName} · ${"★".repeat(review.rating)}`; item.querySelector("small").textContent = review.game || "LevelUp"; item.querySelector("p").textContent = review.message; item.querySelectorAll("[data-review-action]").forEach((button) => button.addEventListener("click", async () => { button.disabled = true; const result = await fetch(`https://api.gamemaster.cc/reviews/${encodeURIComponent(review.id)}`, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${await user.getIdToken()}` }, body: JSON.stringify({ status: button.dataset.reviewAction }) }); if (result.ok) item.remove(); else button.disabled = false; })); list.append(item); }); } catch { panel.querySelector("[data-admin-review-list]").innerHTML = `<p class="admin-empty">Не удалось загрузить очередь отзывов.</p>`; }
+}
+
 document.querySelector("[data-admin-sign-in]")?.addEventListener("click", async () => { elements.feedback.textContent = "Открываем защищённое окно Google…"; try { await signInWithGoogle(); } catch { elements.feedback.textContent = "Не удалось выполнить вход. Попробуйте ещё раз."; } });
 document.querySelector("[data-admin-sign-out]")?.addEventListener("click", () => signOutLevelUp());
 document.querySelectorAll("[data-open-order-dialog]").forEach((button) => button.addEventListener("click", () => open(elements.orderDialog)));
@@ -54,4 +63,5 @@ onAuthStateChanged(auth, async (user) => {
   elements.greeting.textContent = name.split(" ")[0];
   if (user.photoURL) { elements.avatar.src = user.photoURL; elements.avatar.hidden = false; }
   render();
+  renderReviews(user);
 });

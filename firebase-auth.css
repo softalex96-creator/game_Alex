@@ -3,3 +3,15 @@
 .account-profile strong { display: block; }
 .account-profile p { margin: 3px 0 0 !important; font-size: 13px !important; }
 .account-avatar { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; background: #2c2940; }
+.session-expired { position: fixed; z-index: 9999; inset: 0; display: grid; place-items: center; overflow: hidden; padding: 24px; color: #f8f5ff; background: #090914; isolation: isolate; }
+.session-expired__glow { position: absolute; z-index: -1; width: min(72vw, 820px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(135,91,255,.32), rgba(58,197,255,.1) 38%, transparent 68%); filter: blur(12px); animation: session-pulse 5s ease-in-out infinite; }
+.session-expired__card { width: min(100%, 540px); padding: clamp(28px, 6vw, 58px); border: 1px solid rgba(195,171,255,.28); border-radius: 26px; text-align: center; background: linear-gradient(145deg, rgba(45,37,78,.93), rgba(18,17,34,.96)); box-shadow: 0 30px 100px rgba(0,0,0,.48), inset 0 1px rgba(255,255,255,.1); animation: session-enter .45s cubic-bezier(.2,.8,.2,1) both; }
+.session-expired__mark { display: grid; width: 56px; height: 56px; place-items: center; margin: 0 auto 24px; border: 1px solid rgba(141,231,255,.4); border-radius: 17px; color: #0c1622; background: linear-gradient(135deg, #8de7ff, #b092ff); font-size: 28px; font-weight: 800; box-shadow: 0 0 35px rgba(141,231,255,.22); }
+.session-expired .eyebrow { color: #9feaff; }
+.session-expired h1 { margin: 12px 0; font-family: "Chakra Petch", Manrope, sans-serif; font-size: clamp(34px, 7vw, 58px); line-height: 1; letter-spacing: -.05em; }
+.session-expired p:not(.eyebrow) { margin: 0 auto 28px; color: #c4bfd4; line-height: 1.7; }
+.session-expired .button { min-height: 50px; padding-inline: 23px; }
+.session-expired small { display: block; margin-top: 19px; color: #89839e; font-size: 11px; }
+@keyframes session-enter { from { opacity: 0; transform: translateY(16px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes session-pulse { 50% { transform: scale(1.08); opacity: .75; } }
+@media (prefers-reduced-motion: reduce) { .session-expired__glow, .session-expired__card { animation: none; } }

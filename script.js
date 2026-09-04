@@ -66,6 +66,26 @@ if (supportsMotion) {
 }
 
 const reviewsNote = document.querySelector(".reviews__note");
+async function loadPublishedReviews() {
+  const groups = [...document.querySelectorAll(".reviews__group")];
+  if (!groups.length) return;
+  try {
+    const response = await fetch("https://api.gamemaster.cc/reviews", { cache: "no-store" });
+    if (!response.ok) return;
+    const { reviews = [] } = await response.json();
+    reviews.slice(0, 12).forEach((review) => {
+      const card = document.createElement("article");
+      card.className = "review-card review-card--community";
+      card.innerHTML = `<div><strong></strong><span></span></div><b aria-label="Рейтинг ${review.rating} из 5">${"★".repeat(review.rating)}${"☆".repeat(5 - review.rating)}</b><p></p>`;
+      card.querySelector("strong").textContent = review.displayName;
+      card.querySelector("span").textContent = review.game || "LevelUp";
+      card.querySelector("p").textContent = review.message;
+      groups[0].append(card);
+      const clone = card.cloneNode(true); clone.setAttribute("aria-hidden", "true"); groups[1]?.append(clone);
+    });
+  } catch { /* The static review feed remains available if the API is offline. */ }
+}
+loadPublishedReviews();
 if (reviewsNote) {
   const reviewCompose = document.createElement("div");
   reviewCompose.className = "review-compose";
@@ -114,7 +134,7 @@ if (reviewsNote) {
     messageError.textContent = "";
     status.textContent = "";
   });
-  reviewForm.addEventListener("submit", (event) => {
+  reviewForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const text = message.value.trim();
     ratingError.textContent = rating ? "" : "Поставьте оценку";
@@ -127,11 +147,11 @@ if (reviewsNote) {
 
     submit.disabled = true;
     submit.textContent = "Отправляем…";
-    let drafts = [];
-    try { drafts = JSON.parse(localStorage.getItem("levelup-review-submissions") || "[]"); } catch (error) { drafts = []; }
-    drafts.push({ rating, message: text, status: "moderation", createdAt: new Date().toISOString() });
-    try { localStorage.setItem("levelup-review-submissions", JSON.stringify(drafts.slice(-20))); } catch (error) { /* Private mode can block storage; the UI still confirms the local demo submission. */ }
-    window.setTimeout(() => {
+    try {
+      const user = window.levelUpUser;
+      if (!user) throw new Error("auth");
+      const response = await fetch("https://api.gamemaster.cc/reviews", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${await user.getIdToken()}` }, body: JSON.stringify({ rating, message }) });
+      if (!response.ok) throw new Error("request");
       reviewForm.reset();
       rating = 0;
       paintStars(0);
@@ -140,6 +160,10 @@ if (reviewsNote) {
       submit.disabled = false;
       submit.textContent = "Отправить отзыв";
       status.textContent = "Спасибо! Отзыв отправлен на модерацию.";
-    }, 450);
+    } catch {
+      submit.disabled = false;
+      submit.textContent = "Отправить отзыв";
+      status.textContent = window.levelUpUser ? "Не удалось отправить отзыв. Попробуйте ещё раз." : "Сначала войдите в аккаунт.";
+    }
   });
 }
