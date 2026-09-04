@@ -205,7 +205,9 @@
     }
     const meta = document.createElement("div");
     meta.className = "game-card__meta";
-    meta.innerHTML = `<span>${product.platform}</span><span>${product.publisher}</span>`;
+    const rarity = product.featured ? "EPIC" : product.badge ? "RARE" : "COMMON";
+    card.dataset.rarity = rarity.toLowerCase();
+    meta.innerHTML = `<span>${product.platform}</span><span>${product.publisher}</span><span class="game-card__rarity game-card__rarity--${rarity.toLowerCase()}">${rarity}</span>`;
     card.querySelector(".region-note")?.before(meta);
     const info = document.createElement("button");
     info.className = "game-card__info";

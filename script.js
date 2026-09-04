@@ -70,7 +70,7 @@ const playerDashboard = document.querySelector(".gta-status");
 if (playerDashboard) {
   playerDashboard.classList.add("gta-player-dashboard");
   playerDashboard.setAttribute("aria-label", "Профиль игрока");
-  playerDashboard.innerHTML = `<div class="gta-player-head"><span class="gta-avatar">LU</span><div><small>ТВОЙ ПРОФИЛЬ</small><strong>Новый игрок</strong></div><b>LVL 01</b></div><div class="gta-xp"><div><span>Прогресс уровня</span><strong>240 / 500 XP</strong></div><div class="gta-xp__track"><span></span></div><small>Ещё 260 XP до <b>Argentum</b></small></div><div class="gta-status__main"><span>СЛЕДУЮЩАЯ ЦЕЛЬ</span><strong>Открыть игровой мир</strong><small>Выбери товар в каталоге и добавь первый шаг в свой профиль.</small></div><a class="gta-status__cta" href="#catalog">Начать путь <span aria-hidden="true">→</span></a><div class="gta-status__chips"><span><b>30</b> миров</span><span><b>24/7</b> радар</span></div>`;
+  playerDashboard.innerHTML = `<div class="gta-player-head"><span class="gta-avatar">LU</span><div><small>ТВОЙ ПРОФИЛЬ</small><strong>Новый игрок</strong></div><b>LVL 01</b></div><div class="gta-hud-badges"><span class="is-live"><i></i> ONLINE</span><span>NEW DROP</span></div><div class="gta-xp"><div><span>Прогресс уровня</span><strong>240 / 500 XP</strong></div><div class="gta-xp__track"><span></span></div><small>Ещё 260 XP до <b>Argentum</b></small></div><div class="gta-status__main"><span>СЛЕДУЮЩАЯ ЦЕЛЬ</span><strong>Открыть игровой мир</strong><small>Выбери товар в каталоге и добавь первый шаг в свой профиль.</small></div><a class="gta-status__cta" href="#catalog">Начать путь <span aria-hidden="true">→</span></a><div class="gta-status__chips"><span><b>30</b> миров</span><span><b>24/7</b> радар</span></div>`;
 }
 async function loadPublishedReviews() {
   const groups = [...document.querySelectorAll(".reviews__group")];
@@ -82,10 +82,11 @@ async function loadPublishedReviews() {
     reviews.slice(0, 12).forEach((review) => {
       const card = document.createElement("article");
       card.className = "review-card review-card--community";
-      card.innerHTML = `<div><strong></strong><span></span></div><b aria-label="Рейтинг ${review.rating} из 5">${"★".repeat(review.rating)}${"☆".repeat(5 - review.rating)}</b><p></p>`;
+      card.innerHTML = `<div><strong></strong><span></span><em class="review-card__verified">✓ Проверенный игрок</em></div><b aria-label="Рейтинг ${review.rating} из 5">${"★".repeat(review.rating)}${"☆".repeat(5 - review.rating)}</b><p></p><small class="review-card__date"></small>`;
       card.querySelector("strong").textContent = review.displayName;
       card.querySelector("span").textContent = review.game || "LevelUp";
       card.querySelector("p").textContent = review.message;
+      card.querySelector(".review-card__date").textContent = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "short", year: "numeric" }).format(new Date(review.createdAt));
       groups[0].append(card);
       const clone = card.cloneNode(true); clone.setAttribute("aria-hidden", "true"); groups[1]?.append(clone);
     });
