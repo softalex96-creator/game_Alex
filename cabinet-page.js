@@ -11,6 +11,7 @@ const elements = {
 };
 const paymentApiOrigin = "https://api.gamemaster.cc";
 let currentUser = null;
+let serverOrders = [];
 let selectedOrderIds = new Set();
 const minimumOrderAmount = 1000;
 const gameAccountRequirements = {
@@ -160,11 +161,13 @@ function renderOrders() {
 }
 
 function renderTransactions() {
-  const transactions = read("transactions").filter((transaction) => transaction.paymentStatus === "paid"); elements.transactions.replaceChildren();
+  const localTransactions = read("transactions").filter((transaction) => transaction.paymentStatus === "paid");
+  const remoteTransactions = serverOrders.map((order) => ({ product: order.items?.map((item) => item.title || item.gameTitle).join(", ") || "Заказ LevelUp", price: order.amount, createdAt: order.createdAt, paymentStatus: order.status === "paid" ? "paid" : order.status, providerOrderId: order.id, deliveryCode: order.deliveryCode }));
+  const transactions = remoteTransactions.length ? remoteTransactions : localTransactions; elements.transactions.replaceChildren();
   elements.transactionCount.textContent = String(transactions.length);
   elements.transactionTab.setAttribute("aria-label", `Транзакции: ${transactions.length} подтверждённых оплат`);
   if (!transactions.length) { elements.transactions.append(empty("Подтверждённых платежей пока нет.")); return; }
-  transactions.slice().reverse().forEach((transaction) => elements.transactions.append(card(transaction.product, `${priceInRubles(transaction.price)} · ${paymentMethodLabel(transaction.method)} · ${formatDate(transaction.createdAt)}`, "Оплачено", "accepted")));
+  transactions.forEach((transaction) => { const paid = transaction.paymentStatus === "paid"; const status = paid ? "Оплачено" : transaction.paymentStatus === "failed" ? "Платёж не выполнен" : "В обработке"; const item = card(transaction.product, `${priceInRubles(transaction.price)} · ${transaction.providerOrderId || "локальная заявка"} · ${formatDate(transaction.createdAt)}${transaction.deliveryCode ? ` · код: ${transaction.deliveryCode}` : ""}`, status, paid ? "accepted" : "waiting"); elements.transactions.append(item); });
 }
 
 function renderTickets() {
@@ -198,6 +201,12 @@ async function loadServerNotifications(user) {
   } catch { renderNotifications([]); }
 }
 
+async function loadServerOrders(user) {
+  if (!user) return;
+  try { const token = await user.getIdToken(); const response = await fetch(`${paymentApiOrigin}/users/me/orders`, { headers: { Authorization: `Bearer ${token}` }, credentials: "omit", cache: "no-store" }); const payload = await response.json().catch(() => ({})); if (!response.ok) throw new Error(payload.error || "Не удалось загрузить заказы"); serverOrders = Array.isArray(payload.orders) ? payload.orders : []; renderTransactions(); }
+  catch { serverOrders = []; renderTransactions(); }
+}
+
 async function loadPreferences(user) {
   if (!user || !elements.promoEmails) return;
   try { const token = await user.getIdToken(); const response = await fetch(`${paymentApiOrigin}/users/me/preferences`, { headers: { Authorization: `Bearer ${token}` }, credentials: "omit", cache: "no-store" }); const payload = await response.json().catch(() => ({})); if (!response.ok) throw new Error(payload.error || "Не удалось загрузить настройки"); elements.promoEmails.checked = payload.promoEmails === true; }
@@ -214,6 +223,7 @@ function setUser(user) {
   render();
   renderNotifications([]);
   loadServerNotifications(currentUser);
+  loadServerOrders(currentUser);
   loadPreferences(currentUser);
   reconcileUserPayments(currentUser.uid).then((confirmed) => {
     if (!confirmed) return;
