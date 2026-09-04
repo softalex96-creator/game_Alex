@@ -75,13 +75,13 @@ if (playerDashboard) {
     if (!user) return;
     let orders = [];
     try { orders = JSON.parse(localStorage.getItem(`levelup-orders-${user.uid}`) || "[]"); } catch { orders = []; }
-    const totalXp = 240 + orders.length * 80; const level = Math.min(99, Math.floor(totalXp / 500) + 1); const xp = totalXp % 500 || (totalXp > 0 ? 500 : 0); const next = Math.max(0, 500 - xp);
+    const totalXp = 240 + orders.length * 80; const level = Math.min(99, Math.floor(totalXp / 500) + 1); const xp = totalXp % 500 || (totalXp > 0 ? 500 : 0); const next = Math.max(0, 500 - xp); const rank = level >= 5 ? "Platinum" : level >= 3 ? "Argentum" : "Ferrum"; const nextRank = rank === "Ferrum" ? "Argentum" : rank === "Argentum" ? "Platinum" : "максимальный ранг";
     playerDashboard.querySelector("[data-player-name]").textContent = user.displayName || "Игрок LevelUp";
     playerDashboard.querySelector("[data-player-avatar]").textContent = (user.displayName || "LU").trim().slice(0, 2).toUpperCase();
     playerDashboard.querySelector("[data-player-level]").textContent = `LVL ${String(level).padStart(2, "0")}`;
     playerDashboard.querySelector("[data-player-xp]").textContent = `${xp} / 500 XP`;
     playerDashboard.querySelector("[data-player-xp-bar]").style.width = `${(xp / 500) * 100}%`;
-    playerDashboard.querySelector("[data-player-next]").innerHTML = next ? `Ещё ${next} XP до <b>Argentum</b>` : "Ранг Argentum открыт";
+    playerDashboard.querySelector("[data-player-next]").innerHTML = next ? `Ещё ${next} XP до <b>${nextRank}</b>` : `Ранг ${rank} открыт`;
     playerDashboard.querySelector("[data-player-orders]").textContent = String(orders.length);
     const lastOrder = orders.slice().sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0];
     const lastDate = lastOrder?.createdAt ? new Date(lastOrder.createdAt) : null;
