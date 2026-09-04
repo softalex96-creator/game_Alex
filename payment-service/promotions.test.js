@@ -6,6 +6,10 @@ test("LEVELUP5 gives five percent discount above the minimum order", () => {
   assert.deepEqual(calculatePromotion({ subtotal: 2000, promoCode: "levelup5", now: new Date("2026-09-04T00:00:00Z") }), { code: "LEVELUP5", type: "promo", discount: 100, total: 1900 });
 });
 
+test("TELEGRAM5 gives the channel discount", () => {
+  assert.deepEqual(calculatePromotion({ subtotal: 2000, promoCode: "telegram5", now: new Date("2026-09-04T00:00:00Z") }), { code: "TELEGRAM5", type: "promo", discount: 100, total: 1900 });
+});
+
 test("expired or too-small promo orders are rejected", () => {
   assert.throws(() => calculatePromotion({ subtotal: 900, promoCode: "LEVELUP5", now: new Date("2026-09-04T00:00:00Z") }), /minimum/);
   assert.throws(() => calculatePromotion({ subtotal: 2000, promoCode: "NOPE", now: new Date("2026-09-04T00:00:00Z") }), /Unknown/);

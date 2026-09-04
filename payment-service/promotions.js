@@ -1,7 +1,10 @@
 import crypto from "node:crypto";
 
 export const PROMO_MINIMUM_SUBTOTAL = 1000;
-const PROMO_CODES = { LEVELUP5: { percent: 5, minimum: PROMO_MINIMUM_SUBTOTAL } };
+const PROMO_CODES = {
+  LEVELUP5: { percent: 5, minimum: PROMO_MINIMUM_SUBTOTAL },
+  TELEGRAM5: { percent: 5, minimum: PROMO_MINIMUM_SUBTOTAL },
+};
 
 export function referralCodeForUid(uid) {
   return `LU-${crypto.createHash("sha256").update(String(uid)).digest("hex").slice(0, 8).toUpperCase()}`;

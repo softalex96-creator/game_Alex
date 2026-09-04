@@ -18,6 +18,8 @@ if (elements.paymentModal && !elements.paymentModal.querySelector("[data-promo-c
   const field = document.createElement("label"); field.className = "promo-code-field"; field.textContent = "Промокод";
   const input = document.createElement("input"); input.type = "text"; input.dataset.promoCode = ""; input.maxLength = 40; input.autocomplete = "off"; input.placeholder = "Например, LEVELUP5";
   const hint = document.createElement("small"); hint.textContent = "Скидка проверяется автоматически при создании заказа."; field.append(input, hint); elements.paymentModal.querySelector(".demo-payment__methods")?.before(field); elements.promoCode = input;
+  const campaignPromo = new URLSearchParams(window.location.search).get("promo");
+  if (campaignPromo) input.value = campaignPromo.trim().toUpperCase().slice(0, 40);
 }
 const gameAccountRequirements = {
   "world-of-warcraft": { label: "BattleTag или e-mail Battle.net", placeholder: "Например: Player#1234", hint: "Укажите BattleTag или почту Battle.net. Пароль не нужен." },
