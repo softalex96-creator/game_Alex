@@ -88,6 +88,7 @@ if (playerDashboard) {
     playerDashboard.querySelector("[data-player-activity]").textContent = lastOrder ? `Последняя активность: ${lastOrder.product || "Новая заявка"}${lastDate && !Number.isNaN(lastDate.getTime()) ? ` · ${new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "short" }).format(lastDate)}` : ""}` : "Последняя активность: пока пусто";
   }
   window.addEventListener("levelup-auth", (event) => updatePlayerDashboard(event.detail));
+  window.addEventListener("levelup-cart-result", () => updatePlayerDashboard(window.levelUpUser));
 }
 async function loadPublishedReviews() {
   const groups = [...document.querySelectorAll(".reviews__group")];
