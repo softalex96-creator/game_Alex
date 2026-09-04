@@ -66,6 +66,12 @@ if (supportsMotion) {
 }
 
 const reviewsNote = document.querySelector(".reviews__note");
+const playerDashboard = document.querySelector(".gta-status");
+if (playerDashboard) {
+  playerDashboard.classList.add("gta-player-dashboard");
+  playerDashboard.setAttribute("aria-label", "Профиль игрока");
+  playerDashboard.innerHTML = `<div class="gta-player-head"><span class="gta-avatar">LU</span><div><small>ТВОЙ ПРОФИЛЬ</small><strong>Новый игрок</strong></div><b>LVL 01</b></div><div class="gta-xp"><div><span>Прогресс уровня</span><strong>240 / 500 XP</strong></div><div class="gta-xp__track"><span></span></div><small>Ещё 260 XP до <b>Argentum</b></small></div><div class="gta-status__main"><span>СЛЕДУЮЩАЯ ЦЕЛЬ</span><strong>Открыть игровой мир</strong><small>Выбери товар в каталоге и добавь первый шаг в свой профиль.</small></div><a class="gta-status__cta" href="#catalog">Начать путь <span aria-hidden="true">→</span></a><div class="gta-status__chips"><span><b>30</b> миров</span><span><b>24/7</b> радар</span></div>`;
+}
 async function loadPublishedReviews() {
   const groups = [...document.querySelectorAll(".reviews__group")];
   if (!groups.length) return;
