@@ -156,7 +156,7 @@ if (reviewsNote) {
     try {
       const user = window.levelUpUser;
       if (!user) throw new Error("auth");
-      const response = await fetch("https://api.gamemaster.cc/reviews", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${await user.getIdToken()}` }, body: JSON.stringify({ rating, message }) });
+      const response = await fetch("https://api.gamemaster.cc/reviews", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${await user.getIdToken()}` }, body: JSON.stringify({ rating, message: text }) });
       if (!response.ok) throw new Error("request");
       reviewForm.reset();
       rating = 0;
