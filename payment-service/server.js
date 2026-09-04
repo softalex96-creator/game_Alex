@@ -206,7 +206,7 @@ http.createServer(async (request, response) => {
       if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
       const user = await authenticateFirebaseRequest(request);
       const body = JSON.parse(await parseBody(request));
-      const rating = Number(body.rating); const message = String(body.message || "").trim(); const game = String(body.game || "LevelUp").trim().slice(0, 80);
+      const rating = Number(body.rating); const message = typeof body.message === "string" ? body.message.trim() : ""; const game = String(body.game || "LevelUp").trim().slice(0, 80);
       if (!Number.isInteger(rating) || rating < 1 || rating > 5 || message.length < 5 || message.length > 400) return json(response, 422, { error: "Invalid review" }, request);
       const id = `REV-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
       const review = { id, uid: user.uid, displayName: user.displayName || "Игрок LevelUp", email: user.email, game, rating, message, status: "pending", createdAt: new Date().toISOString() };
