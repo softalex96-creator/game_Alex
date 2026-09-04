@@ -63,6 +63,20 @@ if (supportsMotion) {
       card.style.removeProperty("--tilt-y");
     });
   });
+
+  document.querySelectorAll(".catalog-collection").forEach((collection) => {
+    collection.addEventListener("pointermove", (event) => {
+      const rect = collection.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width - 0.5) * 7;
+      const y = ((event.clientY - rect.top) / rect.height - 0.5) * -7;
+      collection.style.setProperty("--collection-x", `${x.toFixed(2)}deg`);
+      collection.style.setProperty("--collection-y", `${y.toFixed(2)}deg`);
+    });
+    collection.addEventListener("pointerleave", () => {
+      collection.style.removeProperty("--collection-x");
+      collection.style.removeProperty("--collection-y");
+    });
+  });
 }
 
 const reviewsNote = document.querySelector(".reviews__note");

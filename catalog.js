@@ -163,6 +163,10 @@
     rarityRow.innerHTML = `<span>Редкость</span><button type="button" data-filter="rarity" data-value="all" aria-pressed="true">Все</button><button type="button" data-filter="rarity" data-value="epic" aria-pressed="false">EPIC</button><button type="button" data-filter="rarity" data-value="rare" aria-pressed="false">RARE</button><button type="button" data-filter="rarity" data-value="common" aria-pressed="false">COMMON</button>`;
     statusRow.after(rarityRow);
   }
+  const collectionGrid = document.querySelector(".catalog-collections__grid");
+  if (collectionGrid) {
+    collectionGrid.innerHTML = `<button class="catalog-collection catalog-collection--hits" type="button" data-collection='{"genre":"Экшен"}'><span>01 · ACTION</span><strong>Шутеры</strong><small>Тактика, арены и быстрый XP</small><b>→</b></button><button class="catalog-collection catalog-collection--rpg" type="button" data-collection='{"genre":"RPG"}'><span>02 · STORY</span><strong>RPG-миры</strong><small>Герои, лут и большие истории</small><b>→</b></button><button class="catalog-collection catalog-collection--mobile" type="button" data-collection='{"platform":"Mobile","category":"currency"}'><span>03 · MOBILE</span><strong>Мобильный режим</strong><small>Валюта и наборы для телефона</small><b>→</b></button><button class="catalog-collection catalog-collection--new" type="button" data-collection='{"category":"currency","status":"featured"}'><span>04 · LOOT</span><strong>Игровая валюта</strong><small>Редкий дроп для следующей катки</small><b>→</b></button>`;
+  }
 
   cards.forEach((card, index) => {
     const product = products[index];
