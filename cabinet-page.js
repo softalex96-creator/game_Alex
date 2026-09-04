@@ -5,7 +5,7 @@ const elements = {
   user: document.querySelector("[data-cabinet-user]"), login: document.querySelector("[data-cabinet-login]"), dashboard: document.querySelector("[data-cabinet-dashboard]"),
   name: document.querySelector("[data-cabinet-name]"), email: document.querySelector("[data-cabinet-email]"), avatar: document.querySelector("[data-cabinet-avatar]"),
   feedback: document.querySelector("[data-cabinet-feedback]"), orders: document.querySelector("[data-cabinet-orders]"), transactions: document.querySelector("[data-cabinet-transactions]"), tickets: document.querySelector("[data-cabinet-tickets]"),
-  orderCount: document.querySelector("[data-cabinet-order-count]"), transactionCount: document.querySelector("[data-cabinet-transaction-count]"), transactionTab: document.querySelector("[data-cabinet-tab='transactions']"), ticketCount: document.querySelector("[data-cabinet-ticket-count]"), supportFeedback: document.querySelector("[data-support-feedback]"),
+  orderCount: document.querySelector("[data-cabinet-order-count]"), transactionCount: document.querySelector("[data-cabinet-transaction-count]"), transactionTab: document.querySelector("[data-cabinet-tab='transactions']"), ticketCount: document.querySelector("[data-cabinet-ticket-count]"), notificationCount: document.querySelector("[data-cabinet-notification-count]"), notifications: document.querySelector("[data-cabinet-notifications]"), promoEmails: document.querySelector("[data-promo-emails]"), preferencesFeedback: document.querySelector("[data-preferences-feedback]"), supportFeedback: document.querySelector("[data-support-feedback]"),
   cartSummary: document.querySelector("[data-cart-summary]"), cartSelectedCount: document.querySelector("[data-cart-selected-count]"), cartTotal: document.querySelector("[data-cart-total]"), openDemoPayment: document.querySelector("[data-open-demo-payment]"),
   paymentModal: document.querySelector("[data-demo-payment]"), paymentItems: document.querySelector("[data-demo-payment-items]"), paymentForm: document.querySelector("[data-demo-payment-form]"), paymentFeedback: document.querySelector("[data-demo-payment-feedback]"), paymentMethodInputs: [...document.querySelectorAll("[name='payment-method']")], paymentMethodPanels: [...document.querySelectorAll("[data-payment-method-panel]")], paymentSubmit: document.querySelector("[data-demo-payment-submit]"), paymentCardInput: document.querySelector("[data-payment-card]"), paymentPhoneInput: document.querySelector("[data-payment-phone]"),
 };
@@ -173,6 +173,37 @@ function renderTickets() {
   tickets.slice().reverse().forEach((ticket) => elements.tickets.append(card(ticket.topic, `${ticket.message} · ${formatDate(ticket.createdAt)}`, "Принято", "accepted")));
 }
 
+function renderNotifications(notifications = []) {
+  if (!elements.notifications || !elements.notificationCount) return;
+  elements.notificationCount.textContent = String(notifications.length);
+  elements.notifications.replaceChildren();
+  if (!notifications.length) { elements.notifications.append(empty("Новых событий пока нет.")); return; }
+  notifications.forEach((notification) => {
+    const item = document.createElement("article"); item.className = `cabinet-record cabinet-notification cabinet-notification--${notification.type || "info"}`;
+    const copy = document.createElement("div"); const title = document.createElement("strong"); const meta = document.createElement("span");
+    title.textContent = notification.title; meta.textContent = `${notification.body} · ${formatDate(notification.createdAt)}`; copy.append(title, meta); item.append(copy);
+    if (notification.href) { const link = document.createElement("a"); link.className = "cabinet-notification__link"; link.href = notification.href; link.textContent = "Открыть →"; item.append(link); }
+    elements.notifications.append(item);
+  });
+}
+
+async function loadServerNotifications(user) {
+  if (!user || !elements.notifications) return;
+  try {
+    const token = await user.getIdToken();
+    const response = await fetch(`${paymentApiOrigin}/users/me/notifications`, { headers: { Authorization: `Bearer ${token}` }, credentials: "omit", cache: "no-store" });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.error || "Не удалось загрузить события");
+    renderNotifications(Array.isArray(payload.notifications) ? payload.notifications : []);
+  } catch { renderNotifications([]); }
+}
+
+async function loadPreferences(user) {
+  if (!user || !elements.promoEmails) return;
+  try { const token = await user.getIdToken(); const response = await fetch(`${paymentApiOrigin}/users/me/preferences`, { headers: { Authorization: `Bearer ${token}` }, credentials: "omit", cache: "no-store" }); const payload = await response.json().catch(() => ({})); if (!response.ok) throw new Error(payload.error || "Не удалось загрузить настройки"); elements.promoEmails.checked = payload.promoEmails === true; }
+  catch { if (elements.preferencesFeedback) elements.preferencesFeedback.textContent = "Настройки пока недоступны. Попробуйте обновить страницу."; }
+}
+
 function render() { renderOrders(); renderTransactions(); renderTickets(); }
 function setUser(user) {
   currentUser = user || null;
@@ -181,6 +212,9 @@ function setUser(user) {
   elements.name.textContent = currentUser.displayName || "Игрок LevelUp"; elements.email.textContent = currentUser.email || "Steam-аккаунт";
   if (currentUser.photoURL) { elements.avatar.src = currentUser.photoURL; elements.avatar.hidden = false; } else { elements.avatar.hidden = true; }
   render();
+  renderNotifications([]);
+  loadServerNotifications(currentUser);
+  loadPreferences(currentUser);
   reconcileUserPayments(currentUser.uid).then((confirmed) => {
     if (!confirmed) return;
     render();
@@ -194,6 +228,13 @@ function selectTab(name) {
 }
 
 document.querySelectorAll("[data-cabinet-tab]").forEach((tab) => tab.addEventListener("click", () => selectTab(tab.dataset.cabinetTab)));
+elements.promoEmails?.addEventListener("change", async () => {
+  if (!currentUser) return;
+  elements.promoEmails.disabled = true;
+  try { const token = await currentUser.getIdToken(); const response = await fetch(`${paymentApiOrigin}/users/me/preferences`, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, credentials: "omit", body: JSON.stringify({ promoEmails: elements.promoEmails.checked }) }); if (!response.ok) throw new Error(); if (elements.preferencesFeedback) elements.preferencesFeedback.textContent = elements.promoEmails.checked ? "Промо-письма включены." : "Промо-письма отключены."; }
+  catch { elements.promoEmails.checked = !elements.promoEmails.checked; if (elements.preferencesFeedback) elements.preferencesFeedback.textContent = "Не удалось сохранить настройку."; }
+  finally { elements.promoEmails.disabled = false; }
+});
 document.querySelector("[data-cabinet-google]")?.addEventListener("click", async () => { elements.feedback.textContent = "Открываем защищённое окно Google…"; try { await signInWithGoogle(); } catch { elements.feedback.textContent = "Не удалось выполнить вход. Попробуйте ещё раз."; } });
 document.querySelector("[data-cabinet-steam]")?.addEventListener("click", () => { window.location.assign("https://levelup-steam-auth.steam-worker.workers.dev/steam/login"); });
 document.querySelector("[data-cabinet-signout]")?.addEventListener("click", async () => { await signOutLevelUp(); });
