@@ -201,6 +201,10 @@ http.createServer(async (request, response) => {
     try { const user = await authenticateFirebaseRequest(request, fetch, false); if (user.email.trim().toLowerCase() !== "business@pulse80.cc") return json(response, 403, { error: "Admin access required" }, request); return json(response, 200, { reviews: Object.values(readReviews()).filter((review) => review.status === "pending") }, request); }
     catch (error) { return json(response, 401, { error: "Unable to load reviews" }, request); }
   }
+  if (request.method === "GET" && url.pathname === "/admin/orders") {
+    try { const user = await authenticateFirebaseRequest(request, fetch, false); if (user.email.trim().toLowerCase() !== "business@pulse80.cc") return json(response, 403, { error: "Admin access required" }, request); const orders = Object.values(readOrders()).map((order) => ({ id: order.id, buyer: order.customer?.displayName || "Игрок LevelUp", contact: order.customer?.email || "—", item: order.items?.map((item) => item.title).join(", ") || "—", amount: order.amount || 0, method: order.provider || "—", status: order.status === "paid" ? "paid" : order.status === "failed" ? "cancelled" : order.status === "awaiting_payment" ? "new" : "processing", createdAt: order.createdAt })); return json(response, 200, { orders }, request); }
+    catch (error) { console.error("admin_orders", error.message); return json(response, 401, { error: "Unable to load orders" }, request); }
+  }
   if (request.method === "POST" && url.pathname === "/reviews") {
     try {
       if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
