@@ -198,7 +198,7 @@ http.createServer(async (request, response) => {
     return json(response, 200, { reviews: reviews.map(({ id, displayName, game, rating, message, createdAt }) => ({ id, displayName, game, rating, message, createdAt })) }, request);
   }
   if (request.method === "GET" && url.pathname === "/admin/reviews") {
-    try { const user = await authenticateFirebaseRequest(request); if (user.email.trim().toLowerCase() !== "business@pulse80.cc") return json(response, 403, { error: "Admin access required" }, request); return json(response, 200, { reviews: Object.values(readReviews()).filter((review) => review.status === "pending") }, request); }
+    try { const user = await authenticateFirebaseRequest(request, fetch, false); if (user.email.trim().toLowerCase() !== "business@pulse80.cc") return json(response, 403, { error: "Admin access required" }, request); return json(response, 200, { reviews: Object.values(readReviews()).filter((review) => review.status === "pending") }, request); }
     catch (error) { return json(response, 401, { error: "Unable to load reviews" }, request); }
   }
   if (request.method === "POST" && url.pathname === "/reviews") {
@@ -215,7 +215,7 @@ http.createServer(async (request, response) => {
     } catch (error) { console.error("review_create", error.message); return json(response, 422, { error: "Unable to submit review" }, request); }
   }
   if (request.method === "PATCH" && url.pathname.startsWith("/reviews/")) {
-    try { const user = await authenticateFirebaseRequest(request); if (request.headers.origin !== origin || user.email.trim().toLowerCase() !== "business@pulse80.cc") return json(response, 403, { error: "Admin access required" }, request); const id = decodeURIComponent(url.pathname.slice("/reviews/".length)); const body = JSON.parse(await parseBody(request)); if (!["approved", "rejected"].includes(body.status)) return json(response, 422, { error: "Invalid review status" }, request); const reviews = readReviews(); if (!reviews[id]) return json(response, 404, { error: "Review not found" }, request); reviews[id] = { ...reviews[id], status: body.status, moderatedAt: new Date().toISOString(), moderatedBy: user.email }; writeReviews(reviews); return json(response, 200, { ok: true, status: reviews[id].status }, request); }
+    try { const user = await authenticateFirebaseRequest(request, fetch, false); if (request.headers.origin !== origin || user.email.trim().toLowerCase() !== "business@pulse80.cc") return json(response, 403, { error: "Admin access required" }, request); const id = decodeURIComponent(url.pathname.slice("/reviews/".length)); const body = JSON.parse(await parseBody(request)); if (!["approved", "rejected"].includes(body.status)) return json(response, 422, { error: "Invalid review status" }, request); const reviews = readReviews(); if (!reviews[id]) return json(response, 404, { error: "Review not found" }, request); reviews[id] = { ...reviews[id], status: body.status, moderatedAt: new Date().toISOString(), moderatedBy: user.email }; writeReviews(reviews); return json(response, 200, { ok: true, status: reviews[id].status }, request); }
     catch (error) { console.error("review_moderate", error.message); return json(response, 422, { error: "Unable to moderate review" }, request); }
   }
   if (request.method === "GET" && url.pathname === "/rates/cbr") {
