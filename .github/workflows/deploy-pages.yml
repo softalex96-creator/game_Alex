@@ -36,6 +36,7 @@ jobs:
             --exclude='payment-service/' \
             --exclude='steam-worker/' \
             --exclude='telegram-news/' \
+            --exclude='deploy/' \
             --exclude='*.test.js' \
             --exclude='*.service' \
             --exclude='*.toml' \
