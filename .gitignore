@@ -1,6 +1,12 @@
 # Firebase service-account credentials are local secrets and must never be committed.
 firebase-service-account.json
 steam-worker/firebase-service-account.json
+# Keep service-account and private-key material out of version control even
+# when it is created under a different filename or service directory.
+*-service-account*.json
+service-account*.json
+*.pem
+*.key
 .DS_Store
 steam-worker/.wrangler/
 .secrets/
