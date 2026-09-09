@@ -34,3 +34,8 @@ test("public pages defer Turnstile until a protected action", () => {
   assert.match(publicScript, /ensureTurnstile/);
   assert.match(cabinetScript, /ensureTurnstile/);
 });
+
+test("public pages version scripts that defer Turnstile", () => {
+  assert.match(index, /src=["']script\.js\?v=lazy-turnstile-1["']/);
+  assert.match(cabinet, /src=["']cabinet-page\.js\?v=lazy-turnstile-1["']/);
+});
