@@ -6,8 +6,8 @@ const elements = {
   name: document.querySelector("[data-cabinet-name]"), email: document.querySelector("[data-cabinet-email]"), avatar: document.querySelector("[data-cabinet-avatar]"),
   feedback: document.querySelector("[data-cabinet-feedback]"), orders: document.querySelector("[data-cabinet-orders]"), transactions: document.querySelector("[data-cabinet-transactions]"), tickets: document.querySelector("[data-cabinet-tickets]"),
   orderCount: document.querySelector("[data-cabinet-order-count]"), transactionCount: document.querySelector("[data-cabinet-transaction-count]"), transactionTab: document.querySelector("[data-cabinet-tab='transactions']"), ticketCount: document.querySelector("[data-cabinet-ticket-count]"), notificationCount: document.querySelector("[data-cabinet-notification-count]"), notifications: document.querySelector("[data-cabinet-notifications]"), promoEmails: document.querySelector("[data-promo-emails]"), preferencesFeedback: document.querySelector("[data-preferences-feedback]"), referralCode: document.querySelector("[data-referral-code]"), referralBalance: document.querySelector("[data-referral-balance]"), supportFeedback: document.querySelector("[data-support-feedback]"),
-  cartSummary: document.querySelector("[data-cart-summary]"), cartSelectedCount: document.querySelector("[data-cart-selected-count]"), cartTotal: document.querySelector("[data-cart-total]"), openDemoPayment: document.querySelector("[data-open-demo-payment]"),
-  paymentModal: document.querySelector("[data-demo-payment]"), paymentItems: document.querySelector("[data-demo-payment-items]"), paymentForm: document.querySelector("[data-demo-payment-form]"), paymentFeedback: document.querySelector("[data-demo-payment-feedback]"), paymentMethodInputs: [...document.querySelectorAll("[name='payment-method']")], paymentMethodPanels: [...document.querySelectorAll("[data-payment-method-panel]")], paymentSubmit: document.querySelector("[data-demo-payment-submit]"), paymentCardInput: document.querySelector("[data-payment-card]"), paymentPhoneInput: document.querySelector("[data-payment-phone]"),
+  cartSummary: document.querySelector("[data-cart-summary]"), cartSelectedCount: document.querySelector("[data-cart-selected-count]"), cartTotal: document.querySelector("[data-cart-total]"), openPayment: document.querySelector("[data-open-payment-dialog]"),
+  paymentModal: document.querySelector("[data-payment-dialog]"), paymentItems: document.querySelector("[data-payment-dialog-items]"), paymentForm: document.querySelector("[data-payment-dialog-form]"), paymentFeedback: document.querySelector("[data-payment-dialog-feedback]"), paymentMethodInputs: [...document.querySelectorAll("[name='payment-method']")], paymentMethodPanels: [...document.querySelectorAll("[data-payment-method-panel]")], paymentSubmit: document.querySelector("[data-payment-dialog-submit]"), paymentCardInput: document.querySelector("[data-payment-card]"), paymentPhoneInput: document.querySelector("[data-payment-phone]"),
 };
 const paymentApiOrigin = "https://api.gamemaster.cc";
 let currentUser = null;
@@ -17,7 +17,7 @@ const minimumOrderAmount = 1000;
 if (elements.paymentModal && !elements.paymentModal.querySelector("[data-promo-code]")) {
   const field = document.createElement("label"); field.className = "promo-code-field"; field.textContent = "Промокод";
   const input = document.createElement("input"); input.type = "text"; input.dataset.promoCode = ""; input.maxLength = 40; input.autocomplete = "off"; input.placeholder = "Например, LEVELUP5";
-  const hint = document.createElement("small"); hint.textContent = "Скидка проверяется автоматически при создании заказа."; field.append(input, hint); elements.paymentModal.querySelector(".demo-payment__methods")?.before(field); elements.promoCode = input;
+  const hint = document.createElement("small"); hint.textContent = "Скидка проверяется автоматически при создании заказа."; field.append(input, hint); elements.paymentModal.querySelector(".payment-dialog__methods")?.before(field); elements.promoCode = input;
   const campaignPromo = new URLSearchParams(window.location.search).get("promo");
   if (campaignPromo) input.value = campaignPromo.trim().toUpperCase().slice(0, 40);
 }
@@ -109,7 +109,7 @@ function renderCartSummary() {
   elements.cartSummary.hidden = !orders.length;
   elements.cartSelectedCount.textContent = String(selected.length);
   elements.cartTotal.textContent = rubles(total, false);
-  elements.openDemoPayment.disabled = !selected.length;
+  elements.openPayment.disabled = !selected.length;
 }
 
 function resetCartSummary() {
@@ -117,7 +117,7 @@ function resetCartSummary() {
   elements.cartSummary.hidden = true;
   elements.cartSelectedCount.textContent = "0";
   elements.cartTotal.textContent = "0 ₽";
-  elements.openDemoPayment.disabled = true;
+  elements.openPayment.disabled = true;
 }
 
 function removePendingOrder(orderIdToRemove, productName) {
@@ -301,7 +301,7 @@ function openPaymentDialog() {
   }
 }
 
-elements.openDemoPayment?.addEventListener("click", openPaymentDialog);
+elements.openPayment?.addEventListener("click", openPaymentDialog);
 elements.paymentModal?.querySelector(".close")?.addEventListener("click", () => elements.paymentModal.close());
 document.querySelector("[data-payment-close]")?.addEventListener("click", () => elements.paymentModal.close());
 elements.paymentSubmit?.addEventListener("click", async () => {
