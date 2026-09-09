@@ -1,4 +1,6 @@
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js";
+const THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js";
+const initThreeScenes = async () => {
+  const THREE = await import(THREE_URL);
 
 const stage = document.querySelector(".three-stage");
 const card = document.querySelector(".hero-card");
@@ -319,4 +321,25 @@ if (globeStage && !reducedMotion) {
     });
     renderer.render(scene, camera);
   });
+}
+};
+
+const threeStages = [...document.querySelectorAll(".three-stage, .how-three-stage, .globe-stage")];
+if (threeStages.length && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  let initialized = false;
+  const loadThree = () => {
+    if (initialized) return;
+    initialized = true;
+    initThreeScenes().catch(() => {});
+  };
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      observer.disconnect();
+      loadThree();
+    }, { rootMargin: "240px" });
+    threeStages.forEach((element) => observer.observe(element));
+  } else {
+    loadThree();
+  }
 }

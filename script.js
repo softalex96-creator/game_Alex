@@ -1,7 +1,12 @@
 const modalNames = { account: "account-modal", payment: "payment-modal" };
 
 document.querySelectorAll("[data-modal]").forEach((button) => {
-  button.addEventListener("click", () => document.getElementById(modalNames[button.dataset.modal]).showModal());
+  button.addEventListener("click", async () => {
+    const modal = document.getElementById(modalNames[button.dataset.modal]);
+    modal?.showModal();
+    if (button.dataset.modal !== "account" || typeof window.ensureLevelUpAuth !== "function") return;
+    try { await window.ensureLevelUpAuth(); } catch { modal?.querySelector(".account-feedback")?.replaceChildren(document.createTextNode("Не удалось загрузить вход. Попробуйте ещё раз.")); }
+  });
 });
 
 document.querySelectorAll(".modal").forEach((modal) => {
