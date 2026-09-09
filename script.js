@@ -128,7 +128,7 @@ loadPublishedReviews();
 if (reviewsNote) {
   const reviewCompose = document.createElement("div");
   reviewCompose.className = "review-compose";
-  reviewCompose.innerHTML = `<div class="review-compose__intro"><p class="eyebrow">Ваш ход</p><h3>Оставить отзыв</h3><p>Расскажите коротко, как всё прошло. После проверки отзыв появится в ленте.</p></div><form class="review-form" id="review-form" novalidate><div class="review-form__rating"><span id="review-rating-label">Ваша оценка</span><div class="review-stars" role="radiogroup" aria-labelledby="review-rating-label" aria-describedby="review-rating-error">${[1, 2, 3, 4, 5].map((value) => `<button type="button" role="radio" aria-checked="false" aria-label="${value} ${value === 1 ? "звезда" : value < 5 ? "звезды" : "звёзд"}" data-rating="${value}">★</button>`).join("")}</div><small class="review-form__error" id="review-rating-error"></small></div><div class="review-form__message"><label for="review-message">Ваш отзыв</label><textarea id="review-message" name="message" rows="3" minlength="5" maxlength="400" placeholder="Что понравилось? Как прошла покупка?" aria-describedby="review-message-hint review-message-error" required></textarea><div class="review-form__meta"><small id="review-message-hint">От 5 до 400 символов</small><small><span data-review-count>0</span>/400</small></div><small class="review-form__error" id="review-message-error"></small></div><div class="cf-turnstile" data-sitekey="0x4AAAAAAEtmCSa771IS1Vq4" data-action="review"></div><button class="button button-primary review-form__submit" type="submit">Отправить отзыв</button><p class="review-form__status" role="status" aria-live="polite"></p></form>`;
+  reviewCompose.innerHTML = `<div class="review-compose__intro"><p class="eyebrow">Ваш ход</p><h3>Оставить отзыв</h3><p>Расскажите коротко, как всё прошло. После проверки отзыв появится в ленте.</p><div class="review-form__rating"><span id="review-rating-label">Ваша оценка</span><div class="review-stars" role="radiogroup" aria-labelledby="review-rating-label" aria-describedby="review-rating-error">${[1, 2, 3, 4, 5].map((value) => `<button type="button" role="radio" aria-checked="false" aria-label="${value} ${value === 1 ? "звезда" : value < 5 ? "звезды" : "звёзд"}" data-rating="${value}">★</button>`).join("")}</div><small class="review-form__error" id="review-rating-error"></small></div></div><form class="review-form" id="review-form" novalidate><div class="review-form__message"><label for="review-message">Ваш отзыв</label><textarea id="review-message" name="message" rows="3" minlength="5" maxlength="400" placeholder="Что понравилось? Как прошла покупка?" aria-describedby="review-message-hint review-message-error" required></textarea><div class="review-form__meta"><small id="review-message-hint">От 5 до 400 символов</small><small><span data-review-count>0</span>/400</small></div><small class="review-form__error" id="review-message-error"></small></div><div class="cf-turnstile" data-sitekey="0x4AAAAAAEtmCSa771IS1Vq4" data-action="review"></div><button class="button button-primary review-form__submit" type="submit">Отправить отзыв</button><p class="review-form__status" role="status" aria-live="polite"></p></form>`;
   reviewsNote.before(reviewCompose);
   const reviewTurnstile = reviewCompose.querySelector(".cf-turnstile");
   const renderReviewTurnstile = () => {
@@ -140,10 +140,10 @@ if (reviewsNote) {
   renderReviewTurnstile();
 
   const reviewForm = reviewCompose.querySelector("#review-form");
-  const stars = [...reviewForm.querySelectorAll("[data-rating]")];
+  const stars = [...reviewCompose.querySelectorAll("[data-rating]")];
   const message = reviewForm.querySelector("#review-message");
   const count = reviewForm.querySelector("[data-review-count]");
-  const ratingError = reviewForm.querySelector("#review-rating-error");
+  const ratingError = reviewCompose.querySelector("#review-rating-error");
   const messageError = reviewForm.querySelector("#review-message-error");
   const status = reviewForm.querySelector(".review-form__status");
   const submit = reviewForm.querySelector(".review-form__submit");
