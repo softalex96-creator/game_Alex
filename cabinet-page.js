@@ -21,19 +21,18 @@ if (elements.paymentModal && !elements.paymentModal.querySelector("[data-promo-c
   const campaignPromo = new URLSearchParams(window.location.search).get("promo");
   if (campaignPromo) input.value = campaignPromo.trim().toUpperCase().slice(0, 40);
 }
-if (elements.paymentModal && !elements.paymentModal.querySelector(".cf-turnstile")) {
-  const turnstile = document.createElement("div");
-  turnstile.className = "cf-turnstile";
-  turnstile.dataset.sitekey = "0x4AAAAAAEtmCSa771IS1Vq4";
-  turnstile.dataset.action = "payment";
-  elements.paymentModal.querySelector(".payment-actions")?.before(turnstile);
-  const renderPaymentTurnstile = () => {
-    if (window.turnstile && !turnstile.dataset.rendered) {
-      window.turnstile.render(turnstile, { sitekey: turnstile.dataset.sitekey, action: "payment" });
-      turnstile.dataset.rendered = "true";
-    } else if (!turnstile.dataset.rendered) window.setTimeout(renderPaymentTurnstile, 250);
-  };
-  renderPaymentTurnstile();
+let paymentTurnstilePromise;
+function ensurePaymentTurnstile() {
+  if (!elements.paymentModal) return Promise.reject(new Error("Payment dialog is unavailable"));
+  if (paymentTurnstilePromise) return paymentTurnstilePromise;
+  const container = document.createElement("div");
+  container.dataset.paymentTurnstile = "";
+  elements.paymentModal.querySelector(".payment-actions")?.before(container);
+  paymentTurnstilePromise = window.ensureTurnstile().then((turnstile) => {
+    turnstile.render(container, { sitekey: "0x4AAAAAAEtmCSa771IS1Vq4", action: "payment" });
+    return container;
+  });
+  return paymentTurnstilePromise;
 }
 const gameAccountRequirements = {
   "world-of-warcraft": { label: "BattleTag или e-mail Battle.net", placeholder: "Например: Player#1234", hint: "Укажите BattleTag или почту Battle.net. Пароль не нужен." },
@@ -299,6 +298,7 @@ function openPaymentDialog() {
   } else if (elements.paymentModal) {
     elements.paymentModal.setAttribute("open", "");
   }
+  void ensurePaymentTurnstile().catch(() => { if (elements.paymentFeedback) elements.paymentFeedback.textContent = "Не удалось загрузить проверку безопасности. Попробуйте ещё раз."; });
 }
 
 elements.openPayment?.addEventListener("click", openPaymentDialog);
@@ -314,6 +314,7 @@ elements.paymentSubmit?.addEventListener("click", async () => {
     if (!currentUser) throw new Error("Сначала войдите в аккаунт Google.");
     const idToken = await currentUser.getIdToken();
     const method = paymentMethod();
+    await ensurePaymentTurnstile();
     const turnstileToken = elements.paymentModal.querySelector("[name='cf-turnstile-response']")?.value || "";
     if (!turnstileToken) throw new Error("Подтвердите, что вы не бот.");
     const response = await fetch(`${paymentApiOrigin}/payments/${method}/create`, {

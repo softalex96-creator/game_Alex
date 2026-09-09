@@ -133,16 +133,18 @@ loadPublishedReviews();
 if (reviewsNote) {
   const reviewCompose = document.createElement("div");
   reviewCompose.className = "review-compose";
-  reviewCompose.innerHTML = `<div class="review-compose__intro"><p class="eyebrow">Ваш ход</p><h3>Оставить отзыв</h3><p>Расскажите коротко, как всё прошло. После проверки отзыв появится в ленте.</p><div class="review-form__rating"><span id="review-rating-label">Ваша оценка</span><div class="review-stars" role="radiogroup" aria-labelledby="review-rating-label" aria-describedby="review-rating-error">${[1, 2, 3, 4, 5].map((value) => `<button type="button" role="radio" aria-checked="false" aria-label="${value} ${value === 1 ? "звезда" : value < 5 ? "звезды" : "звёзд"}" data-rating="${value}">★</button>`).join("")}</div><small class="review-form__error" id="review-rating-error"></small></div></div><form class="review-form" id="review-form" novalidate><div class="review-form__message"><label for="review-message">Ваш отзыв</label><textarea id="review-message" name="message" rows="3" minlength="5" maxlength="400" placeholder="Что понравилось? Как прошла покупка?" aria-describedby="review-message-hint review-message-error" required></textarea><div class="review-form__meta"><small id="review-message-hint">От 5 до 400 символов</small><small><span data-review-count>0</span>/400</small></div><small class="review-form__error" id="review-message-error"></small></div><div class="review-compose__captcha cf-turnstile" data-sitekey="0x4AAAAAAEtmCSa771IS1Vq4" data-action="review"></div><button class="button button-primary review-form__submit" type="submit">Отправить отзыв</button><p class="review-form__status" role="status" aria-live="polite"></p></form>`;
+  reviewCompose.innerHTML = `<div class="review-compose__intro"><p class="eyebrow">Ваш ход</p><h3>Оставить отзыв</h3><p>Расскажите коротко, как всё прошло. После проверки отзыв появится в ленте.</p><div class="review-form__rating"><span id="review-rating-label">Ваша оценка</span><div class="review-stars" role="radiogroup" aria-labelledby="review-rating-label" aria-describedby="review-rating-error">${[1, 2, 3, 4, 5].map((value) => `<button type="button" role="radio" aria-checked="false" aria-label="${value} ${value === 1 ? "звезда" : value < 5 ? "звезды" : "звёзд"}" data-rating="${value}">★</button>`).join("")}</div><small class="review-form__error" id="review-rating-error"></small></div></div><form class="review-form" id="review-form" novalidate><div class="review-form__message"><label for="review-message">Ваш отзыв</label><textarea id="review-message" name="message" rows="3" minlength="5" maxlength="400" placeholder="Что понравилось? Как прошла покупка?" aria-describedby="review-message-hint review-message-error" required></textarea><div class="review-form__meta"><small id="review-message-hint">От 5 до 400 символов</small><small><span data-review-count>0</span>/400</small></div><small class="review-form__error" id="review-message-error"></small></div><div class="review-compose__captcha" data-review-turnstile></div><button class="button button-primary review-form__submit" type="submit">Отправить отзыв</button><p class="review-form__status" role="status" aria-live="polite"></p></form>`;
   reviewsNote.before(reviewCompose);
-  const reviewTurnstile = reviewCompose.querySelector(".cf-turnstile");
-  const renderReviewTurnstile = () => {
-    if (window.turnstile && reviewTurnstile && !reviewTurnstile.dataset.rendered) {
-      window.turnstile.render(reviewTurnstile, { sitekey: reviewTurnstile.dataset.sitekey, action: "review" });
-      reviewTurnstile.dataset.rendered = "true";
-    } else if (reviewTurnstile && !reviewTurnstile.dataset.rendered) window.setTimeout(renderReviewTurnstile, 250);
+  const reviewTurnstile = reviewCompose.querySelector("[data-review-turnstile]");
+  let reviewTurnstilePromise;
+  const ensureReviewTurnstile = () => {
+    reviewTurnstilePromise ||= window.ensureTurnstile().then((turnstile) => {
+      turnstile.render(reviewTurnstile, { sitekey: "0x4AAAAAAEtmCSa771IS1Vq4", action: "review" });
+    });
+    return reviewTurnstilePromise;
   };
-  renderReviewTurnstile();
+  reviewCompose.addEventListener("pointerdown", () => { void ensureReviewTurnstile(); }, { once: true });
+  reviewCompose.addEventListener("focusin", () => { void ensureReviewTurnstile(); }, { once: true });
 
   const reviewForm = reviewCompose.querySelector("#review-form");
   const stars = [...reviewCompose.querySelectorAll("[data-rating]")];
@@ -202,6 +204,7 @@ if (reviewsNote) {
     try {
       const user = window.levelUpUser;
       if (!user) throw new Error("auth");
+      await ensureReviewTurnstile();
       const turnstileToken = reviewForm.querySelector("[name='cf-turnstile-response']")?.value || "";
       if (!turnstileToken) throw new Error("captcha");
       const response = await fetch("https://api.gamemaster.cc/reviews", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${await user.getIdToken()}` }, body: JSON.stringify({ rating, message: text, turnstileToken }) });
