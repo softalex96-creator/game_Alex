@@ -9,6 +9,7 @@ import { createDeliveryCode, sendPaymentEmail, sendWelcomeEmail } from "./email.
 import { applyReferralReward, calculatePromotion, referralCodeForUid } from "./promotions.js";
 import { createWink2PayInvoice, getWink2PayStatus, hasValidWink2PaySignature } from "./wink2pay.js";
 import { createFkWalletPayment, signFkWalletWebhook } from "./fkwallet.js";
+import { verifyTurnstileToken } from "./turnstile.js";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 3000);
@@ -94,6 +95,9 @@ function hasValidSignature(received, expected) {
   return actual.length === wanted.length && crypto.timingSafeEqual(actual, wanted);
 }
 function clientIp(request) { return String(request.headers["x-forwarded-for"] || request.socket.remoteAddress || "").split(",")[0].trim(); }
+async function requireTurnstile(body, request) {
+  await verifyTurnstileToken(body?.turnstileToken, { remoteip: clientIp(request) });
+}
 function requestSignature(parameters) {
   const apiSecret = process.env.BETA_TRANSFER_API_SECRET;
   if (!apiSecret) return null;
@@ -261,6 +265,7 @@ http.createServer(async (request, response) => {
       if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
       const user = await authenticateFirebaseRequest(request);
       const body = JSON.parse(await parseBody(request));
+      await requireTurnstile(body, request);
       const rating = Number(body.rating); const message = typeof body.message === "string" ? body.message.trim() : ""; const game = String(body.game || "LevelUp").trim().slice(0, 80);
       if (!Number.isInteger(rating) || rating < 1 || rating > 5 || message.length < 5 || message.length > 400) return json(response, 422, { error: "Invalid review" }, request);
       const id = `REV-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
@@ -299,7 +304,7 @@ http.createServer(async (request, response) => {
     try {
       if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
       const user = await authenticateFirebaseRequest(request);
-      const { items, promoCode } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items); const promotion = calculatePromotion({ subtotal: selected.reduce((sum, item) => sum + item.price, 0), promoCode, customer: user, users: readUsers() });
+      const body = JSON.parse(await parseBody(request)); await requireTurnstile(body, request); const { items, promoCode } = body; const selected = normalizeItems(items); const promotion = calculatePromotion({ subtotal: selected.reduce((sum, item) => sum + item.price, 0), promoCode, customer: user, users: readUsers() });
       const order = { id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`, amount: promotion.total, subtotal: selected.reduce((sum, item) => sum + item.price, 0), discount: promotion.discount, promotion, currency: "RUB", items: selected, customer: user, status: "created", createdAt: new Date().toISOString() };
       const provider = await createProviderPayment(order); order.provider = "betatransfer"; order.providerId = provider.id; order.providerHash = provider.hash; order.status = "awaiting_payment";
       const orders = readOrders(); orders[order.id] = order; writeOrders(orders);
@@ -310,7 +315,7 @@ http.createServer(async (request, response) => {
     try {
       if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
       const user = await authenticateFirebaseRequest(request);
-      const { items, promoCode } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items); const promotion = calculatePromotion({ subtotal: selected.reduce((sum, item) => sum + item.price, 0), promoCode, customer: user, users: readUsers() });
+      const body = JSON.parse(await parseBody(request)); await requireTurnstile(body, request); const { items, promoCode } = body; const selected = normalizeItems(items); const promotion = calculatePromotion({ subtotal: selected.reduce((sum, item) => sum + item.price, 0), promoCode, customer: user, users: readUsers() });
       const order = {
         id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`,
         amount: promotion.total, subtotal: selected.reduce((sum, item) => sum + item.price, 0), discount: promotion.discount, promotion, currency: "RUB", items: selected,
@@ -335,7 +340,7 @@ http.createServer(async (request, response) => {
     try {
       if (request.headers.origin !== origin) return json(response, 403, { error: "Origin is not allowed" }, request);
       const user = await authenticateFirebaseRequest(request);
-      const { items, promoCode } = JSON.parse(await parseBody(request)); const selected = normalizeItems(items); const promotion = calculatePromotion({ subtotal: selected.reduce((sum, item) => sum + item.price, 0), promoCode, customer: user, users: readUsers() });
+      const body = JSON.parse(await parseBody(request)); await requireTurnstile(body, request); const { items, promoCode } = body; const selected = normalizeItems(items); const promotion = calculatePromotion({ subtotal: selected.reduce((sum, item) => sum + item.price, 0), promoCode, customer: user, users: readUsers() });
       const order = { id: `LU${Date.now()}${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`, amount: promotion.total, subtotal: selected.reduce((sum, item) => sum + item.price, 0), discount: promotion.discount, promotion, currency: "RUB", items: selected, customer: user, provider: "fkwallet", status: "created", createdAt: new Date().toISOString() };
       const provider = await createFkWalletPayment(order, { customerIp: clientIp(request) });
       order.providerId = provider.orderId; order.providerHash = provider.orderHash; order.status = "awaiting_payment";

@@ -21,6 +21,20 @@ if (elements.paymentModal && !elements.paymentModal.querySelector("[data-promo-c
   const campaignPromo = new URLSearchParams(window.location.search).get("promo");
   if (campaignPromo) input.value = campaignPromo.trim().toUpperCase().slice(0, 40);
 }
+if (elements.paymentModal && !elements.paymentModal.querySelector(".cf-turnstile")) {
+  const turnstile = document.createElement("div");
+  turnstile.className = "cf-turnstile";
+  turnstile.dataset.sitekey = "0x4AAAAAAEtmCSa771IS1Vq4";
+  turnstile.dataset.action = "payment";
+  elements.paymentModal.querySelector(".payment-actions")?.before(turnstile);
+  const renderPaymentTurnstile = () => {
+    if (window.turnstile && !turnstile.dataset.rendered) {
+      window.turnstile.render(turnstile, { sitekey: turnstile.dataset.sitekey, action: "payment" });
+      turnstile.dataset.rendered = "true";
+    } else if (!turnstile.dataset.rendered) window.setTimeout(renderPaymentTurnstile, 250);
+  };
+  renderPaymentTurnstile();
+}
 const gameAccountRequirements = {
   "world-of-warcraft": { label: "BattleTag или e-mail Battle.net", placeholder: "Например: Player#1234", hint: "Укажите BattleTag или почту Battle.net. Пароль не нужен." },
   "mobile-legends": { label: "User ID и Zone ID", placeholder: "Например: 12345678 (1234)", hint: "Откройте профиль в игре: там отображаются User ID и Zone ID." },
@@ -300,11 +314,13 @@ elements.paymentSubmit?.addEventListener("click", async () => {
     if (!currentUser) throw new Error("Сначала войдите в аккаунт Google.");
     const idToken = await currentUser.getIdToken();
     const method = paymentMethod();
+    const turnstileToken = elements.paymentModal.querySelector("[name='cf-turnstile-response']")?.value || "";
+    if (!turnstileToken) throw new Error("Подтвердите, что вы не бот.");
     const response = await fetch(`${paymentApiOrigin}/payments/${method}/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
       credentials: "omit",
-      body: JSON.stringify({ items: selected.map(providerItem), promoCode: elements.promoCode?.value.trim() || "" }),
+      body: JSON.stringify({ items: selected.map(providerItem), promoCode: elements.promoCode?.value.trim() || "", turnstileToken }),
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok || !result.paymentUrl || !result.orderId) throw new Error(result.error || "Платёжный сервис не создал заказ.");
