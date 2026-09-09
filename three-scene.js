@@ -1,4 +1,7 @@
-const THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js";
+// Keep the visualizer self-contained so the public site does not execute a
+// third-party module from a CDN. The bundled copy is already used by the
+// standalone 3D viewer and is covered by the site's same-origin policy.
+const THREE_URL = "./scrubber-3d/vendor/three.module.js";
 const initThreeScenes = async () => {
   const THREE = await import(THREE_URL);
 

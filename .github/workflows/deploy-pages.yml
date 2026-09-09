@@ -42,6 +42,11 @@ jobs:
             --exclude='*.toml' \
             --exclude='README.md' \
             --exclude='SITE_STRUCTURE.md' \
+            --exclude='scrubber-3d/README.md' \
+            --exclude='scrubber-3d/verify.mjs' \
+            --exclude='scrubber-3d/tilda-*.html' \
+            --exclude='scrubber-3d/tilda-*.txt' \
+            --exclude='fk-verify.html' \
             --exclude='scrubber-3d-website.zip' \
             --exclude='public/' \
             ./ public/
