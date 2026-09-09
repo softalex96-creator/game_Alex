@@ -69,14 +69,14 @@
 .payment-dialog__method--disabled { opacity: .52; cursor: not-allowed; }
 .payment-dialog__method--disabled:hover { border-color: rgba(196,174,255,.2); transform: none; }
 .payment-dialog__method--disabled input { cursor: not-allowed; }
-.demo-mobile { display: grid; grid-template-columns: auto 1fr; gap: 13px; align-items: center; margin: 18px 0; padding: 18px; border: 1px solid rgba(95,220,255,.36); border-radius: 17px; background: radial-gradient(circle at 90% 15%, rgba(95,220,255,.18), transparent 30%), linear-gradient(135deg, rgba(20,70,109,.52), rgba(46,30,92,.62)); }
-.demo-mobile__icon { display: grid; width: 48px; height: 48px; place-items: center; border: 1px solid rgba(169,240,255,.45); border-radius: 14px; color: #99eaff; background: rgba(8,27,58,.55); font-size: 30px; font-weight: 800; }
-.demo-mobile > div span, .demo-mobile > div strong, .demo-mobile > div small { display: block; }
-.demo-mobile > div span { color: #b4efff; font-size: 9px; font-weight: 800; letter-spacing: .11em; }
-.demo-mobile > div strong { margin-top: 4px; color: #fff; font-size: 16px; }
-.demo-mobile > div small { margin-top: 4px; color: #c4d7ef; font-size: 10px; line-height: 1.45; }
-.demo-mobile label { grid-column: 1 / -1; }
-.demo-mobile input { cursor: not-allowed; }
+.mobile-payment { display: grid; grid-template-columns: auto 1fr; gap: 13px; align-items: center; margin: 18px 0; padding: 18px; border: 1px solid rgba(95,220,255,.36); border-radius: 17px; background: radial-gradient(circle at 90% 15%, rgba(95,220,255,.18), transparent 30%), linear-gradient(135deg, rgba(20,70,109,.52), rgba(46,30,92,.62)); }
+.mobile-payment__icon { display: grid; width: 48px; height: 48px; place-items: center; border: 1px solid rgba(169,240,255,.45); border-radius: 14px; color: #99eaff; background: rgba(8,27,58,.55); font-size: 30px; font-weight: 800; }
+.mobile-payment > div span, .mobile-payment > div strong, .mobile-payment > div small { display: block; }
+.mobile-payment > div span { color: #b4efff; font-size: 9px; font-weight: 800; letter-spacing: .11em; }
+.mobile-payment > div strong { margin-top: 4px; color: #fff; font-size: 16px; }
+.mobile-payment > div small { margin-top: 4px; color: #c4d7ef; font-size: 10px; line-height: 1.45; }
+.mobile-payment label { grid-column: 1 / -1; }
+.mobile-payment input { cursor: not-allowed; }
 @media (max-width: 560px) { .payment-dialog__methods { grid-template-columns: 1fr; }.payment-dialog__method { min-height: 58px; } }
 
 .payment-entry { display: grid; gap: 13px; margin: 18px 0; padding: 18px; border: 1px solid rgba(183,151,255,.32); border-radius: 17px; background: radial-gradient(circle at 88% 12%, rgba(169,119,255,.2), transparent 28%), linear-gradient(135deg, rgba(38,29,79,.78), rgba(23,23,42,.92)); }

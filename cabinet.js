@@ -68,7 +68,7 @@
 
   function renderOrders() {
     if (!orderList || !orderCount) return;
-    const orders = currentUser ? readOrders().filter((order) => !order.demoPaid) : [];
+    const orders = currentUser ? readOrders().filter((order) => !order.paid) : [];
     orderCount.textContent = String(orders.length);
     renderRank(orders.length);
     orderList.replaceChildren();
