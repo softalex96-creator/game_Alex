@@ -93,6 +93,28 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 @media (max-width: 960px) { .atlas-panel { min-height: 360px; }.atlas-map-wrap { min-height: 292px; }.atlas-marker text { font-size: 11px; }.atlas-marker .atlas-marker__status { font-size: 9px; } }
 @media (max-width: 760px) { .atlas-panel { min-height: 328px; padding: 18px 13px 15px; border-radius: 21px; }.atlas-map-wrap { min-height: 245px; }.atlas-marker text { font-size: 9px; stroke-width: 4px; }.atlas-marker .atlas-marker__status { font-size: 7px; stroke-width: 3px; }.atlas-panel .globe-key { gap: 9px; font-size: 9px; } }
 @media (prefers-reduced-motion: reduce) { .atlas-marker__halo { animation: none; } }
+.game-info-modal.modal {
+  width: min(530px, calc(100% - 28px));
+  max-height: calc(100svh - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: 16px calc(24px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling: touch;
+  padding: 33px;
+}
+.game-info-modal__actions {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@media (max-width: 560px) {
+  .game-info-modal.modal {
+    width: min(530px, calc(100% - 20px));
+    max-height: calc(100svh - 16px);
+    max-height: calc(100dvh - 16px);
+    padding: 29px 21px calc(23px + env(safe-area-inset-bottom));
+  }
+}
 .game-card__actions { display: grid; width: 100%; grid-template-columns: 1fr 1.25fr; gap: 6px; margin-top: auto; }.game-card .game-card__actions button { display: inline-flex; align-items: center; justify-content: center; width: 100%; margin: 0; padding: 7px 5px; border: 1px solid rgba(194,168,255,.22); border-radius: 8px; color: #d9ccff; background: rgba(255,255,255,.035); font-size: 9px; line-height: 1.1; text-align: center; }.game-card .game-card__actions .button-cart-icon { width: 13px; height: 13px; margin-right: 4px; }.game-card .game-card__actions .game-card__add { border-color: rgba(169,137,255,.72); color: #fff; background: linear-gradient(135deg, #8059e9, #aa61d6); box-shadow: 0 6px 16px rgba(119,79,214,.2); }.game-card .game-card__actions .game-card__add:hover { color: #fff; background: linear-gradient(135deg, #936ef3, #c56be8); }.cart-toast { position: fixed; z-index: 30; right: 22px; bottom: 22px; max-width: min(360px, calc(100% - 44px)); padding: 13px 16px; border: 1px solid rgba(158,245,193,.46); border-radius: 12px; color: #eafff2; background: rgba(20,54,43,.94); box-shadow: 0 16px 34px rgba(0,0,0,.34); font-size: 13px; font-weight: 800; line-height: 1.45; opacity: 0; pointer-events: none; transform: translateY(18px); transition: opacity .22s ease, transform .22s ease; }.cart-toast[data-variant="warning"] { border-color: rgba(255,201,123,.5); color: #fff1d8; background: rgba(77,49,24,.96); }.cart-toast.is-visible { opacity: 1; transform: translateY(0); }.game-info-modal__actions { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; }.game-info-modal__actions .button { margin: 0; }.game-info-modal__actions .button-outline { text-decoration: none; }
 .slot-cover::before { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, rgba(7,7,15,.25), transparent 58%, rgba(7,7,15,.48)); }
 .slot-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(9,8,18,.44)); }

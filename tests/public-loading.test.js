@@ -10,6 +10,7 @@ const publicScript = fs.readFileSync(new URL("../script.js", import.meta.url), "
 const cabinetScript = fs.readFileSync(new URL("../cabinet-page.js", import.meta.url), "utf8");
 const turnstileLoader = fs.readFileSync(new URL("../turnstile-loader.js", import.meta.url), "utf8");
 const firebaseAuth = fs.readFileSync(new URL("../firebase-auth.js", import.meta.url), "utf8");
+const styles = fs.readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 
 test("public index does not eagerly load Firebase Auth", () => {
   assert.doesNotMatch(index, /src=["']firebase-auth\.js/);
@@ -43,4 +44,10 @@ test("public pages version scripts that defer Turnstile", () => {
 
 test("Firebase Auth uses the first-party domain for Safari redirect sign-in", () => {
   assert.match(firebaseAuth, /authDomain:\s*["']gamemaster\.cc["']/);
+});
+
+test("game info modal keeps mobile actions reachable", () => {
+  assert.match(styles, /\.game-info-modal\.modal\s*\{[^}]*overflow-y:\s*auto/);
+  assert.match(styles, /\.game-info-modal\.modal\s*\{[^}]*scroll-padding-block:/);
+  assert.match(styles, /\.game-info-modal__actions\s*\{[^}]*padding-bottom:/);
 });
