@@ -494,3 +494,21 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
 .telegram-join__copy p:not(.eyebrow) { margin: 10px 0 16px; font-size: 14px; }
 .telegram-join__signal { width: 130px; padding: 14px; }
 @media (max-width: 760px) { .header { height: auto; }.telegram-join { width: calc(100% - 40px); } }
+
+/* Final mobile overrides: keep editorial cards readable and game controls separate. */
+@media (max-width: 760px) {
+  .catalog-gta-banner { grid-template-columns: 1fr; min-height: 330px; padding: 24px; }
+  .catalog-gta-banner__status { justify-self: stretch; width: 100%; }
+  .telegram-join { grid-template-columns: 1fr; min-height: 0; padding: 28px 22px; }
+  .telegram-join__signal { display: none; }
+}
+
+@media (max-width: 720px) {
+  .pixel-runner__screen,
+  .pixel-runner__canvas { min-height: 185px; height: 185px; }
+  .pixel-runner__challenge { top: 14px; right: 12px; width: calc(100% - 112px); padding: 11px 12px; }
+  .pixel-runner__challenge p { max-width: none; }
+  .pixel-runner__jump { left: 12px; right: auto; bottom: 12px; transform: none; }
+  .pixel-runner__jump:hover,
+  .pixel-runner__jump:focus-visible { transform: translateY(-2px); }
+}
