@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { GoogleAuthProvider, getAuth, getRedirectResult, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signInWithRedirect, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDQ5Hp_AUCYWacBpoFysKpZeYLOmStCtfk",
@@ -68,7 +68,13 @@ function showAccountView(name) {
 
 function setFeedback(message) { if (feedback) feedback.textContent = message; }
 
-export async function signInWithGoogle() { return signInWithPopup(auth, provider); }
+function isMobileBrowser() {
+  return Boolean(window.matchMedia?.("(max-width: 760px)")?.matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+}
+
+export async function signInWithGoogle() {
+  return isMobileBrowser() ? signInWithRedirect(auth, provider) : signInWithPopup(auth, provider);
+}
 export async function signInWithEmail(email, password) { return signInWithEmailAndPassword(auth, email.trim(), password); }
 export async function signOutLevelUp() { return signOut(auth); }
 
@@ -88,6 +94,11 @@ function signInMessage(error) {
   if (error.code === "auth/unauthorized-domain") return "Этот адрес сайта ещё не разрешён для входа. Откройте опубликованную версию LevelUp и повторите попытку.";
   return "Не удалось выполнить вход. Проверьте интернет‑соединение и повторите попытку.";
 }
+
+getRedirectResult(auth).catch((error) => {
+  const redirectFeedback = accountModal?.querySelector(".account-feedback") || document.querySelector("[data-cabinet-feedback]");
+  if (redirectFeedback) redirectFeedback.textContent = signInMessage(error);
+});
 
 signInButton?.addEventListener("click", async () => {
   signInButton.disabled = true;

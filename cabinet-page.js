@@ -1,4 +1,4 @@
-import { signInWithGoogle, signOutLevelUp } from "./firebase-auth.js?v=resend-email-1";
+import { signInWithGoogle, signOutLevelUp } from "./firebase-auth.js?v=mobile-google-1";
 import { reconcileUserPayments, rememberPayment } from "./payment-sync.js";
 
 const elements = {
