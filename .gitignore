@@ -8,5 +8,6 @@ service-account*.json
 *.pem
 *.key
 .DS_Store
+.wrangler/
 steam-worker/.wrangler/
 .secrets/
