@@ -66,6 +66,33 @@ h1 { max-width: 620px; font-size: clamp(42px, 6vw, 72px); line-height: 1.05; let
   background: #171424 center / cover no-repeat;
   box-shadow: inset 0 -46px 44px rgba(8, 7, 18, .56);
 }
+
+/* 2D atlas for the geography section. The markers are intentionally kept
+   simple and legible so the map remains useful at every viewport size. */
+.atlas-panel { min-height: 410px; padding: 24px 22px 18px; place-items: stretch; background: radial-gradient(circle at 55% 44%, rgba(87,66,183,.36), transparent 58%), linear-gradient(145deg, rgba(31,26,66,.9), rgba(11,12,24,.88)); }
+.atlas-panel::before { inset: 10%; border: 0; border-radius: 0; box-shadow: none; background: linear-gradient(90deg, transparent, rgba(163,139,255,.08), transparent); transform: skewX(-18deg); }
+.atlas-map-wrap { position: relative; z-index: 1; display: grid; min-height: 330px; align-items: center; }
+.atlas-map { display: block; width: 100%; height: auto; overflow: visible; }
+.atlas-map__sea { fill: rgba(15,18,39,.72); stroke: rgba(168,151,255,.28); stroke-width: 1.5; }
+.atlas-map__grid { pointer-events: none; }
+.atlas-map__land { fill: url(#atlas-land); stroke: rgba(193,178,255,.42); stroke-width: 2; stroke-linejoin: round; filter: drop-shadow(0 14px 22px rgba(17,9,57,.42)); }
+.atlas-map__land--south { opacity: .82; }
+.atlas-map__coast { fill: none; stroke: rgba(224,215,255,.2); stroke-width: 1; stroke-linecap: round; }
+.atlas-map__route { fill: none; stroke: rgba(123,224,255,.3); stroke-width: 1.5; stroke-dasharray: 5 8; }
+.atlas-marker { cursor: default; outline: none; }
+.atlas-marker circle:first-child { fill: #ffbd70; stroke: #fff0dc; stroke-width: 2; filter: url(#atlas-glow); }
+.atlas-marker--active circle:first-child { fill: #73efab; stroke: #e2ffef; }
+.atlas-marker__halo { fill: none; stroke: currentColor; stroke-width: 1.5; opacity: .42; animation: atlas-pulse 2.4s ease-in-out infinite; }
+.atlas-marker--active { color: #73efab; }
+.atlas-marker--soon { color: #ffbd70; }
+.atlas-marker text { fill: #fff; font-family: Manrope, Arial, sans-serif; font-size: 13px; font-weight: 800; paint-order: stroke; stroke: rgba(15,13,33,.85); stroke-width: 5px; stroke-linejoin: round; }
+.atlas-marker .atlas-marker__status { fill: currentColor; font-size: 10px; font-weight: 700; stroke-width: 4px; }
+.atlas-marker:focus-visible circle:first-child { stroke: #fff; stroke-width: 3; }
+.atlas-panel .globe-key { position: relative; z-index: 2; bottom: auto; justify-self: center; align-self: end; width: fit-content; }
+@keyframes atlas-pulse { 50% { transform: scale(1.28); opacity: .12; } }
+@media (max-width: 960px) { .atlas-panel { min-height: 360px; }.atlas-map-wrap { min-height: 292px; }.atlas-marker text { font-size: 11px; }.atlas-marker .atlas-marker__status { font-size: 9px; } }
+@media (max-width: 760px) { .atlas-panel { min-height: 328px; padding: 18px 13px 15px; border-radius: 21px; }.atlas-map-wrap { min-height: 245px; }.atlas-marker text { font-size: 9px; stroke-width: 4px; }.atlas-marker .atlas-marker__status { font-size: 7px; stroke-width: 3px; }.atlas-panel .globe-key { gap: 9px; font-size: 9px; } }
+@media (prefers-reduced-motion: reduce) { .atlas-marker__halo { animation: none; } }
 .game-card__actions { display: grid; width: 100%; grid-template-columns: 1fr 1.25fr; gap: 6px; margin-top: auto; }.game-card .game-card__actions button { display: inline-flex; align-items: center; justify-content: center; width: 100%; margin: 0; padding: 7px 5px; border: 1px solid rgba(194,168,255,.22); border-radius: 8px; color: #d9ccff; background: rgba(255,255,255,.035); font-size: 9px; line-height: 1.1; text-align: center; }.game-card .game-card__actions .button-cart-icon { width: 13px; height: 13px; margin-right: 4px; }.game-card .game-card__actions .game-card__add { border-color: rgba(169,137,255,.72); color: #fff; background: linear-gradient(135deg, #8059e9, #aa61d6); box-shadow: 0 6px 16px rgba(119,79,214,.2); }.game-card .game-card__actions .game-card__add:hover { color: #fff; background: linear-gradient(135deg, #936ef3, #c56be8); }.cart-toast { position: fixed; z-index: 30; right: 22px; bottom: 22px; max-width: min(360px, calc(100% - 44px)); padding: 13px 16px; border: 1px solid rgba(158,245,193,.46); border-radius: 12px; color: #eafff2; background: rgba(20,54,43,.94); box-shadow: 0 16px 34px rgba(0,0,0,.34); font-size: 13px; font-weight: 800; line-height: 1.45; opacity: 0; pointer-events: none; transform: translateY(18px); transition: opacity .22s ease, transform .22s ease; }.cart-toast[data-variant="warning"] { border-color: rgba(255,201,123,.5); color: #fff1d8; background: rgba(77,49,24,.96); }.cart-toast.is-visible { opacity: 1; transform: translateY(0); }.game-info-modal__actions { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; }.game-info-modal__actions .button { margin: 0; }.game-info-modal__actions .button-outline { text-decoration: none; }
 .slot-cover::before { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, rgba(7,7,15,.25), transparent 58%, rgba(7,7,15,.48)); }
 .slot-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(9,8,18,.44)); }
