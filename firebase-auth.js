@@ -79,14 +79,7 @@ function isIosSafari() {
 }
 
 export async function signInWithGoogle() {
-  if (isIosSafari()) {
-    try {
-      return await signInWithPopup(auth, provider);
-    } catch (error) {
-      if (error.code !== "auth/popup-blocked") throw error;
-      return signInWithRedirect(auth, provider);
-    }
-  }
+  if (isIosSafari()) return signInWithRedirect(auth, provider);
   return isMobileBrowser() ? signInWithRedirect(auth, provider) : signInWithPopup(auth, provider);
 }
 export async function signInWithEmail(email, password) { return signInWithEmailAndPassword(auth, email.trim(), password); }
