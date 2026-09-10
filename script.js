@@ -19,6 +19,20 @@ if (accountModal) {
   const accountViews = accountModal.querySelectorAll("[data-account-view]");
   const feedback = accountModal.querySelector(".account-feedback");
 
+  const googleSignInButton = accountModal.querySelector("#google-sign-in");
+  googleSignInButton?.addEventListener("click", async () => {
+    googleSignInButton.disabled = true;
+    if (feedback) feedback.textContent = "Открываем защищённую страницу Google…";
+    try {
+      const { signInWithGoogle } = await window.ensureLevelUpAuth();
+      await signInWithGoogle();
+    } catch {
+      if (feedback) feedback.textContent = "Не удалось открыть вход. Проверьте соединение и попробуйте ещё раз.";
+    } finally {
+      googleSignInButton.disabled = false;
+    }
+  });
+
   accountModal.querySelectorAll("[data-account-mode]").forEach((button) => {
     button.addEventListener("click", () => {
       accountViews.forEach((view) => { view.hidden = view.dataset.accountView !== button.dataset.accountMode; });

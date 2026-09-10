@@ -57,7 +57,6 @@ function armIdleTimer(user) {
 });
 
 const accountModal = document.getElementById("account-modal");
-const signInButton = document.getElementById("google-sign-in");
 const steamSignInButton = document.getElementById("steam-sign-in");
 const signOutButton = document.getElementById("google-sign-out");
 const feedback = accountModal?.querySelector(".account-feedback");
@@ -105,12 +104,6 @@ function signInMessage(error) {
 getRedirectResult(auth).catch((error) => {
   const redirectFeedback = accountModal?.querySelector(".account-feedback") || document.querySelector("[data-cabinet-feedback]");
   if (redirectFeedback) redirectFeedback.textContent = signInMessage(error);
-});
-
-signInButton?.addEventListener("click", async () => {
-  signInButton.disabled = true;
-  setFeedback("Открываем защищённое окно Google…");
-  try { await signInWithGoogle(); } catch (error) { setFeedback(signInMessage(error)); } finally { signInButton.disabled = false; }
 });
 
 steamSignInButton?.addEventListener("click", () => {

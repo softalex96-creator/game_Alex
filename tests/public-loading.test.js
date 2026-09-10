@@ -38,7 +38,7 @@ test("public pages defer Turnstile until a protected action", () => {
 });
 
 test("public pages version scripts that defer Turnstile", () => {
-  assert.match(index, /src=["']script\.js\?v=lazy-turnstile-1["']/);
+  assert.match(index, /src=["']script\.js\?v=lazy-turnstile-2["']/);
   assert.match(cabinet, /src=["']cabinet-page\.js\?v=lazy-turnstile-1["']/);
 });
 
@@ -49,6 +49,11 @@ test("Firebase Auth uses the first-party domain for Safari redirect sign-in", ()
 test("iOS Safari uses same-tab redirect sign-in", () => {
   assert.match(firebaseAuth, /function isIosSafari\(\)/);
   assert.match(firebaseAuth, /if \(isIosSafari\(\)\) return signInWithRedirect\(auth, provider\);/);
+});
+
+test("public Google login binds before the lazy auth module finishes loading", () => {
+  assert.match(publicScript, /google-sign-in/);
+  assert.match(publicScript, /ensureLevelUpAuth\(\)[\s\S]*signInWithGoogle/);
 });
 
 test("game info modal keeps mobile actions reachable", () => {
