@@ -3,7 +3,7 @@ import { GoogleAuthProvider, getAuth, getRedirectResult, onAuthStateChanged, sig
 
 const firebaseConfig = {
   apiKey: "AIzaSyDQ5Hp_AUCYWacBpoFysKpZeYLOmStCtfk",
-  authDomain: "levelup-game-alex.firebaseapp.com",
+  authDomain: "gamemaster.cc",
   projectId: "levelup-game-alex",
   storageBucket: "levelup-game-alex.firebasestorage.app",
   messagingSenderId: "920434234588",

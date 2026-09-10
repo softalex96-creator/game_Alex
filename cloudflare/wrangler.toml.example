@@ -1,0 +1,6 @@
+name = "gamemaster-firebase-auth-proxy"
+main = "firebase-auth-proxy.js"
+compatibility_date = "2026-09-10"
+
+# Attach these routes in Cloudflare Dashboard after deployment:
+# gamemaster.cc/__/auth/*
