@@ -72,7 +72,21 @@ function isMobileBrowser() {
   return Boolean(window.matchMedia?.("(max-width: 760px)")?.matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
 }
 
+function isIosSafari() {
+  return /iPad|iPhone|iPod/i.test(navigator.userAgent)
+    && /Safari/i.test(navigator.userAgent)
+    && !/CriOS|FxiOS|EdgiOS/i.test(navigator.userAgent);
+}
+
 export async function signInWithGoogle() {
+  if (isIosSafari()) {
+    try {
+      return await signInWithPopup(auth, provider);
+    } catch (error) {
+      if (error.code !== "auth/popup-blocked") throw error;
+      return signInWithRedirect(auth, provider);
+    }
+  }
   return isMobileBrowser() ? signInWithRedirect(auth, provider) : signInWithPopup(auth, provider);
 }
 export async function signInWithEmail(email, password) { return signInWithEmailAndPassword(auth, email.trim(), password); }

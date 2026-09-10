@@ -46,6 +46,12 @@ test("Firebase Auth uses the first-party domain for Safari redirect sign-in", ()
   assert.match(firebaseAuth, /authDomain:\s*["']gamemaster\.cc["']/);
 });
 
+test("iOS Safari tries a user-gesture popup before redirect fallback", () => {
+  assert.match(firebaseAuth, /function isIosSafari\(\)/);
+  assert.match(firebaseAuth, /isIosSafari\(\)[\s\S]*signInWithPopup\(auth, provider\)/);
+  assert.match(firebaseAuth, /auth\/popup-blocked[\s\S]*signInWithRedirect\(auth, provider\)/);
+});
+
 test("game info modal keeps mobile actions reachable", () => {
   assert.match(styles, /\.game-info-modal\.modal\s*\{[^}]*overflow-y:\s*auto/);
   assert.match(styles, /\.game-info-modal\.modal\s*\{[^}]*scroll-padding-block:/);
