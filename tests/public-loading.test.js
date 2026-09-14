@@ -17,6 +17,21 @@ test("public index does not eagerly load Firebase Auth", () => {
   assert.match(index, /src=["']auth-loader\.js/);
 });
 
+test("homepage keeps its basic brand styling while the main stylesheet loads", () => {
+  const head = index.match(/<head>([\s\S]*?)<\/head>/i)?.[1] ?? "";
+  assert.match(head, /<style[\s\S]*?body\s*\{[^}]*background:\s*#0c0c14/i);
+  assert.match(head, /\.header\s*\{[^}]*display:\s*flex/i);
+  assert.match(head, /\.cart-button\s*\{[^}]*border-radius:/i);
+});
+
+test("homepage exposes LevelUp search metadata and a root favicon", () => {
+  assert.match(index, /<title>LevelUp — игры, игровая валюта и подписки<\/title>/);
+  assert.match(index, /name="description" content="Каталог LevelUp:/);
+  assert.match(index, /href="\/favicon\.png\?v=levelup-brand-1"/);
+  assert.ok(fs.existsSync(new URL("../favicon.png", import.meta.url)));
+  assert.match(index, /"logo":\s*"https:\/\/gamemaster\.cc\/assets\/brand\/levelup-mark\.png"/);
+});
+
 test("auth loader imports Firebase only when requested", () => {
   assert.match(authLoader, /import\(["']\.\/firebase-auth\.js/);
   assert.match(authLoader, /ensureLevelUpAuth/);

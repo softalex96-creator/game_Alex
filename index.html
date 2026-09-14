@@ -3,18 +3,54 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="LevelUp — исследуй игровые миры вместе с нами. Игры и игровая валюта для пользователей из Кыргызстана и СНГ." />
+    <meta name="description" content="Каталог LevelUp: игры, подписки и игровая валюта. Выберите игру, платформу и регион, чтобы оформить заявку. Поддержка игроков в Кыргызстане и СНГ." />
     <meta name="google-site-verification" content="3W2Xe-0OzmELOPpDCvfBUqhqH2eZDBt11Pu1V6UDogU" />
     <link rel="canonical" href="https://gamemaster.cc/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="LevelUp" />
-    <meta property="og:title" content="LevelUp — исследуй игровые миры" />
-    <meta property="og:description" content="Игры, дополнения и игровая валюта: выберите подходящий вариант в каталоге LevelUp." />
+    <meta property="og:title" content="LevelUp — игры, игровая валюта и подписки" />
+    <meta property="og:description" content="Каталог LevelUp: игры, подписки и игровая валюта. Выберите игру, платформу и регион, чтобы оформить заявку." />
     <meta property="og:url" content="https://gamemaster.cc/" />
     <meta name="twitter:card" content="summary" />
-    <title>LevelUp — исследуй игровые миры</title>
-    <link rel="icon" type="image/png" href="assets/brand/levelup-favicon.png" />
-    <link rel="apple-touch-icon" href="assets/brand/levelup-favicon.png" />
+    <title>LevelUp — игры, игровая валюта и подписки</title>
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png?v=levelup-brand-1" />
+    <link rel="apple-touch-icon" href="/favicon.png?v=levelup-brand-1" />
+    <style>
+      :root { color-scheme: dark; background: #0c0c14; color: #f6f5ff; font-family: Arial, sans-serif; }
+      * { box-sizing: border-box; }
+      body { min-width: 320px; margin: 0; overflow-x: hidden; background: #0c0c14; color: #f6f5ff; }
+      .container { position: relative; width: min(1120px, calc(100% - 40px)); margin-inline: auto; }
+      .header { display: flex; min-height: 88px; align-items: center; justify-content: space-between; gap: 24px; }
+      .logo { display: inline-flex; align-items: center; gap: 9px; color: #fff; font-size: 20px; font-weight: 800; text-decoration: none; }
+      .logo > img { width: 38px; height: 38px; object-fit: contain; }
+      .logo-copy { display: grid; gap: 1px; }
+      .logo-copy strong { font-size: 22px; line-height: 1; }
+      .logo-copy small { color: #b9b1d0; font-size: 9px; line-height: 1.3; }
+      .header-actions { display: flex; align-items: center; gap: 10px; }
+      .cart-button { display: grid; width: 44px; height: 44px; place-items: center; padding: 0; border: 1px solid rgba(255,255,255,.16); border-radius: 12px; background: #181826; color: #f6f5ff; }
+      .cart-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+      nav { display: flex; flex-wrap: wrap; gap: 16px; }
+      nav a { color: #aaa9bb; font-size: 13px; text-decoration: none; }
+      .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr); align-items: center; gap: 32px; padding-block: 36px 54px; }
+      .hero h1 { max-width: 13ch; margin: 10px 0; font-size: clamp(34px, 5vw, 62px); line-height: 1.03; letter-spacing: -.04em; }
+      .hero .lead { max-width: 52ch; color: #aaa9bb; font-size: 15px; line-height: 1.6; }
+      .gta-status { padding: 22px; border: 1px solid rgba(255,255,255,.12); border-radius: 18px; background: #181826; }
+      .button { display: inline-flex; align-items: center; justify-content: center; padding: 12px 18px; border-radius: 10px; background: #8c65ff; color: #fff; font-weight: 700; text-decoration: none; }
+      .text-link { color: #c5b7ff; }
+      @media (max-width: 760px) {
+        .container { width: calc(100% - 36px); }
+        .header { min-height: 70px; gap: 10px; }
+        .header > nav { display: none; }
+        .logo { gap: 6px; font-size: 17px; }
+        .logo > img { width: 34px; height: 34px; }
+        .logo-copy strong { font-size: 19px; }
+        .logo-copy small { display: none; }
+        .header-actions { gap: 8px; }
+        .cart-button { width: 40px; height: 40px; }
+        .hero { grid-template-columns: 1fr; gap: 20px; padding-block: 24px 38px; }
+        .hero h1 { font-size: clamp(34px, 10vw, 48px); }
+      }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -27,6 +63,7 @@
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "LevelUp",
+        "logo": "https://gamemaster.cc/assets/brand/levelup-mark.png",
         "legalName": "ОсОО «ТРЕЙД АП»",
         "url": "https://gamemaster.cc/",
         "email": "business@pulse80.cc",
