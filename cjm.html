@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Банковский CJM оплаты GameMaster со счёта абонента билайн." />
+    <title>GameMaster · банковский CJM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="cjm.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true">GM</span>
+          <div><strong>GameMaster</strong><span>Banking journey map</span></div>
+        </div>
+        <div class="document-meta"><span class="meta-dot"></span><span>Целевая операционная модель</span><b>v0.1</b></div>
+      </header>
+
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="kicker">Для банковского согласования</p>
+          <h1 id="page-title">Оплата цифровой услуги GameMaster со счёта абонента билайн</h1>
+          <p class="hero-lead">Один путь клиента, два независимых контура: информационный обмен подтверждает заказ, а расчётный контур Альфа‑Банка перечисляет средства в пользу киргизского юрлица.</p>
+        </div>
+        <aside class="hero-callout">
+          <span class="callout-label">Главная мысль</span>
+          <strong>Альфа‑Банк не оказывает цифровую услугу</strong>
+          <p>Банк обеспечивает расчёты и договорный контур. Решение «оказать / отказать» остаётся у GameMaster.</p>
+        </aside>
+      </section>
+
+      <section class="legend" aria-label="Легенда потоков">
+        <span><i class="legend-line legend-line--info"></i>Информационный обмен</span>
+        <span><i class="legend-line legend-line--money"></i>Денежный поток</span>
+        <span><i class="legend-line legend-line--contract"></i>Договорная связь</span>
+        <span class="legend-note">↳ callback / статус транзакции</span>
+      </section>
+
+      <section class="journey" aria-labelledby="journey-title">
+        <div class="section-heading">
+          <div><p class="kicker">01 · CJM</p><h2 id="journey-title">Как проходит одна оплата</h2></div>
+          <p>Номер транзакции проходит через все четыре дорожки и связывает SMS, callback, результат услуги и расчётный реестр.</p>
+        </div>
+
+        <div class="lane-grid">
+          <div class="lane-spacer"></div>
+          <div class="lane-head lane-head--person"><span class="lane-index">01</span><div><strong>Физлицо</strong><small>абонент билайн</small></div></div>
+          <div class="lane-head lane-head--beeline"><span class="lane-index">02</span><div><strong>билайн</strong><small>мобильный счёт</small></div></div>
+          <div class="lane-head lane-head--ruru"><span class="lane-index">03</span><div><strong>RU.RU / НСК</strong><small>агрегация и callback</small></div></div>
+          <div class="lane-head lane-head--game"><span class="lane-index">04</span><div><strong>GameMaster KG</strong><small>услуга и заказ</small></div></div>
+
+          <div class="step-label"><span>01</span><strong>Инициирует оплату</strong><small>Выбирает цифровой товар и подтверждает оплату SMS‑командой.</small></div>
+          <div class="event event--person"><b>SMS</b><small>короткий номер</small></div><div class="flow flow--info flow--to-ruru"><span></span></div><div class="event event--ruru"><b>Создать платёж</b><small>merchant / order ID</small></div><div class="flow flow--info flow--to-game"><span></span></div>
+
+          <div class="step-label"><span>02</span><strong>Проверяет баланс</strong><small>Оператор проверяет доступный остаток и лимиты мобильного платежа.</small></div>
+          <div class="state state--neutral">ожидание</div><div class="event event--beeline"><b>Проверка</b><small>баланс + лимиты</small></div><div class="flow flow--info flow--callback"><span></span></div><div class="state state--neutral">получить статус</div>
+
+          <div class="step-label"><span>03</span><strong>Списывает или отказывает</strong><small>Результат списания возвращается агрегатору с тем же ID транзакции.</small></div>
+          <div class="state state--muted">не участвует</div><div class="event event--beeline event--decision"><b>✓ / ×</b><small>debit / decline</small></div><div class="event event--ruru"><b>Callback</b><small>success / failed</small></div><div class="flow flow--info flow--to-game"><span></span></div>
+
+          <div class="step-label"><span>04</span><strong>Оказывает услугу</strong><small>GameMaster проверяет заказ, доступность и исполняет либо отклоняет его.</small></div>
+          <div class="state state--muted">получить SMS</div><div class="flow flow--info flow--return"><span></span></div><div class="state state--neutral">передать решение</div><div class="event event--game event--outcome"><b>Оказать / отказать</b><small>статус заказа</small></div>
+        </div>
+
+        <div class="journey-result">
+          <div class="result result--success"><span>✓</span><div><strong>SUCCESS</strong><small>платёж подтверждён → заказ исполнен → статус возвращён клиенту</small></div></div>
+          <div class="result result--failed"><span>×</span><div><strong>FAILED</strong><small>нет средств / лимит / отказ услуги → платёж не считается исполненным</small></div></div>
+        </div>
+      </section>
+
+      <section class="money" aria-labelledby="money-title">
+        <div class="section-heading section-heading--money">
+          <div><p class="kicker">02 · Settlement</p><h2 id="money-title">Денежный поток и роль Альфа‑Банка</h2></div>
+          <p>Пользователь не открывает отдельные отношения с банком: источник денег — мобильный счёт, а банк обслуживает расчётный контур.</p>
+        </div>
+        <div class="money-flow">
+          <div class="money-node"><span class="node-icon">₽</span><div><strong>Мобильный счёт</strong><small>абонент билайн</small></div></div>
+          <span class="money-arrow">→</span>
+          <div class="money-node money-node--operator"><span class="node-icon">B</span><div><strong>билайн / RU.RU</strong><small>сервис мобильной коммерции</small></div></div>
+          <span class="money-arrow">→</span>
+          <div class="money-node money-node--bank"><span class="node-icon">A</span><div><strong>Альфа‑Банк</strong><small>расчёты / перечисление</small></div></div>
+          <span class="money-arrow">→</span>
+          <div class="money-node money-node--recipient"><span class="node-icon">GM</span><div><strong>GameMaster KG</strong><small>получатель средств</small></div></div>
+        </div>
+        <div class="settlement-note"><span class="note-icon">i</span><div><strong>Рабочая формулировка для банка</strong><p>«Расчёты по подтверждённым транзакциям / реестрам» — предпочтительнее, чем фиксировать «аванс», пока не выбрана конкретная договорная модель.</p></div></div>
+      </section>
+
+      <section class="contracts" aria-labelledby="contracts-title">
+        <div class="section-heading"><div><p class="kicker">03 · Contract perimeter</p><h2 id="contracts-title">Договорный контур</h2></div><p>На схеме видно, какие отношения нужны для расчётов, а какие относятся к оказанию самой услуги.</p></div>
+        <div class="contract-grid">
+          <article class="contract-card contract-card--primary"><span class="contract-number">01</span><div><strong>Альфа‑Банк ↔ RU.RU / НСК</strong><p>Расчётное обслуживание, обработка/перечисление средств, реестры, callback и сверка транзакций.</p></div><em>банковский контур</em></article>
+          <article class="contract-card"><span class="contract-number">02</span><div><strong>Альфа‑Банк ↔ GameMaster KG</strong><p>Договор с получателем средств: реквизиты, назначение платежа, валюты, комиссии, возвраты и подтверждающие документы.</p></div><em>получатель</em></article>
+          <article class="contract-card"><span class="contract-number">03</span><div><strong>RU.RU / НСК ↔ GameMaster KG</strong><p>Подключение поставщика услуги: merchant ID, API/SMS-интеграция, формат статусов и правила исполнения заказа.</p></div><em>инфообмен</em></article>
+        </div>
+        <div class="legal-note"><strong>Проверить до юридической фиксации</strong><span>Кто является оператором электронных денежных средств в конкретной схеме; кто принимает распоряжение абонента; кто является поставщиком услуги; как оформляются возвраты и трансграничное перечисление в Кыргызстан.</span></div>
+      </section>
+
+      <footer class="footer"><span>GameMaster · внутренний концепт для обсуждения с банком</span><span><a href="https://topiframe2.ruru.ru/" target="_blank" rel="noreferrer">Источник по сервису RU.RU ↗</a></span></footer>
+    </main>
+  </body>
+</html>
