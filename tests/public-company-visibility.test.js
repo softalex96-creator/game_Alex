@@ -10,7 +10,11 @@ test('public homepage does not expose the company requisites card', () => {
   assert.equal(indexHtml.includes('Реквизиты организации'), false);
 });
 
-test('dedicated contacts page still contains the company requisites', () => {
-  assert.equal(contactsHtml.includes('Реквизиты организации'), true);
-  assert.equal(contactsHtml.includes('ИНН КР'), true);
+test('public contacts page exposes only contact channels, not company requisites', () => {
+  assert.equal(contactsHtml.includes('Реквизиты организации'), false);
+  assert.equal(contactsHtml.includes('ИНН КР'), false);
+  assert.equal(contactsHtml.includes('Адрес офиса'), false);
+  assert.equal(contactsHtml.includes('Директор'), false);
+  assert.equal(contactsHtml.includes('business@pulse80.cc'), true);
+  assert.equal(contactsHtml.includes('@levelUP_67'), true);
 });
